@@ -1,0 +1,24 @@
+# Survey mission. Positions are in the map frame, which is same as the world
+# frame of the simulator when everything is started together.
+
+mission:
+  ros__parameters:
+    autostart: false
+    pose_frame: map             # SLAM pose. Give `odom` to run on dead reckoning alone
+    depth: -5.0                 # z in m, seabed is around -10
+    cruise_speed: 0.5           # m/s
+    accept_radius: 1.0          # m, waypoint is taken as reached inside this
+    turn_in_place_angle_deg: 25.0
+    slow_down_gain: 0.4         # 1/s, speed is reduced on approaching the waypoint
+    min_speed: 0.15             # m/s
+    depth_tolerance: 0.5        # m, vehicle starts moving only after reaching the depth
+    pose_timeout: 1.0           # s
+
+    # lawnmower over the pipeline and the rocks, lanes are along x
+    survey:
+      center_x: 5.0
+      center_y: 0.0
+      length: 30.0              # m, along x
+      width: 24.0               # m, along y
+      spacing: 6.0              # m between the lanes
+      tie_line: true            # run the first lane again at the end for loop closure
