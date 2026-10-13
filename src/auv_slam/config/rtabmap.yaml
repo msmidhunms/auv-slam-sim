@@ -9,7 +9,8 @@
 #
 # RTAB-Map internal parameters (Xxx/Yyy) are strings.
 
-rtabmap:
+# node is running as /rtabmap/rtabmap, wildcard is used so the namespace does not matter
+/**:
   ros__parameters:
     frame_id: base_link
     odom_frame_id: odom             # odometry is taken from TF

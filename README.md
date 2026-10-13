@@ -5,7 +5,7 @@ sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
 > Work in progress. As of now the vehicle model, underwater world, sensors, control, teleop,
-> EKF localisation and the visualisation are in place. SLAM and mission nodes will be added next.
+> EKF localisation, SLAM and the visualisation are in place. Mission node will be added next.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ containers only.
 ```bash
 cp .env.example .env   # optional, defaults are same as the example
 make build             # build the images, first time it takes around 10 min for Gazebo
-make up                # simulator, bridge, sensors, control, localisation, gui and foxglove bridge
+make up                # simulator, sensors, control, localisation, SLAM, gui and foxglove bridge
 make ps
 make gui               # opens http://localhost:6080 in the browser
 make teleop            # drive the vehicle from keyboard
@@ -42,6 +42,7 @@ There is no GPU inside Docker on macOS, so all the rendering is happening on CPU
 | `controller` | depth, heading, attitude and velocity controller, `cmd_vel` to body wrench |
 | `allocator` | thruster allocator, body wrench to 8 thrust commands |
 | `localization` | `robot_localization` EKF, AHRS + DVL + depth to `odom -> base_link` |
+| `slam` | RTAB-Map, sonar cloud + odometry to `map -> odom` and the 3D map |
 | `state-pub` | `robot_state_publisher` with the vehicle URDF |
 | `gui` | desktop in the browser (noVNC) with RViz and Gazebo GUI, port 6080 |
 | `foxglove` | `foxglove_bridge` for live data in Foxglove, port 8765 |
@@ -158,7 +159,7 @@ from DVL and z from the depth sensor. Config is in `src/auv_localization/config/
 |---|---|---|
 | `/odometry/filtered` | `nav_msgs/Odometry` | estimated pose and velocity, 50 Hz |
 | TF `odom -> base_link` | | same estimate as TF |
-| TF `world -> odom` | static | only for showing the ground truth along with the estimate in RViz |
+| TF `world -> map` | static | only for showing the ground truth along with the estimate in RViz |
 
 This is dead reckoning. Depth and heading are absolute, but nothing is observing x and y,
 so the horizontal position drifts with the distance travelled. Correcting that drift is the
@@ -175,10 +176,50 @@ Measured against ground truth, two 15 m squares at 0.5 m/s and 5 m depth (118 m 
 The error is not growing steadily in this run because the path is a closed square, the
 heading error partly cancels on opposite legs. On a long straight run it will grow more.
 
-`world` and `odom` frames are the same only when the simulator and the localisation node
+`world` and `map` frames are the same only when the simulator and the localisation node
 are started together (`make up` does that), since the filter starts from x = y = 0.
 If the `localization` container alone is restarted in between, ground truth and estimate
 will be shown with an offset in RViz.
+
+## SLAM
+
+RTAB-Map is running in sonar only mode. The EKF dead reckoning is its odometry, a node is
+added to the graph on every 0.5 m, and the sonar cloud of the new node is matched with ICP
+against the clouds of nearby older nodes (proximity detection). On a successful match the
+graph is optimised and the correction comes out as the `map -> odom` TF. Config is in
+`src/auv_slam/config/rtabmap.yaml`.
+
+| Output | Type | Meaning |
+|---|---|---|
+| TF `map -> odom` | | drift correction, so `map -> base_link` is the SLAM pose |
+| `/rtabmap/cloud_map` | `sensor_msgs/PointCloud2` | 3D map, 0.25 m voxels |
+| `/rtabmap/mapPath` | `nav_msgs/Path` | optimised trajectory |
+| `/rtabmap/mapGraph` | `rtabmap_msgs/MapGraph` | pose graph with the loop closure links |
+
+Measured against ground truth, two laps of a 20 m square at 0.5 m/s and 5 m depth
+(163 m in 392 s). 260 graph nodes and 127 proximity links were created.
+
+| Position error | EKF alone | SLAM |
+|---|---|---|
+| Back at the start after lap 1 | 0.51 m | 0.09 m |
+| Back at the start after lap 2 | 0.34 m | 0.03 m |
+| RMS over the full run | 0.45 m | 0.42 m |
+| Maximum | 0.54 m | 0.66 m |
+
+So SLAM is pulling the position back when the vehicle comes to an already mapped place,
+but in between the revisits it is only as good as the dead reckoning. In this run the dead
+reckoning itself was within 0.55 m, so the gain is small. It will matter more on longer runs.
+
+Points to note:
+
+- ICP between consecutive clouds is switched off (`RGBD/NeighborLinkRefining`). On open
+  seabed nothing is holding x and y and ICP slides, DVL dead reckoning is better there.
+- There is no camera, so appearance based loop closure is not available. The vehicle has
+  to come within 8 m of an old pose (`RGBD/LocalRadius`) for a loop closure.
+- RTAB-Map prints `Missing visual features ...` warnings, these are from the visual
+  proximity check which has nothing to work with. They can be ignored.
+- A new map is started on every start of the `slam` container. The database is kept in the
+  `slam_data` volume at `/data/rtabmap.db`.
 
 ## Tests
 
@@ -202,8 +243,10 @@ Gazebo GUI is the heaviest one on CPU rendering (around 5 cores). If the machine
 struggling, make `START_GZ_GUI=false` in `.env` and do `make up` again, RViz alone is light.
 Desktop resolution can be changed with `VNC_RESOLUTION`.
 
-In RViz the vehicle model is drawn at the estimated pose (fixed frame is `odom`). Orange
-arrows are the EKF estimate and green arrows are the ground truth from the simulator.
+In RViz the fixed frame is `map` and the vehicle model is drawn at the SLAM pose. Coloured
+boxes are the SLAM map, white points are the live sonar cloud, pink line is the SLAM
+trajectory, orange arrows are the EKF estimate and green arrows are the ground truth.
+The `slam` container has to be running for RViz to show anything, since it gives `map -> odom`.
 
 ## Comms smoke test
 
