@@ -93,6 +93,23 @@ services:
       target: nodes
     command: ros2 launch auv_sensors sensor.launch.py node:=depth
 
+  # --- control: cmd_vel -> controller -> wrench -> allocator -> thrusters ------
+  controller:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_control control.launch.py node:=controller
+
+  allocator:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_control control.launch.py node:=thruster_allocator
+
   # --- vehicle ---------------------------------------------------------------
   state-pub:
     <<: *ros-node
@@ -132,6 +149,16 @@ services:
       -p port:=8765 -p address:=0.0.0.0 -p use_sim_time:=true
     ports:
       - "127.0.0.1:${FOXGLOVE_PORT:-8765}:8765"
+
+  # keyboard teleop, started with `make teleop`
+  teleop:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    profiles: [tools]
+    restart: "no"
+    stdin_open: true
+    tty: true
+    command: ros2 run auv_teleop keyboard_node
 
   # --- throwaway shell on the network, for ros2 topic/node commands ----------
   shell:

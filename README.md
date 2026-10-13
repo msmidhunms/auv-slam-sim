@@ -4,8 +4,8 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle 
 sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
-> Work in progress. As of now the vehicle model, underwater world, sensors and the
-> visualisation are in place. Control, localisation and SLAM nodes will be added one by one.
+> Work in progress. As of now the vehicle model, underwater world, sensors, control,
+> teleop and the visualisation are in place. Localisation and SLAM nodes will be added next.
 
 ## Prerequisites
 
@@ -20,9 +20,10 @@ containers only.
 ```bash
 cp .env.example .env   # optional, defaults are same as the example
 make build             # build the images, first time it takes around 10 min for Gazebo
-make up                # simulator, bridge, sensors, state publisher, gui and foxglove bridge
+make up                # simulator, bridge, sensors, control, gui and foxglove bridge
 make ps
 make gui               # opens http://localhost:6080 in the browser
+make teleop            # drive the vehicle from keyboard
 ```
 
 Docker Desktop is to be given around 14 GB memory and 8 CPUs (Settings -> Resources).
@@ -38,9 +39,12 @@ There is no GPU inside Docker on macOS, so all the rendering is happening on CPU
 | `ahrs` | attitude and heading from the raw IMU, with compass error added |
 | `dvl` | DVL model, body velocity with noise and bottom lock dropouts |
 | `depth` | pressure sensor model, pressure and depth |
+| `controller` | depth, heading, attitude and velocity controller, `cmd_vel` to body wrench |
+| `allocator` | thruster allocator, body wrench to 8 thrust commands |
 | `state-pub` | `robot_state_publisher` with the vehicle URDF |
 | `gui` | desktop in the browser (noVNC) with RViz and Gazebo GUI, port 6080 |
 | `foxglove` | `foxglove_bridge` for live data in Foxglove, port 8765 |
+| `teleop` | keyboard teleop, started with `make teleop` |
 | `shell` | throwaway ROS 2 shell, started with `make shell` |
 | `talker`, `listener` | comms smoke test, started with `make smoke` |
 
@@ -62,28 +66,68 @@ Checking the simulation:
 ```bash
 make rtf      # real time factor, should be near to 1.0
 make shell
+ros2 topic echo /ground_truth/odom --field pose.pose.position --once
 ```
 
-and inside the shell:
+Vehicle is slightly positively buoyant, so if the controller is stopped it comes up slowly
+(around 6 cm/s) and stays at the surface.
+
+## Control
+
+```
+cmd_vel -> controller -> wrench_cmd -> allocator -> /thrusters/thruster<1-8>/cmd_thrust
+```
+
+The controller works like the depth hold mode of a ROV autopilot. Roll and pitch are held
+level, depth and heading are held, and the commands are moving their references. It is
+taking the feedback directly from AHRS, depth sensor and DVL (not from localisation), so
+the vehicle stays stable even if localisation or SLAM is down.
+
+| ROS topic | Type | Meaning |
+|---|---|---|
+| `/cmd_vel` | `geometry_msgs/Twist` | `linear.x` surge and `linear.y` sway in m/s, `linear.z` depth rate in m/s (up is positive), `angular.z` heading rate in rad/s |
+| `/depth_setpoint` | `std_msgs/Float64` | absolute depth as z in m, for example `-4.0` |
+| `/heading_setpoint` | `std_msgs/Float64` | absolute heading in rad |
+| `/wrench_cmd` | `geometry_msgs/WrenchStamped` | controller output in `base_link` |
+| `/thrusters/cmd` | `std_msgs/Float64MultiArray` | all 8 thrusts in N, for plotting |
+| `/controller/depth_reference`, `/controller/heading_reference` | `std_msgs/Float64` | current references, for plotting |
+
+If `cmd_vel` is not coming for 1 s the vehicle holds its position, and if the wrench
+command is not coming for 0.5 s the allocator stops the thrusters. The controller can be
+switched off with `ros2 service call /controller/enable std_srvs/srv/SetBool "{data: false}"`.
+
+Gains are in `src/auv_control/config/control.yaml`. Pitch and yaw gains are on higher side
+purposefully. The vehicle is having a destabilising (Munk) moment from the added mass which
+grows with speed, without the controller it starts spinning and pitching on surge.
+
+Measured against ground truth:
+
+| Test | Result |
+|---|---|
+| Depth step of 1.2 m and 4 m | settles within 5 cm in 3.7 s and 6.1 s, 3 cm overshoot |
+| Surge at 0.5 and 1.0 m/s | speed error within 2 cm/s, heading within 1.3 deg, pitch within 0.3 deg |
+| Sway at 0.3 m/s | 0.31 m/s, heading within 0.7 deg |
+| Station hold for 20 s | 7 cm horizontal drift, 1.3 cm in depth |
+
+Heading is held against the AHRS, so the compass error (around 1.5 deg) remains as it is.
+
+### Teleop
 
 ```bash
-ros2 topic echo /ground_truth/odom --field pose.pose.position --once
-
-# all four vertical thrusters pushing down with 10 N, vehicle should go down
-for i in 5 6 7 8; do
-  ros2 topic pub -r 20 /thrusters/thruster$i/cmd_thrust std_msgs/msg/Float64 "{data: -10.0}" &
-done
-ros2 topic echo /ground_truth/odom --field pose.pose.position.z
-# Ctrl+C, then `kill %1 %2 %3 %4` to stop the thrusters
+make teleop
 ```
 
-Points to note:
+| Key | Action |
+|---|---|
+| `w` / `s` | forward / backward |
+| `a` / `d` | left / right (sway) |
+| `q` / `e` | turn left / right |
+| `r` / `f` | up / down |
+| `space` | stop everything |
+| `+` / `-` | speed up / down |
 
-- Vehicle is slightly positively buoyant, so with thrusters off it comes up slowly
-  (around 6 cm/s) and stays at the surface.
-- Thrusters are open loop as of now. On surge the vehicle will start yawing and pitching
-  by its own, this is expected (Munk moment from the added mass) and it will be taken care
-  once the heading and attitude controller is added.
+Each press moves that axis by one step (stop to moving, or moving to stop) and the command
+stays till it is changed. The Teleop panel of Foxglove also works, it publishes on `/cmd_vel`.
 
 ## Sensors
 
@@ -107,7 +151,7 @@ Localisation and SLAM nodes are supposed to use only these topics.
 ## Tests
 
 ```bash
-make test     # unit tests of the sensor models
+make test     # unit tests of sensor models, thruster allocation and PID
 ```
 
 ## Visualisation
@@ -175,6 +219,7 @@ make smoke-down
 | `make ps` | container status |
 | `make logs` | follow logs, use `S=<service>` for one service |
 | `make shell` | open a ROS 2 shell on the network |
+| `make teleop` | drive the vehicle from keyboard |
 | `make gui` | open the browser desktop with RViz and Gazebo GUI |
 | `make test` | unit tests of our packages |
 | `make rtf` | real time factor of the simulation |
