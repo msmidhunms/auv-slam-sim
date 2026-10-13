@@ -1,0 +1,292 @@
+{
+  "configById": {
+    "3D!auv": {
+      "followTf": "base_link",
+      "followMode": "follow-position",
+      "cameraState": {
+        "distance": 25,
+        "phi": 55,
+        "thetaOffset": 45,
+        "perspective": true,
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "scene": {
+        "backgroundColor": "#0c1e30"
+      },
+      "topics": {
+        "/robot_description": {
+          "visible": true
+        },
+        "/sonar/points": {
+          "visible": true,
+          "pointSize": 3,
+          "colorMode": "flat",
+          "flatColor": "#ffffffff"
+        },
+        "/rtabmap/cloud_map": {
+          "visible": true,
+          "pointSize": 3,
+          "colorMode": "colormap",
+          "colorField": "z",
+          "colorMap": "turbo"
+        },
+        "/rtabmap/mapPath": {
+          "visible": true
+        },
+        "/mission/path": {
+          "visible": true
+        }
+      },
+      "layers": {
+        "grid": {
+          "layerId": "foxglove.Grid",
+          "visible": true,
+          "frameId": "map",
+          "size": 100,
+          "divisions": 20,
+          "color": "#4682aa66",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "order": 1
+        }
+      },
+      "foxglovePanelTitle": "Vehicle, sonar and SLAM map"
+    },
+    "Plot!error": {
+      "paths": [
+        {
+          "value": "/eval/ekf_position_error.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "EKF dead reckoning"
+        },
+        {
+          "value": "/eval/slam_position_error.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "SLAM"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 120,
+      "foxglovePanelTitle": "Position error against ground truth (m)",
+      "minYValue": 0
+    },
+    "Plot!depth": {
+      "paths": [
+        {
+          "value": "/controller/depth_reference.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "reference"
+        },
+        {
+          "value": "/ground_truth/odom.pose.pose.position.z",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "actual"
+        },
+        {
+          "value": "/odometry/filtered.pose.pose.position.z",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "estimated"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 120,
+      "foxglovePanelTitle": "Depth (m)"
+    },
+    "Plot!speed": {
+      "paths": [
+        {
+          "value": "/dvl/twist.twist.twist.linear.x",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "surge"
+        },
+        {
+          "value": "/dvl/twist.twist.twist.linear.y",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "sway"
+        },
+        {
+          "value": "/dvl/twist.twist.twist.linear.z",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "heave"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 120,
+      "foxglovePanelTitle": "Body velocity from DVL (m/s)"
+    },
+    "Plot!thrust": {
+      "paths": [
+        {
+          "value": "/thrusters/cmd.data[0]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "thruster 1"
+        },
+        {
+          "value": "/thrusters/cmd.data[1]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "thruster 2"
+        },
+        {
+          "value": "/thrusters/cmd.data[2]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "thruster 3"
+        },
+        {
+          "value": "/thrusters/cmd.data[3]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "thruster 4"
+        },
+        {
+          "value": "/thrusters/cmd.data[4]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "thruster 5"
+        },
+        {
+          "value": "/thrusters/cmd.data[5]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "thruster 6"
+        },
+        {
+          "value": "/thrusters/cmd.data[6]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "thruster 7"
+        },
+        {
+          "value": "/thrusters/cmd.data[7]",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "thruster 8"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 120,
+      "foxglovePanelTitle": "Thruster commands (N)"
+    },
+    "RawMessages!mission": {
+      "topicPath": "/mission/status.data",
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "foxglovePanelTitle": "Mission status"
+    },
+    "Teleop!drive": {
+      "topic": "/cmd_vel",
+      "publishRate": 10,
+      "upButton": {
+        "field": "linear-x",
+        "value": 0.4
+      },
+      "downButton": {
+        "field": "linear-x",
+        "value": -0.4
+      },
+      "leftButton": {
+        "field": "angular-z",
+        "value": 0.4
+      },
+      "rightButton": {
+        "field": "angular-z",
+        "value": -0.4
+      },
+      "foxglovePanelTitle": "Teleop"
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": {
+    "direction": "row",
+    "splitPercentage": 55,
+    "first": {
+      "direction": "column",
+      "splitPercentage": 78,
+      "first": "3D!auv",
+      "second": {
+        "direction": "row",
+        "splitPercentage": 60,
+        "first": "RawMessages!mission",
+        "second": "Teleop!drive"
+      }
+    },
+    "second": {
+      "direction": "column",
+      "splitPercentage": 50,
+      "first": {
+        "direction": "column",
+        "splitPercentage": 50,
+        "first": "Plot!error",
+        "second": "Plot!depth"
+      },
+      "second": {
+        "direction": "column",
+        "splitPercentage": 50,
+        "first": "Plot!speed",
+        "second": "Plot!thrust"
+      }
+    }
+  }
+}

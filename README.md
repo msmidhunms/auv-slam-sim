@@ -4,8 +4,8 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle 
 sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
-> All the nodes are in place: simulation, sensors, control, teleop, EKF localisation, SLAM,
-> survey mission, evaluation and visualisation. Foxglove layout and rosbag recording are pending.
+> Simulation only as of now. There is no GPU inside Docker on macOS, so the sonar and the
+> GUIs are rendered on CPU.
 
 ## Prerequisites
 
@@ -25,10 +25,16 @@ make ps
 make gui               # opens http://localhost:6080 in the browser
 make teleop            # drive the vehicle from keyboard
 make mission           # or let it run the survey by its own
+make check             # smoke test of the running stack
 ```
 
-Docker Desktop is to be given around 14 GB memory and 8 CPUs (Settings -> Resources).
-There is no GPU inside Docker on macOS, so all the rendering is happening on CPU.
+Tested on a MacBook with Apple M4 and Docker Desktop having 8 GB memory and 10 CPUs. The full
+stack is using around 2.5 GB of memory. CPU is what matters, the Gazebo GUI alone takes
+around 5 cores since all the rendering is on CPU.
+
+All the nodes are running on simulation time. So if the `sim` container is restarted, the
+other containers are also restarted by compose (`depends_on` with `restart: true`),
+otherwise the EKF gets stuck when the clock goes back to zero.
 
 ## Containers
 
@@ -50,6 +56,7 @@ There is no GPU inside Docker on macOS, so all the rendering is happening on CPU
 | `gui` | desktop in the browser (noVNC) with RViz and Gazebo GUI, port 6080 |
 | `foxglove` | `foxglove_bridge` for live data in Foxglove, port 8765 |
 | `teleop` | keyboard teleop, started with `make teleop` |
+| `bag` | rosbag recording, started with `make bag` |
 | `shell` | throwaway ROS 2 shell, started with `make shell` |
 | `talker`, `listener` | comms smoke test, started with `make smoke` |
 
@@ -282,9 +289,20 @@ the map consistent with itself, it cannot remove the error which was already the
 the place was mapped first. To get absolute accuracy an absolute reference is needed
 (USBL, or GPS fix at the surface).
 
+## Recording
+
+```bash
+make bag      # Ctrl-C to stop
+```
+
+Sensor, control, estimate, ground truth and evaluation topics are recorded in MCAP format
+into `./bags` (not tracked in git). Sonar cloud is the bulky one, a bag is around
+50 MB per minute. The MCAP file can be opened directly in Foxglove.
+
 ## Tests
 
 ```bash
+make check    # smoke test of the running stack: topic rates, latched topics and TF chain
 make test     # unit tests of sensor models, thruster allocation, PID and survey guidance
 ```
 
@@ -295,8 +313,10 @@ and Gazebo is on the right. Give 20 to 30 seconds after `make up`, Gazebo window
 some time to come.
 
 **Foxglove** - in the Foxglove app (desktop or `app.foxglove.dev` in Chrome) select
-Open connection -> Foxglove WebSocket -> `ws://localhost:8765`. For example add a Plot panel
-with `/ground_truth/odom.pose.pose.position.z` to see the depth live.
+Open connection -> Foxglove WebSocket -> `ws://localhost:8765`. Then import the layout from
+`foxglove/layout.json` (Layouts -> Import from file). It is having the 3D view with sonar
+and SLAM map, plots of position error, depth, DVL velocity and thruster commands, mission
+status and a teleop panel.
 
 Both the ports are bound to localhost only, as there is no password on the VNC.
 
@@ -361,6 +381,8 @@ make smoke-down
 | `make mission-stop` | stop the mission, vehicle holds position |
 | `make gui` | open the browser desktop with RViz and Gazebo GUI |
 | `make test` | unit tests of our packages |
+| `make check` | smoke test of the running stack |
+| `make bag` | record a rosbag into `./bags` |
 | `make rtf` | real time factor of the simulation |
 | `make smoke` | talker and listener in separate containers, to check the comms |
 | `make smoke-down` | stop the smoke test containers |

@@ -33,6 +33,18 @@ x-ros-node: &ros-node
       condition: service_healthy
   restart: unless-stopped
 
+# Nodes running on simulation time. If the simulator is restarted the clock goes
+# back to zero and these nodes get stuck (EKF stops publishing), so compose is
+# told to restart them along with the simulator.
+x-sim-node: &sim-node
+  <<: *ros-node
+  depends_on:
+    zenoh-router:
+      condition: service_healthy
+    sim:
+      condition: service_healthy
+      restart: true
+
 services:
   zenoh-router:
     <<: *ros-node
@@ -57,9 +69,15 @@ services:
     environment:
       <<: [*ros-env, *gz-env]
     command: ros2 launch auv_sim sim.launch.py
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "gz sim"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
 
   bridge:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/sim:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -70,7 +88,7 @@ services:
 
   # --- simulated navigation sensors (sonar and raw IMU are coming from gazebo) ---
   ahrs:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -78,7 +96,7 @@ services:
     command: ros2 launch auv_sensors sensor.launch.py node:=ahrs
 
   dvl:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -86,7 +104,7 @@ services:
     command: ros2 launch auv_sensors sensor.launch.py node:=dvl
 
   depth:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -95,7 +113,7 @@ services:
 
   # --- control: cmd_vel -> controller -> wrench -> allocator -> thrusters ------
   controller:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -103,7 +121,7 @@ services:
     command: ros2 launch auv_control control.launch.py node:=controller
 
   allocator:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -112,7 +130,7 @@ services:
 
   # --- localization: AHRS + DVL + depth -> odom -> base_link -------------------
   localization:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -122,7 +140,7 @@ services:
 
   # --- SLAM: sonar cloud + odom -> map -> odom and the 3D map -------------------
   slam:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/slam:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -133,7 +151,7 @@ services:
 
   # --- mission: survey waypoints -> cmd_vel and setpoints for the controller ---
   mission:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -142,7 +160,7 @@ services:
 
   # estimate against ground truth, simulation only
   eval:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -151,7 +169,7 @@ services:
 
   # --- vehicle ---------------------------------------------------------------
   state-pub:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -161,7 +179,7 @@ services:
   # --- visualisation --------------------------------------------------------
   # desktop in the browser with RViz and Gazebo GUI: http://localhost:6080
   gui:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/gui:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -175,10 +193,16 @@ services:
       # no password on the VNC, so it is kept on localhost only
       - "127.0.0.1:${NOVNC_PORT:-6080}:6080"
     shm_size: 512m
+    healthcheck:
+      test: ["CMD", "bash", "-c", "</dev/tcp/localhost/6080"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
 
   # live data for Foxglove: ws://localhost:8765
   foxglove:
-    <<: *ros-node
+    <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
@@ -188,6 +212,32 @@ services:
       -p port:=8765 -p address:=0.0.0.0 -p use_sim_time:=true
     ports:
       - "127.0.0.1:${FOXGLOVE_PORT:-8765}:8765"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "</dev/tcp/localhost/8765"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+
+  # rosbag recording, started with `make bag`. Bags are kept in ./bags
+  bag:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    profiles: [tools]
+    restart: "no"
+    working_dir: /bags
+    volumes:
+      - ./bags:/bags
+    command: >
+      ros2 bag record --use-sim-time --topics
+      /clock /tf /tf_static /robot_description
+      /sonar/points /imu/raw /imu/data /dvl/twist /depth/pose /pressure
+      /cmd_vel /depth_setpoint /heading_setpoint /wrench_cmd /thrusters/cmd
+      /controller/depth_reference /controller/heading_reference
+      /odometry/filtered /ground_truth/odom
+      /mission/status /mission/path
+      /eval/ekf_position_error /eval/slam_position_error /eval/depth_error
+      /eval/heading_error_deg /eval/distance_travelled
 
   # keyboard teleop, started with `make teleop`
   teleop:

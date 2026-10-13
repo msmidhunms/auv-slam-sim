@@ -1,6 +1,6 @@
 COMPOSE := docker compose
 
-.PHONY: help build up down ps logs shell teleop mission mission-stop gui rtf test smoke smoke-down
+.PHONY: help build up down ps logs shell teleop mission mission-stop gui rtf check bag test smoke smoke-down
 
 help:
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -37,6 +37,12 @@ gui: ## open the browser desktop with RViz and Gazebo GUI
 
 rtf: ## real time factor of the simulation
 	@$(COMPOSE) exec -T bridge bash -c 'source /opt/ros/$$ROS_DISTRO/setup.bash && gz topic -e -t /world/underwater/stats -n 1 | grep real_time_factor'
+
+check: ## smoke test of the running stack: topic rates, latched topics and TF
+	@$(COMPOSE) run --rm -T -v $(CURDIR)/tests:/tests:ro teleop python3 /tests/stack_check.py
+
+bag: ## record a rosbag into ./bags, Ctrl-C to stop
+	$(COMPOSE) run --rm bag
 
 test: ## unit tests of our packages
 	@for pkg in auv_sensors auv_control auv_mission; do \
