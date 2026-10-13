@@ -1,0 +1,23 @@
+# Thruster layout of the vehicle, BlueROV2 Heavy style 8 thruster config.
+#
+# All poses are in base_link frame (x forward, y left, z up).
+# Positive thrust acts along the +x axis of the thruster frame.
+# spin: propeller rotation direction (1 or -1). Kept in counter rotating pairs so
+# the reaction torques cancel each other, same as CW/CCW props on the real vehicle.
+#
+# This file is the single source for the thruster geometry. URDF, Gazebo model
+# and the thruster allocator are all reading from here, so change it only here.
+
+max_thrust: 40.0   # N, per thruster
+
+thrusters:
+  # horizontal, vectored at 45 deg -> surge, sway, yaw
+  - {name: thruster1, xyz: [ 0.156, -0.111, 0.0], rpy: [0.0, 0.0,  0.7854], spin:  1}   # front right
+  - {name: thruster2, xyz: [ 0.156,  0.111, 0.0], rpy: [0.0, 0.0, -0.7854], spin: -1}   # front left
+  - {name: thruster3, xyz: [-0.156, -0.111, 0.0], rpy: [0.0, 0.0, -0.7854], spin: -1}   # rear right
+  - {name: thruster4, xyz: [-0.156,  0.111, 0.0], rpy: [0.0, 0.0,  0.7854], spin:  1}   # rear left
+  # vertical, pointing up -> heave, roll, pitch
+  - {name: thruster5, xyz: [ 0.120, -0.218, 0.0], rpy: [0.0, -1.5708, 0.0], spin:  1}   # front right
+  - {name: thruster6, xyz: [ 0.120,  0.218, 0.0], rpy: [0.0, -1.5708, 0.0], spin: -1}   # front left
+  - {name: thruster7, xyz: [-0.120, -0.218, 0.0], rpy: [0.0, -1.5708, 0.0], spin: -1}   # rear right
+  - {name: thruster8, xyz: [-0.120,  0.218, 0.0], rpy: [0.0, -1.5708, 0.0], spin:  1}   # rear left
