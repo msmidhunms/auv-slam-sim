@@ -4,8 +4,8 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle 
 sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
-> Work in progress. As of now the vehicle model, underwater world, sensors, control, teleop,
-> EKF localisation, SLAM and the visualisation are in place. Mission node will be added next.
+> All the nodes are in place: simulation, sensors, control, teleop, EKF localisation, SLAM,
+> survey mission, evaluation and visualisation. Foxglove layout and rosbag recording are pending.
 
 ## Prerequisites
 
@@ -24,6 +24,7 @@ make up                # simulator, sensors, control, localisation, SLAM, gui an
 make ps
 make gui               # opens http://localhost:6080 in the browser
 make teleop            # drive the vehicle from keyboard
+make mission           # or let it run the survey by its own
 ```
 
 Docker Desktop is to be given around 14 GB memory and 8 CPUs (Settings -> Resources).
@@ -43,6 +44,8 @@ There is no GPU inside Docker on macOS, so all the rendering is happening on CPU
 | `allocator` | thruster allocator, body wrench to 8 thrust commands |
 | `localization` | `robot_localization` EKF, AHRS + DVL + depth to `odom -> base_link` |
 | `slam` | RTAB-Map, sonar cloud + odometry to `map -> odom` and the 3D map |
+| `mission` | survey mission, waypoints to `cmd_vel` and setpoints for the controller |
+| `eval` | estimate against ground truth, errors as topics for plotting (simulation only) |
 | `state-pub` | `robot_state_publisher` with the vehicle URDF |
 | `gui` | desktop in the browser (noVNC) with RViz and Gazebo GUI, port 6080 |
 | `foxglove` | `foxglove_bridge` for live data in Foxglove, port 8765 |
@@ -221,10 +224,68 @@ Points to note:
 - A new map is started on every start of the `slam` container. The database is kept in the
   `slam_data` volume at `/data/rtabmap.db`.
 
+## Mission
+
+```bash
+make mission        # start the survey
+make mission-stop   # stop it, vehicle holds position
+make logs S=mission
+```
+
+The mission node runs a lawnmower survey over the pipeline and the rocks: 5 lanes of 30 m
+with 6 m spacing at 5 m depth, 242 m in total. It takes the position from the SLAM pose
+(`map -> base_link`), points the vehicle at the next waypoint and gives the heading and
+depth setpoints and the surge speed to the controller. Survey area, depth and speed are in
+`src/auv_mission/config/mission.yaml`.
+
+Neighbouring lanes are run in opposite directions, so the forward looking sonar is not
+seeing the same seabed again on them and no loop closure comes there. For that reason the
+first lane is run once more at the end (tie line).
+
+| ROS interface | Type | Meaning |
+|---|---|---|
+| `/mission/start`, `/mission/stop` | `std_srvs/Trigger` | start from the first waypoint, stop |
+| `/mission/status` | `std_msgs/String` | `IDLE`, `RUNNING waypoint n/N` or `DONE` |
+| `/mission/path` | `nav_msgs/Path` | planned waypoints, shown in RViz as yellow line |
+
+When the mission is not running it does not publish any command, so teleop can be used.
+
+## Evaluation
+
+The `eval` node compares the estimates with the ground truth and publishes the errors, for
+plotting in Foxglove. A summary is also logged every 60 s (`make logs S=eval`).
+
+| ROS topic (`std_msgs/Float64`) | Meaning |
+|---|---|
+| `/eval/ekf_position_error` | horizontal error of the EKF dead reckoning, m |
+| `/eval/slam_position_error` | horizontal error of the SLAM pose, m |
+| `/eval/depth_error` | m |
+| `/eval/heading_error_deg` | deg |
+| `/eval/distance_travelled` | m |
+
+Result of the full survey mission (249 m travelled, completed in 506 s, 369 graph nodes,
+61 proximity links, all of them on the tie line):
+
+| Position error | EKF alone | SLAM |
+|---|---|---|
+| RMS over the mission | 0.55 m | 0.50 m |
+| Maximum | 0.81 m | 0.81 m |
+| At the end | 0.73 m | 0.66 m |
+
+The vehicle stopped 0.66 m away from the last waypoint in ground truth. Depth error at the
+end was 1.7 cm and heading error was 0.4 deg.
+
+SLAM gain is small in this mission, and it has to be understood properly. A loop closure
+brings the vehicle back to where SLAM believes the first lane was, and the first lane
+itself was mapped with around 0.5 m of dead reckoning error by its end. So SLAM is making
+the map consistent with itself, it cannot remove the error which was already there when
+the place was mapped first. To get absolute accuracy an absolute reference is needed
+(USBL, or GPS fix at the surface).
+
 ## Tests
 
 ```bash
-make test     # unit tests of sensor models, thruster allocation and PID
+make test     # unit tests of sensor models, thruster allocation, PID and survey guidance
 ```
 
 ## Visualisation
@@ -245,7 +306,8 @@ Desktop resolution can be changed with `VNC_RESOLUTION`.
 
 In RViz the fixed frame is `map` and the vehicle model is drawn at the SLAM pose. Coloured
 boxes are the SLAM map, white points are the live sonar cloud, pink line is the SLAM
-trajectory, orange arrows are the EKF estimate and green arrows are the ground truth.
+trajectory, yellow line is the mission plan, orange arrows are the EKF estimate and green
+arrows are the ground truth.
 The `slam` container has to be running for RViz to show anything, since it gives `map -> odom`.
 
 ## Comms smoke test
@@ -295,6 +357,8 @@ make smoke-down
 | `make logs` | follow logs, use `S=<service>` for one service |
 | `make shell` | open a ROS 2 shell on the network |
 | `make teleop` | drive the vehicle from keyboard |
+| `make mission` | start the survey mission |
+| `make mission-stop` | stop the mission, vehicle holds position |
 | `make gui` | open the browser desktop with RViz and Gazebo GUI |
 | `make test` | unit tests of our packages |
 | `make rtf` | real time factor of the simulation |

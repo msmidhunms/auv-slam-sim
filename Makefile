@@ -1,6 +1,6 @@
 COMPOSE := docker compose
 
-.PHONY: help build up down ps logs shell teleop gui rtf test smoke smoke-down
+.PHONY: help build up down ps logs shell teleop mission mission-stop gui rtf test smoke smoke-down
 
 help:
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -26,6 +26,12 @@ shell: ## open a ROS 2 shell on the network, for ros2 topic/node commands
 teleop: ## drive the vehicle from keyboard
 	$(COMPOSE) run --rm teleop
 
+mission: ## start the survey mission
+	$(COMPOSE) run --rm -T shell ros2 service call /mission/start std_srvs/srv/Trigger
+
+mission-stop: ## stop the mission, vehicle holds position
+	$(COMPOSE) run --rm -T shell ros2 service call /mission/stop std_srvs/srv/Trigger
+
 gui: ## open the browser desktop with RViz and Gazebo GUI
 	open http://localhost:$${NOVNC_PORT:-6080}/
 
@@ -33,7 +39,7 @@ rtf: ## real time factor of the simulation
 	@$(COMPOSE) exec -T bridge bash -c 'source /opt/ros/$$ROS_DISTRO/setup.bash && gz topic -e -t /world/underwater/stats -n 1 | grep real_time_factor'
 
 test: ## unit tests of our packages
-	@for pkg in auv_sensors auv_control; do \
+	@for pkg in auv_sensors auv_control auv_mission; do \
 	  echo "--- $$pkg"; \
 	  $(COMPOSE) run --rm -T -v $(CURDIR)/src:/ws/src:ro -w /ws/src/$$pkg shell python3 -m pytest -q -p no:cacheprovider test || exit 1; \
 	done

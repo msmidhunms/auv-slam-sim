@@ -131,6 +131,24 @@ services:
     volumes:
       - slam_data:/data
 
+  # --- mission: survey waypoints -> cmd_vel and setpoints for the controller ---
+  mission:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_mission mission.launch.py
+
+  # estimate against ground truth, simulation only
+  eval:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_eval eval.launch.py
+
   # --- vehicle ---------------------------------------------------------------
   state-pub:
     <<: *ros-node

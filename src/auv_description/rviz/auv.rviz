@@ -73,6 +73,17 @@ Visualization Manager:
         Value: /rtabmap/mapPath
       Color: 255; 60; 200
       Line Style: Lines
+    - Class: rviz_default_plugins/Path
+      Name: Mission plan
+      Enabled: true
+      Topic:
+        Depth: 1
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /mission/path
+      Color: 255; 255; 0
+      Line Style: Lines
     - Class: rviz_default_plugins/Odometry
       Name: Ground truth
       Enabled: true
