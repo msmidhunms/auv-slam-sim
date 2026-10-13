@@ -26,10 +26,11 @@ def generate_launch_description():
     # depth are absolute, so both frames are the same as long as the simulation
     # and the filter are started together. Needed only to show the ground truth
     # in RViz along with the estimate.
+    # With SLAM running the child frame is given as `map`, without SLAM it is `odom`.
     world_tf = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
-        name='world_to_odom',
+        name='world_tf',
         arguments=['--frame-id', 'world', '--child-frame-id', LaunchConfiguration('world_child_frame')],
         parameters=[{'use_sim_time': True}],
         condition=IfCondition(LaunchConfiguration('publish_world_tf')),

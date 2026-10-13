@@ -117,7 +117,19 @@ services:
     build:
       <<: *ros-build
       target: nodes
-    command: ros2 launch auv_localization localization.launch.py
+    # ground truth frame is attached to map, SLAM is giving map -> odom
+    command: ros2 launch auv_localization localization.launch.py world_child_frame:=map
+
+  # --- SLAM: sonar cloud + odom -> map -> odom and the 3D map -------------------
+  slam:
+    <<: *ros-node
+    image: auv-slam-sim/slam:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: slam
+    command: ros2 launch auv_slam slam.launch.py
+    volumes:
+      - slam_data:/data
 
   # --- vehicle ---------------------------------------------------------------
   state-pub:
@@ -186,6 +198,10 @@ services:
     <<: *ros-node
     profiles: [smoke]
     command: ros2 run demo_nodes_cpp listener
+
+volumes:
+  # RTAB-Map database, the map can be opened later with rtabmap-databaseViewer
+  slam_data:
 
 networks:
   auv_net:

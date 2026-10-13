@@ -67,6 +67,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=workspace /ws/install /ws/install
 
 # ---------------------------------------------------------------------------
+# slam: RTAB-Map
+# ---------------------------------------------------------------------------
+FROM base AS slam
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ros-${ROS_DISTRO}-rtabmap-slam \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=workspace /ws/install /ws/install
+
+# ---------------------------------------------------------------------------
 # gui: desktop in the browser (noVNC) with RViz and Gazebo GUI.
 # No GPU inside docker on macOS, so rendering is on CPU with Mesa llvmpipe.
 # ---------------------------------------------------------------------------

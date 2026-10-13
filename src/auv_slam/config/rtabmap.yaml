@@ -1,0 +1,84 @@
+# RTAB-Map in lidar (sonar) only mode with external odometry.
+#
+# Odometry is the EKF dead reckoning (odom -> base_link TF). RTAB-Map adds a node
+# to the graph on every 0.5 m, matches the sonar cloud with the clouds of nearby
+# older nodes (proximity detection + ICP), and on a successful match the graph is
+# optimised. The correction comes out as the map -> odom TF.
+#
+# There is no camera, so appearance based loop closure is switched off.
+#
+# RTAB-Map internal parameters (Xxx/Yyy) are strings.
+
+rtabmap:
+  ros__parameters:
+    frame_id: base_link
+    odom_frame_id: odom             # odometry is taken from TF
+    map_frame_id: map
+    publish_tf: true
+    wait_for_transform: 0.2
+    tf_delay: 0.05
+
+    subscribe_depth: false
+    subscribe_rgb: false
+    subscribe_rgbd: false
+    subscribe_scan: false
+    subscribe_scan_cloud: true
+    approx_sync: false
+    sync_queue_size: 10
+
+    # uncertainty of the dead reckoning between two nodes (0.5 m apart).
+    # 2 cm and around 1 deg, as per the DVL and compass error.
+    odom_tf_linear_variance: 0.0004
+    odom_tf_angular_variance: 0.0003
+
+    database_path: /data/rtabmap.db
+
+    # --- graph and memory ---
+    Rtabmap/DetectionRate: "1"          # Hz
+    Rtabmap/TimeThr: "0"
+    RGBD/LinearUpdate: "0.5"            # m, new node on this much motion
+    RGBD/AngularUpdate: "0.2"           # rad
+    RGBD/CreateOccupancyGrid: "true"
+    Mem/STMSize: "20"
+    Mem/NotLinkedNodesKept: "false"
+    Kp/MaxFeatures: "-1"                # no visual features
+
+    # --- registration: ICP on the sonar cloud ---
+    Reg/Strategy: "1"                   # 0 visual, 1 ICP
+    Reg/Force3DoF: "false"
+    # consecutive clouds are not refined with ICP. On open seabed there is nothing
+    # to hold x and y and ICP will slide, DVL dead reckoning is better there.
+    RGBD/NeighborLinkRefining: "false"
+    RGBD/ProximityBySpace: "true"
+    RGBD/ProximityByTime: "false"
+    RGBD/ProximityMaxGraphDepth: "0"
+    RGBD/ProximityPathMaxNeighbors: "1"
+    RGBD/LocalRadius: "8"               # m, search radius for nearby older nodes
+    RGBD/OptimizeMaxError: "4"
+
+    Icp/Strategy: "1"                   # libpointmatcher
+    Icp/VoxelSize: "0.3"
+    Icp/PointToPlane: "true"
+    Icp/PointToPlaneK: "20"
+    Icp/PointToPlaneRadius: "0"
+    Icp/MaxCorrespondenceDistance: "2.0"
+    Icp/MaxTranslation: "4.0"
+    Icp/Iterations: "30"
+    Icp/Epsilon: "0.001"
+    Icp/CorrespondenceRatio: "0.3"
+    Icp/OutlierRatio: "0.7"
+    # reject the match if the overlapping area is too flat to fix all directions
+    Icp/PointToPlaneMinComplexity: "0.03"
+
+    # --- map output ---
+    Grid/Sensor: "0"                    # build the map from the sonar cloud
+    Grid/3D: "true"
+    Grid/CellSize: "0.25"
+    Grid/RangeMax: "30"
+    Grid/RayTracing: "false"
+    Grid/NormalsSegmentation: "false"
+    Grid/MaxGroundHeight: "0"
+    Grid/MaxObstacleHeight: "0"
+
+    cloud_output_voxelized: true
+    cloud_voxel_size: 0.25

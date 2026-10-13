@@ -11,7 +11,7 @@ Visualization Manager:
     - Class: rviz_default_plugins/Grid
       Name: Water surface
       Enabled: true
-      Reference Frame: odom
+      Reference Frame: map
       Plane: XY
       Plane Cell Count: 20
       Cell Size: 5
@@ -45,9 +45,34 @@ Visualization Manager:
         Value: /sonar/points
       Style: Points
       Size (Pixels): 3
+      Color Transformer: FlatColor
+      Color: 255; 255; 255
+      Decay Time: 0
+    - Class: rviz_default_plugins/PointCloud2
+      Name: SLAM map
+      Enabled: true
+      Topic:
+        Depth: 1
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rtabmap/cloud_map
+      Style: Boxes
+      Size (m): 0.25
       Color Transformer: AxisColor
       Axis: Z
       Decay Time: 0
+    - Class: rviz_default_plugins/Path
+      Name: SLAM path
+      Enabled: true
+      Topic:
+        Depth: 1
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /rtabmap/mapPath
+      Color: 255; 60; 200
+      Line Style: Lines
     - Class: rviz_default_plugins/Odometry
       Name: Ground truth
       Enabled: true
@@ -93,7 +118,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 12; 30; 48
-    Fixed Frame: odom
+    Fixed Frame: map
     Frame Rate: 15
   Name: root
   Tools:
