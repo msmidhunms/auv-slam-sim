@@ -1,0 +1,62 @@
+name: auv-slam-sim
+
+# One service = one ROS 2 node (or one tightly coupled process).
+# All of them sit on auv_net and discover each other through the zenoh router.
+
+x-ros-env: &ros-env
+  ROS_DOMAIN_ID: ${ROS_DOMAIN_ID}
+  RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION}
+  # by default sessions look for the router on localhost and listen only on localhost.
+  # point them to the router container and listen on all interfaces so peers connect directly
+  ZENOH_CONFIG_OVERRIDE: 'connect/endpoints=["tcp/zenoh-router:7447"];listen/endpoints=["tcp/[::]:0"]'
+
+x-ros-node: &ros-node
+  image: auv-slam-sim/base:${ROS_DISTRO}
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+    target: base
+    args:
+      ROS_DISTRO: ${ROS_DISTRO}
+  environment: *ros-env
+  networks: [auv_net]
+  depends_on:
+    zenoh-router:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  zenoh-router:
+    <<: *ros-node
+    command: ros2 run rmw_zenoh_cpp rmw_zenohd
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID}
+      RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION}
+    depends_on: []
+    healthcheck:
+      test: ["CMD", "bash", "-c", "</dev/tcp/localhost/7447"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  # --- throwaway shell on the network, for ros2 topic/node commands ----------
+  shell:
+    <<: *ros-node
+    profiles: [tools]
+    restart: "no"
+    command: bash
+
+  # --- smoke test: two containers talking to each other ---------------------
+  talker:
+    <<: *ros-node
+    profiles: [smoke]
+    command: ros2 run demo_nodes_cpp talker
+
+  listener:
+    <<: *ros-node
+    profiles: [smoke]
+    command: ros2 run demo_nodes_cpp listener
+
+networks:
+  auv_net:
+    driver: bridge
