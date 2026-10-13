@@ -2,22 +2,30 @@ name: auv-slam-sim
 
 # One service = one ROS 2 node (or one tightly coupled process).
 # All of them sit on auv_net and discover each other through the zenoh router.
+# Settings are coming from .env (copy from .env.example), defaults below are used if it is missing.
 
 x-ros-env: &ros-env
-  ROS_DOMAIN_ID: ${ROS_DOMAIN_ID}
-  RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION}
+  ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-42}
+  RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_zenoh_cpp}
   # by default sessions look for the router on localhost and listen only on localhost.
   # point them to the router container and listen on all interfaces so peers connect directly
   ZENOH_CONFIG_OVERRIDE: 'connect/endpoints=["tcp/zenoh-router:7447"];listen/endpoints=["tcp/[::]:0"]'
 
+# gazebo transport is separate from ROS 2, same partition is needed in every
+# container which talks to the simulator directly (sim, bridge, gui)
+x-gz-env: &gz-env
+  GZ_PARTITION: ${GZ_PARTITION:-auv_sim}
+
+x-ros-build: &ros-build
+  context: .
+  dockerfile: docker/Dockerfile
+  target: base
+  args:
+    ROS_DISTRO: ${ROS_DISTRO:-jazzy}
+
 x-ros-node: &ros-node
-  image: auv-slam-sim/base:${ROS_DISTRO}
-  build:
-    context: .
-    dockerfile: docker/Dockerfile
-    target: base
-    args:
-      ROS_DISTRO: ${ROS_DISTRO}
+  image: auv-slam-sim/base:${ROS_DISTRO:-jazzy}
+  build: *ros-build
   environment: *ros-env
   networks: [auv_net]
   depends_on:
@@ -30,14 +38,35 @@ services:
     <<: *ros-node
     command: ros2 run rmw_zenoh_cpp rmw_zenohd
     environment:
-      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID}
-      RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION}
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-42}
+      RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_zenoh_cpp}
     depends_on: []
     healthcheck:
       test: ["CMD", "bash", "-c", "</dev/tcp/localhost/7447"]
       interval: 2s
       timeout: 2s
       retries: 15
+
+  # --- simulator ------------------------------------------------------------
+  sim:
+    <<: *ros-node
+    image: auv-slam-sim/sim:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: sim
+    environment:
+      <<: [*ros-env, *gz-env]
+    command: ros2 launch auv_sim sim.launch.py
+
+  bridge:
+    <<: *ros-node
+    image: auv-slam-sim/sim:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: sim
+    environment:
+      <<: [*ros-env, *gz-env]
+    command: ros2 launch auv_sim bridge.launch.py
 
   # --- throwaway shell on the network, for ros2 topic/node commands ----------
   shell:

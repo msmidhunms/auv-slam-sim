@@ -4,8 +4,8 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle 
 sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
-> Work in progress. As of now only the base image and the container-to-container comms
-> are in place. Vehicle model, simulator and SLAM nodes will be added one by one.
+> Work in progress. As of now the vehicle model, underwater world, Gazebo server and the
+> ROS bridge are in place. Sensors, control, localisation and SLAM nodes will be added one by one.
 
 ## Prerequisites
 
@@ -18,7 +18,66 @@ containers only.
 ## Quick start
 
 ```bash
-make build        # build the image
+cp .env.example .env   # optional, defaults are same as the example
+make build             # build the images, first time it takes around 10 min for Gazebo
+make up                # zenoh router + simulator + bridge
+make ps
+```
+
+## Containers
+
+| Service | What it runs |
+|---|---|
+| `zenoh-router` | Zenoh router, ROS 2 discovery for all the containers |
+| `sim` | Gazebo Harmonic server (headless) with the underwater world and the vehicle |
+| `bridge` | `ros_gz_bridge`, topics as per `src/auv_sim/config/bridge.yaml` |
+| `shell` | throwaway ROS 2 shell, started with `make shell` |
+| `talker`, `listener` | comms smoke test, started with `make smoke` |
+
+## Simulation
+
+The vehicle is a BlueROV2 Heavy style ROV with 8 thrusters (4 vectored horizontal, 4 vertical).
+Thruster layout is kept in `src/auv_description/config/thrusters.yaml` and the Gazebo model
+is generated from it at build time. Water surface is at `z = 0` and the seabed is around
+`z = -10` with a pipeline, a wreck and some rocks on it.
+
+| ROS topic | Type | Direction |
+|---|---|---|
+| `/clock` | `rosgraph_msgs/Clock` | sim -> ROS |
+| `/ground_truth/odom` | `nav_msgs/Odometry` | sim -> ROS, for sensors simulation and evaluation only |
+| `/thrusters/thruster<1-8>/cmd_thrust` | `std_msgs/Float64` | ROS -> sim, thrust in N (max 40) |
+
+Checking the simulation:
+
+```bash
+make rtf      # real time factor, should be near to 1.0
+make shell
+```
+
+and inside the shell:
+
+```bash
+ros2 topic echo /ground_truth/odom --field pose.pose.position --once
+
+# all four vertical thrusters pushing down with 10 N, vehicle should go down
+for i in 5 6 7 8; do
+  ros2 topic pub -r 20 /thrusters/thruster$i/cmd_thrust std_msgs/msg/Float64 "{data: -10.0}" &
+done
+ros2 topic echo /ground_truth/odom --field pose.pose.position.z
+# Ctrl+C, then `kill %1 %2 %3 %4` to stop the thrusters
+```
+
+Points to note:
+
+- Vehicle is slightly positively buoyant, so with thrusters off it comes up slowly
+  (around 6 cm/s) and stays at the surface.
+- Thrusters are open loop as of now. On surge the vehicle will start yawing and pitching
+  by its own, this is expected (Munk moment from the added mass) and it will be taken care
+  once the heading and attitude controller is added.
+
+## Comms smoke test
+
+```bash
 make smoke        # starts router + talker + listener and prints the listener output
 ```
 
@@ -30,10 +89,8 @@ listener-1  | [INFO] [listener]: I heard: [Hello World: 4]
 
 It means one container is receiving the messages published from the other container.
 
-## Checking the comms
-
 ```bash
-make ps                 # all three containers should be "Up", router should be "(healthy)"
+make ps                 # talker and listener containers should be "Up", router should be "(healthy)"
 make logs S=listener    # follow the listener logs, Ctrl+C to come out
 make shell              # opens a ROS 2 shell in a new container on the same network
 ```
@@ -64,6 +121,7 @@ make smoke-down
 | `make ps` | container status |
 | `make logs` | follow logs, use `S=<service>` for one service |
 | `make shell` | open a ROS 2 shell on the network |
+| `make rtf` | real time factor of the simulation |
 | `make smoke` | talker and listener in separate containers, to check the comms |
 | `make smoke-down` | stop the smoke test containers |
 
