@@ -1,0 +1,67 @@
+# Controller gains. Forces in N, torques in Nm, angles in rad.
+#
+# Vehicle is around 11.5 kg, with added mass it is around 17 kg in surge,
+# 24 kg in sway and 26 kg in heave. Rotational inertia with added mass is
+# around 0.37 kg m^2 in all three axes.
+
+controller:
+  ros__parameters:
+    enabled: true
+
+    max_speed: 1.0          # m/s, surge and sway
+    max_heave_rate: 0.5     # m/s
+    max_yaw_rate: 0.8       # rad/s
+    min_depth: 0.3          # m, do not come above this
+    max_depth: 9.0          # m, seabed is around 10 m
+    cmd_timeout: 1.0        # s, hold position if cmd_vel is older than this
+    dvl_timeout: 0.5        # s
+
+    surge:
+      kp: 30.0
+      ki: 10.0
+      kd: 0.0
+      integral_limit: 20.0
+      output_limit: 80.0
+      # feed forward, same as the drag of the vehicle model
+      drag_linear: 4.03
+      drag_quadratic: 18.18
+    sway:
+      kp: 40.0
+      ki: 10.0
+      kd: 0.0
+      integral_limit: 20.0
+      output_limit: 80.0
+      drag_linear: 6.22
+      drag_quadratic: 21.66
+    depth:
+      kp: 40.0
+      ki: 5.0
+      kd: 45.0
+      integral_limit: 15.0
+      integral_zone: 0.3    # m, integral is off during big depth changes
+      output_limit: 80.0
+    roll:
+      kp: 8.0
+      ki: 0.0
+      kd: 2.0
+      integral_limit: 0.0
+      output_limit: 10.0
+    # pitch and yaw gains are kept on higher side. Vehicle is having a
+    # destabilising (Munk) moment in both which is growing with speed square,
+    # around 7 to 9 Nm/rad at 1 m/s, so kp has to be well above that.
+    pitch:
+      kp: 15.0
+      ki: 0.0
+      kd: 4.0
+      integral_limit: 0.0
+      output_limit: 12.0
+    yaw:
+      kp: 15.0
+      ki: 1.0
+      kd: 4.0
+      integral_limit: 2.0
+      output_limit: 12.0
+
+thruster_allocator:
+  ros__parameters:
+    command_timeout: 0.5    # s, thrusters are stopped if wrench command is not coming
