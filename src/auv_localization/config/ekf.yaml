@@ -1,0 +1,53 @@
+# robot_localization EKF, odom -> base_link.
+#
+# This is dead reckoning: heading from AHRS, velocity from DVL and depth from the
+# pressure sensor. Nothing here is observing x and y, so the horizontal position
+# drifts with distance travelled (mainly from the compass error). Correcting that
+# drift is the job of SLAM, which publishes map -> odom.
+#
+# Order of the config flags:
+#   [x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az]
+
+ekf:
+  ros__parameters:
+    frequency: 50.0
+    sensor_timeout: 0.2
+    two_d_mode: false
+    publish_tf: true
+    print_diagnostics: false
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: odom
+
+    # AHRS: absolute attitude and angular rates. Acceleration is not used, with
+    # DVL velocity available it is only adding noise.
+    imu0: imu/data
+    imu0_config: [false, false, false,
+                  true,  true,  true,
+                  false, false, false,
+                  true,  true,  true,
+                  false, false, false]
+    imu0_queue_size: 20
+    imu0_differential: false
+    imu0_remove_gravitational_acceleration: false
+
+    # DVL: body velocity. Message is in dvl_link, the filter rotates it to base_link.
+    twist0: dvl/twist
+    twist0_config: [false, false, false,
+                    false, false, false,
+                    true,  true,  true,
+                    false, false, false,
+                    false, false, false]
+    twist0_queue_size: 10
+
+    # pressure sensor: only z
+    pose0: depth/pose
+    pose0_config: [false, false, true,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    pose0_queue_size: 10
+    pose0_differential: false

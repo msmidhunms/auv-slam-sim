@@ -52,12 +52,15 @@ ENV LIBGL_ALWAYS_SOFTWARE=1
 ENV GZ_SIM_RESOURCE_PATH=/ws/install/auv_sim/share/auv_sim/models
 
 # ---------------------------------------------------------------------------
-# nodes: light weight ROS nodes (state publisher, foxglove bridge)
+# nodes: our own nodes and the light weight ROS nodes (state publisher,
+# robot_localization, foxglove bridge)
 # ---------------------------------------------------------------------------
 FROM base AS nodes
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-${ROS_DISTRO}-robot-state-publisher \
+      ros-${ROS_DISTRO}-robot-localization \
+      ros-${ROS_DISTRO}-tf2-ros \
       ros-${ROS_DISTRO}-foxglove-bridge \
     && rm -rf /var/lib/apt/lists/*
 
