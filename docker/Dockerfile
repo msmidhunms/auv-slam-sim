@@ -42,3 +42,58 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=workspace /ws/install /ws/install
+
+# models are needed by the gz server and also by the gz GUI
+ENV GZ_SIM_RESOURCE_PATH=/ws/install/auv_sim/share/auv_sim/models
+
+# ---------------------------------------------------------------------------
+# nodes: light weight ROS nodes (state publisher, foxglove bridge)
+# ---------------------------------------------------------------------------
+FROM base AS nodes
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ros-${ROS_DISTRO}-robot-state-publisher \
+      ros-${ROS_DISTRO}-foxglove-bridge \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=workspace /ws/install /ws/install
+
+# ---------------------------------------------------------------------------
+# gui: desktop in the browser (noVNC) with RViz and Gazebo GUI.
+# No GPU inside docker on macOS, so rendering is on CPU with Mesa llvmpipe.
+# ---------------------------------------------------------------------------
+FROM sim AS gui
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ros-${ROS_DISTRO}-rviz2 \
+      tigervnc-standalone-server \
+      novnc \
+      websockify \
+      openbox \
+      supervisor \
+      libgl1-mesa-dri \
+      mesa-utils \
+      fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
+# RViz on the left half and Gazebo on the right half of the desktop
+RUN sed -i 's|</applications>|\
+  <application title="*RViz*"><decor>no</decor><position force="yes"><x>0</x><y>0</y></position><size><width>50%</width><height>100%</height></size></application>\
+  <application title="Gazebo*"><decor>no</decor><position force="yes"><x>50%</x><y>0</y></position><size><width>50%</width><height>100%</height></size></application>\
+</applications>|' /etc/xdg/openbox/rc.xml
+
+COPY docker/gui/supervisord.conf /etc/supervisor/conf.d/gui.conf
+COPY docker/gui/index.html /usr/share/novnc/index.html
+
+ENV DISPLAY=:1 \
+    VNC_RESOLUTION=1600x900 \
+    START_RVIZ=true \
+    START_GZ_GUI=true \
+    RVIZ_CONFIG=/ws/install/auv_description/share/auv_description/rviz/auv.rviz \
+    LIBGL_ALWAYS_SOFTWARE=1 \
+    QT_X11_NO_MITSHM=1 \
+    XDG_RUNTIME_DIR=/tmp/runtime-root
+RUN mkdir -m 700 -p /tmp/runtime-root
+
+EXPOSE 6080
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]

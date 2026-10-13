@@ -68,6 +68,45 @@ services:
       <<: [*ros-env, *gz-env]
     command: ros2 launch auv_sim bridge.launch.py
 
+  state-pub:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_description state_publisher.launch.py
+
+  # --- visualisation --------------------------------------------------------
+  # desktop in the browser with RViz and Gazebo GUI: http://localhost:6080
+  gui:
+    <<: *ros-node
+    image: auv-slam-sim/gui:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: gui
+    environment:
+      <<: [*ros-env, *gz-env]
+      VNC_RESOLUTION: ${VNC_RESOLUTION:-1600x900}
+      START_RVIZ: ${START_RVIZ:-true}
+      START_GZ_GUI: ${START_GZ_GUI:-true}
+    ports:
+      # no password on the VNC, so it is kept on localhost only
+      - "127.0.0.1:${NOVNC_PORT:-6080}:6080"
+    shm_size: 512m
+
+  # live data for Foxglove: ws://localhost:8765
+  foxglove:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: >
+      ros2 run foxglove_bridge foxglove_bridge --ros-args
+      -p port:=8765 -p address:=0.0.0.0 -p use_sim_time:=true
+    ports:
+      - "127.0.0.1:${FOXGLOVE_PORT:-8765}:8765"
+
   # --- throwaway shell on the network, for ros2 topic/node commands ----------
   shell:
     <<: *ros-node

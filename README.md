@@ -4,8 +4,9 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle 
 sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
-> Work in progress. As of now the vehicle model, underwater world, Gazebo server and the
-> ROS bridge are in place. Sensors, control, localisation and SLAM nodes will be added one by one.
+> Work in progress. As of now the vehicle model, underwater world, Gazebo server, ROS bridge
+> and the visualisation are in place. Sensors, control, localisation and SLAM nodes will be
+> added one by one.
 
 ## Prerequisites
 
@@ -20,9 +21,13 @@ containers only.
 ```bash
 cp .env.example .env   # optional, defaults are same as the example
 make build             # build the images, first time it takes around 10 min for Gazebo
-make up                # zenoh router + simulator + bridge
+make up                # router, simulator, bridge, state publisher, gui and foxglove bridge
 make ps
+make gui               # opens http://localhost:6080 in the browser
 ```
+
+Docker Desktop is to be given around 14 GB memory and 8 CPUs (Settings -> Resources).
+There is no GPU inside Docker on macOS, so all the rendering is happening on CPU.
 
 ## Containers
 
@@ -31,6 +36,9 @@ make ps
 | `zenoh-router` | Zenoh router, ROS 2 discovery for all the containers |
 | `sim` | Gazebo Harmonic server (headless) with the underwater world and the vehicle |
 | `bridge` | `ros_gz_bridge`, topics as per `src/auv_sim/config/bridge.yaml` |
+| `state-pub` | `robot_state_publisher` with the vehicle URDF |
+| `gui` | desktop in the browser (noVNC) with RViz and Gazebo GUI, port 6080 |
+| `foxglove` | `foxglove_bridge` for live data in Foxglove, port 8765 |
 | `shell` | throwaway ROS 2 shell, started with `make shell` |
 | `talker`, `listener` | comms smoke test, started with `make smoke` |
 
@@ -74,6 +82,25 @@ Points to note:
 - Thrusters are open loop as of now. On surge the vehicle will start yawing and pitching
   by its own, this is expected (Munk moment from the added mass) and it will be taken care
   once the heading and attitude controller is added.
+
+## Visualisation
+
+**RViz and Gazebo GUI** - open `http://localhost:6080` (or `make gui`). RViz is on the left
+and Gazebo is on the right. Give 20 to 30 seconds after `make up`, Gazebo window takes
+some time to come.
+
+**Foxglove** - in the Foxglove app (desktop or `app.foxglove.dev` in Chrome) select
+Open connection -> Foxglove WebSocket -> `ws://localhost:8765`. For example add a Plot panel
+with `/ground_truth/odom.pose.pose.position.z` to see the depth live.
+
+Both the ports are bound to localhost only, as there is no password on the VNC.
+
+Gazebo GUI is the heaviest one on CPU rendering (around 5 cores). If the machine is
+struggling, make `START_GZ_GUI=false` in `.env` and do `make up` again, RViz alone is light.
+Desktop resolution can be changed with `VNC_RESOLUTION`.
+
+As of now the vehicle pose in RViz is the ground truth from the simulator. It will be
+replaced with the estimated pose once the localisation node is added.
 
 ## Comms smoke test
 
@@ -121,6 +148,7 @@ make smoke-down
 | `make ps` | container status |
 | `make logs` | follow logs, use `S=<service>` for one service |
 | `make shell` | open a ROS 2 shell on the network |
+| `make gui` | open the browser desktop with RViz and Gazebo GUI |
 | `make rtf` | real time factor of the simulation |
 | `make smoke` | talker and listener in separate containers, to check the comms |
 | `make smoke-down` | stop the smoke test containers |

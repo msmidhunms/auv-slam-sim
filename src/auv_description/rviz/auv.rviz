@@ -1,0 +1,87 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+    Splitter Ratio: 0.6
+    Tree Height: 400
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Water surface
+      Enabled: true
+      Reference Frame: world
+      Plane: XY
+      Plane Cell Count: 20
+      Cell Size: 5
+      Color: 70; 130; 170
+      Alpha: 0.4
+    - Class: rviz_default_plugins/RobotModel
+      Name: Vehicle
+      Enabled: true
+      Description Source: Topic
+      Description Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /robot_description
+      Visual Enabled: true
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Show Names: false
+      Show Arrows: false
+      Marker Scale: 0.5
+    - Class: rviz_default_plugins/Odometry
+      Name: Ground truth
+      Enabled: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /ground_truth/odom
+      Keep: 300
+      Position Tolerance: 0.2
+      Angle Tolerance: 0.3
+      Shape:
+        Value: Arrow
+        Color: 50; 220; 90
+        Shaft Length: 0.25
+        Shaft Radius: 0.02
+        Head Length: 0.1
+        Head Radius: 0.05
+      Covariance:
+        Value: false
+  Enabled: true
+  Global Options:
+    Background Color: 12; 30; 48
+    Fixed Frame: world
+    Frame Rate: 15
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Interact
+    - Class: rviz_default_plugins/Measure
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Name: Current View
+      Target Frame: base_link
+      Distance: 6
+      Pitch: 0.45
+      Yaw: 2.4
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Near Clip Distance: 0.01
+Window Geometry:
+  Displays:
+    collapsed: false
+  Views:
+    collapsed: true
+  Height: 900
+  Width: 800

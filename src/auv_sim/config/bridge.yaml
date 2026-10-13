@@ -15,6 +15,14 @@
   gz_type_name: gz.msgs.Odometry
   direction: GZ_TO_ROS
 
+# world -> base_link TF from ground truth, so that the vehicle can be seen in RViz.
+# TODO: to be removed once the localization node is publishing the TF.
+- ros_topic_name: /tf
+  gz_topic_name: /model/auv/pose
+  ros_type_name: tf2_msgs/msg/TFMessage
+  gz_type_name: gz.msgs.Pose_V
+  direction: GZ_TO_ROS
+
 # thrust command per thruster in N, names are as per auv_description/config/thrusters.yaml
 - ros_topic_name: /thrusters/thruster1/cmd_thrust
   gz_topic_name: /model/auv/joint/thruster1_joint/cmd_thrust
