@@ -4,9 +4,8 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle 
 sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
-> Work in progress. As of now the vehicle model, underwater world, Gazebo server, ROS bridge
-> and the visualisation are in place. Sensors, control, localisation and SLAM nodes will be
-> added one by one.
+> Work in progress. As of now the vehicle model, underwater world, sensors and the
+> visualisation are in place. Control, localisation and SLAM nodes will be added one by one.
 
 ## Prerequisites
 
@@ -21,7 +20,7 @@ containers only.
 ```bash
 cp .env.example .env   # optional, defaults are same as the example
 make build             # build the images, first time it takes around 10 min for Gazebo
-make up                # router, simulator, bridge, state publisher, gui and foxglove bridge
+make up                # simulator, bridge, sensors, state publisher, gui and foxglove bridge
 make ps
 make gui               # opens http://localhost:6080 in the browser
 ```
@@ -36,6 +35,9 @@ There is no GPU inside Docker on macOS, so all the rendering is happening on CPU
 | `zenoh-router` | Zenoh router, ROS 2 discovery for all the containers |
 | `sim` | Gazebo Harmonic server (headless) with the underwater world and the vehicle |
 | `bridge` | `ros_gz_bridge`, topics as per `src/auv_sim/config/bridge.yaml` |
+| `ahrs` | attitude and heading from the raw IMU, with compass error added |
+| `dvl` | DVL model, body velocity with noise and bottom lock dropouts |
+| `depth` | pressure sensor model, pressure and depth |
 | `state-pub` | `robot_state_publisher` with the vehicle URDF |
 | `gui` | desktop in the browser (noVNC) with RViz and Gazebo GUI, port 6080 |
 | `foxglove` | `foxglove_bridge` for live data in Foxglove, port 8765 |
@@ -82,6 +84,31 @@ Points to note:
 - Thrusters are open loop as of now. On surge the vehicle will start yawing and pitching
   by its own, this is expected (Munk moment from the added mass) and it will be taken care
   once the heading and attitude controller is added.
+
+## Sensors
+
+| ROS topic | Type | Rate | Source |
+|---|---|---|---|
+| `/sonar/points` | `sensor_msgs/PointCloud2` | 5 Hz | Gazebo, 128 x 32 beams, 120 x 40 deg, 0.5 to 30 m, looking 30 deg down |
+| `/imu/raw` | `sensor_msgs/Imu` | 50 Hz | Gazebo, gyro and accel with noise, orientation is perfect |
+| `/imu/data` | `sensor_msgs/Imu` | 50 Hz | `ahrs`, orientation with noise and slowly wandering heading error (1.5 deg) |
+| `/dvl/twist` | `geometry_msgs/TwistWithCovarianceStamped` | 10 Hz | `dvl`, 1 cm/s noise, 0.2 % scale error, 2 % dropouts |
+| `/pressure` | `sensor_msgs/FluidPressure` | 25 Hz | `depth`, absolute pressure |
+| `/depth/pose` | `geometry_msgs/PoseWithCovarianceStamped` | 25 Hz | `depth`, only z is valid, 1 cm noise |
+
+Noise values are in `src/auv_sensors/config/sensors.yaml`. Sonar is a `gpu_lidar` in Gazebo,
+so it gives the geometry of a multibeam sonar but acoustic effects (multipath, speckle,
+beam width) are not modelled. Beam count and rate are kept low as the rendering is on CPU,
+they can be changed at the top of `src/auv_sim/models/auv/model.sdf.xacro`.
+
+Localisation and SLAM nodes are supposed to use only these topics.
+`/ground_truth/odom` is for the sensor models and for evaluation.
+
+## Tests
+
+```bash
+make test     # unit tests of the sensor models
+```
 
 ## Visualisation
 
@@ -149,6 +176,7 @@ make smoke-down
 | `make logs` | follow logs, use `S=<service>` for one service |
 | `make shell` | open a ROS 2 shell on the network |
 | `make gui` | open the browser desktop with RViz and Gazebo GUI |
+| `make test` | unit tests of our packages |
 | `make rtf` | real time factor of the simulation |
 | `make smoke` | talker and listener in separate containers, to check the comms |
 | `make smoke-down` | stop the smoke test containers |

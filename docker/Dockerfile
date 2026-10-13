@@ -39,9 +39,14 @@ FROM base AS sim
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ros-${ROS_DISTRO}-ros-gz-sim \
       ros-${ROS_DISTRO}-ros-gz-bridge \
+      libgl1-mesa-dri \
+      libegl1 \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=workspace /ws/install /ws/install
+
+# no GPU inside docker on macOS, sonar is rendered on CPU with Mesa llvmpipe
+ENV LIBGL_ALWAYS_SOFTWARE=1
 
 # models are needed by the gz server and also by the gz GUI
 ENV GZ_SIM_RESOURCE_PATH=/ws/install/auv_sim/share/auv_sim/models
@@ -76,11 +81,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
 
-# RViz on the left half and Gazebo on the right half of the desktop
+# RViz on the left half and Gazebo on the right half of the desktop (for 1600x900).
+# Gazebo GUI is taking its window size from its own config, so default config is
+# copied and the window part alone is changed.
 RUN sed -i 's|</applications>|\
   <application title="*RViz*"><decor>no</decor><position force="yes"><x>0</x><y>0</y></position><size><width>50%</width><height>100%</height></size></application>\
-  <application title="Gazebo*"><decor>no</decor><position force="yes"><x>50%</x><y>0</y></position><size><width>50%</width><height>100%</height></size></application>\
-</applications>|' /etc/xdg/openbox/rc.xml
+  <application title="Gazebo*"><decor>no</decor><position force="yes"><x>50%</x><y>0</y></position></application>\
+</applications>|' /etc/xdg/openbox/rc.xml \
+    && mkdir -p /root/.gz/sim/8 \
+    && sed -e 's|<width>1000</width>|<width>800</width>|' \
+           -e 's|<height>845</height>|<height>900</height>|' \
+           /opt/ros/${ROS_DISTRO}/opt/gz_sim_vendor/share/gz/gz-sim8/gui/gui.config \
+           > /root/.gz/sim/8/gui.config
 
 COPY docker/gui/supervisord.conf /etc/supervisor/conf.d/gui.conf
 COPY docker/gui/index.html /usr/share/novnc/index.html
@@ -90,7 +102,6 @@ ENV DISPLAY=:1 \
     START_RVIZ=true \
     START_GZ_GUI=true \
     RVIZ_CONFIG=/ws/install/auv_description/share/auv_description/rviz/auv.rviz \
-    LIBGL_ALWAYS_SOFTWARE=1 \
     QT_X11_NO_MITSHM=1 \
     XDG_RUNTIME_DIR=/tmp/runtime-root
 RUN mkdir -m 700 -p /tmp/runtime-root

@@ -68,6 +68,32 @@ services:
       <<: [*ros-env, *gz-env]
     command: ros2 launch auv_sim bridge.launch.py
 
+  # --- simulated navigation sensors (sonar and raw IMU are coming from gazebo) ---
+  ahrs:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_sensors sensor.launch.py node:=ahrs
+
+  dvl:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_sensors sensor.launch.py node:=dvl
+
+  depth:
+    <<: *ros-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_sensors sensor.launch.py node:=depth
+
+  # --- vehicle ---------------------------------------------------------------
   state-pub:
     <<: *ros-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
