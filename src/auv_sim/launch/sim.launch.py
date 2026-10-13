@@ -19,7 +19,7 @@ def generate_launch_description():
     )
 
     gz_server = ExecuteProcess(
-        cmd=['gz', 'sim', '-s', '-r', '-v', verbosity,
+        cmd=['gz', 'sim', '-s', '-r', '--headless-rendering', '-v', verbosity,
              PathJoinSubstitution([share, 'worlds', world])],
         additional_env={'GZ_SIM_RESOURCE_PATH': resource_path},
         output='screen',

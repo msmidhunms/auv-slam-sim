@@ -15,6 +15,20 @@
   gz_type_name: gz.msgs.Odometry
   direction: GZ_TO_ROS
 
+# raw IMU, auv_sensors/ahrs_node is adding the heading error on top of this
+- ros_topic_name: /imu/raw
+  gz_topic_name: /model/auv/imu
+  ros_type_name: sensor_msgs/msg/Imu
+  gz_type_name: gz.msgs.IMU
+  direction: GZ_TO_ROS
+
+# sonar point cloud
+- ros_topic_name: /sonar/points
+  gz_topic_name: /model/auv/sonar/points
+  ros_type_name: sensor_msgs/msg/PointCloud2
+  gz_type_name: gz.msgs.PointCloudPacked
+  direction: GZ_TO_ROS
+
 # world -> base_link TF from ground truth, so that the vehicle can be seen in RViz.
 # TODO: to be removed once the localization node is publishing the TF.
 - ros_topic_name: /tf
