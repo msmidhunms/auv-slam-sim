@@ -49,3 +49,22 @@ qtcreator-*
 
 # Catkin custom files
 CATKIN_IGNORE
+
+# ROS 2 / colcon
+install/
+log/
+__pycache__/
+
+# rosbags and rtabmap databases
+bags/
+*.db3
+*.mcap
+rtabmap.db
+
+# local overrides
+.env.local
+compose.override.yaml
+
+.DS_Store
+.vscode/
+.env
