@@ -4,8 +4,8 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle 
 sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
-> Work in progress. As of now the vehicle model, underwater world, sensors, control,
-> teleop and the visualisation are in place. Localisation and SLAM nodes will be added next.
+> Work in progress. As of now the vehicle model, underwater world, sensors, control, teleop,
+> EKF localisation and the visualisation are in place. SLAM and mission nodes will be added next.
 
 ## Prerequisites
 
@@ -20,7 +20,7 @@ containers only.
 ```bash
 cp .env.example .env   # optional, defaults are same as the example
 make build             # build the images, first time it takes around 10 min for Gazebo
-make up                # simulator, bridge, sensors, control, gui and foxglove bridge
+make up                # simulator, bridge, sensors, control, localisation, gui and foxglove bridge
 make ps
 make gui               # opens http://localhost:6080 in the browser
 make teleop            # drive the vehicle from keyboard
@@ -41,6 +41,7 @@ There is no GPU inside Docker on macOS, so all the rendering is happening on CPU
 | `depth` | pressure sensor model, pressure and depth |
 | `controller` | depth, heading, attitude and velocity controller, `cmd_vel` to body wrench |
 | `allocator` | thruster allocator, body wrench to 8 thrust commands |
+| `localization` | `robot_localization` EKF, AHRS + DVL + depth to `odom -> base_link` |
 | `state-pub` | `robot_state_publisher` with the vehicle URDF |
 | `gui` | desktop in the browser (noVNC) with RViz and Gazebo GUI, port 6080 |
 | `foxglove` | `foxglove_bridge` for live data in Foxglove, port 8765 |
@@ -148,6 +149,37 @@ they can be changed at the top of `src/auv_sim/models/auv/model.sdf.xacro`.
 Localisation and SLAM nodes are supposed to use only these topics.
 `/ground_truth/odom` is for the sensor models and for evaluation.
 
+## Localisation
+
+`robot_localization` EKF is fusing the heading and angular rates from AHRS, body velocity
+from DVL and z from the depth sensor. Config is in `src/auv_localization/config/ekf.yaml`.
+
+| Output | Type | Meaning |
+|---|---|---|
+| `/odometry/filtered` | `nav_msgs/Odometry` | estimated pose and velocity, 50 Hz |
+| TF `odom -> base_link` | | same estimate as TF |
+| TF `world -> odom` | static | only for showing the ground truth along with the estimate in RViz |
+
+This is dead reckoning. Depth and heading are absolute, but nothing is observing x and y,
+so the horizontal position drifts with the distance travelled. Correcting that drift is the
+job of SLAM.
+
+Measured against ground truth, two 15 m squares at 0.5 m/s and 5 m depth (118 m in 313 s):
+
+| Quantity | Error |
+|---|---|
+| Horizontal position | max 1.06 m, 0.97 m at the end (0.8 % of distance travelled) |
+| Depth | max 3.1 cm |
+| Heading | mean -0.5 deg, between -2.4 and +1.2 deg (it is the compass error of the AHRS) |
+
+The error is not growing steadily in this run because the path is a closed square, the
+heading error partly cancels on opposite legs. On a long straight run it will grow more.
+
+`world` and `odom` frames are the same only when the simulator and the localisation node
+are started together (`make up` does that), since the filter starts from x = y = 0.
+If the `localization` container alone is restarted in between, ground truth and estimate
+will be shown with an offset in RViz.
+
 ## Tests
 
 ```bash
@@ -170,8 +202,8 @@ Gazebo GUI is the heaviest one on CPU rendering (around 5 cores). If the machine
 struggling, make `START_GZ_GUI=false` in `.env` and do `make up` again, RViz alone is light.
 Desktop resolution can be changed with `VNC_RESOLUTION`.
 
-As of now the vehicle pose in RViz is the ground truth from the simulator. It will be
-replaced with the estimated pose once the localisation node is added.
+In RViz the vehicle model is drawn at the estimated pose (fixed frame is `odom`). Orange
+arrows are the EKF estimate and green arrows are the ground truth from the simulator.
 
 ## Comms smoke test
 
