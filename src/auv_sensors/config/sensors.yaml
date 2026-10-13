@@ -1,0 +1,36 @@
+# Noise models of the simulated navigation sensors.
+# Values are typical for the class of sensors used on a small ROV.
+
+ahrs:
+  ros__parameters:
+    # white noise on the attitude output, deg
+    roll_pitch_noise_std_deg: 0.1
+    yaw_noise_std_deg: 0.3
+    # magnetic heading error, modelled as a slowly wandering bias (Gauss-Markov)
+    yaw_bias_std_deg: 1.5
+    yaw_bias_time_constant: 300.0   # s
+    # these two are only for the covariance fields, noise itself is added in gazebo
+    gyro_noise_std: 0.002           # rad/s
+    accel_noise_std: 0.02           # m/s^2
+    seed: 11
+
+dvl:
+  ros__parameters:
+    rate: 10.0                      # Hz
+    noise_std: 0.01                 # m/s, per axis
+    scale_error: 0.002              # 0.2 % of the speed
+    dropout_probability: 0.02       # pings with no bottom lock
+    frame_id: dvl_link
+    # DVL position in base_link, it measures the velocity at this point
+    offset: [0.0, 0.0, -0.10]
+    seed: 12
+
+depth:
+  ros__parameters:
+    rate: 25.0                      # Hz, ground truth is at 50 Hz so keep it a divisor of 50
+    noise_std: 0.01                 # m
+    world_frame: odom
+    frame_id: base_link
+    water_density: 1000.0           # kg/m^3
+    atmospheric_pressure: 101325.0  # Pa
+    seed: 13
