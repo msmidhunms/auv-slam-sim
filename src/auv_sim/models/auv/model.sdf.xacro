@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<!--
+  Gazebo model of the vehicle. Processed with xacro at build time, thruster
+  poses are coming from auv_description/config/thrusters.yaml.
+
+  Frame: x forward, y left, z up. base_link origin is at the centre of mass.
+-->
+<sdf version="1.10" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:arg name="thrusters_file" default=""/>
+  <xacro:property name="cfg" value="${xacro.load_yaml('$(arg thrusters_file)')}"/>
+
+  <xacro:property name="total_mass" value="11.5"/>
+  <xacro:property name="propeller_mass" value="0.01"/>
+  <xacro:property name="n_thrusters" value="${len(cfg['thrusters'])}"/>
+
+  <!--
+    Buoyancy plugin takes the displaced volume from the collision shapes, so the
+    collision box is sized for buoyancy and not for the outer dimensions.
+    0.40 x 0.30 x 0.09625 = 0.01155 m3, i.e. 11.55 kg of water against 11.5 kg
+    mass. Vehicle is slightly positive, like a real ROV it floats up slowly
+    when thrusters are off.
+    Box is kept above the centre of mass to get the restoring moment in roll and pitch.
+  -->
+  <xacro:property name="buoy_x" value="0.40"/>
+  <xacro:property name="buoy_y" value="0.30"/>
+  <xacro:property name="buoy_z" value="0.09625"/>
+  <xacro:property name="buoy_offset_z" value="0.04"/>
+
+  <model name="auv">
+
+    <link name="base_link">
+      <inertial>
+        <mass>${total_mass - n_thrusters * propeller_mass}</mass>
+        <inertia>
+          <ixx>0.21</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.245</iyy><iyz>0</iyz>
+          <izz>0.245</izz>
+        </inertia>
+        <!-- added mass of the water moving along with the vehicle (BlueROV2 Heavy values) -->
+        <fluid_added_mass>
+          <xx>5.5</xx>
+          <yy>12.7</yy>
+          <zz>14.57</zz>
+          <pp>0.12</pp>
+          <qq>0.12</qq>
+          <rr>0.12</rr>
+        </fluid_added_mass>
+      </inertial>
+
+      <collision name="buoyancy_collision">
+        <pose>0 0 ${buoy_offset_z} 0 0 0</pose>
+        <geometry>
+          <box><size>${buoy_x} ${buoy_y} ${buoy_z}</size></box>
+        </geometry>
+      </collision>
+
+      <visual name="frame_visual">
+        <pose>0 0 -0.03 0 0 0</pose>
+        <geometry>
+          <box><size>0.44 0.30 0.12</size></box>
+        </geometry>
+        <material>
+          <ambient>0.05 0.25 0.6 1</ambient>
+          <diffuse>0.05 0.25 0.6 1</diffuse>
+        </material>
+      </visual>
+      <visual name="foam_visual">
+        <pose>0 0 0.07 0 0 0</pose>
+        <geometry>
+          <box><size>0.44 0.34 0.07</size></box>
+        </geometry>
+        <material>
+          <ambient>0.95 0.75 0.1 1</ambient>
+          <diffuse>0.95 0.75 0.1 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- one propeller link + joint + thruster plugin per entry in thrusters.yaml -->
+    <xacro:macro name="thruster" params="name xyz rpy spin">
+      <link name="${name}">
+        <pose relative_to="base_link">${xyz[0]} ${xyz[1]} ${xyz[2]} ${rpy[0]} ${rpy[1]} ${rpy[2]}</pose>
+        <inertial>
+          <mass>${propeller_mass}</mass>
+          <inertia>
+            <ixx>0.00002</ixx><ixy>0</ixy><ixz>0</ixz>
+            <iyy>0.00002</iyy><iyz>0</iyz>
+            <izz>0.00002</izz>
+          </inertia>
+        </inertial>
+        <visual name="visual">
+          <pose>0 0 0 0 1.5708 0</pose>
+          <geometry>
+            <cylinder><radius>0.045</radius><length>0.06</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.1 0.1 0.1 1</ambient>
+            <diffuse>0.1 0.1 0.1 1</diffuse>
+          </material>
+        </visual>
+      </link>
+
+      <joint name="${name}_joint" type="revolute">
+        <parent>base_link</parent>
+        <child>${name}</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>-1e16</lower>
+            <upper>1e16</upper>
+          </limit>
+        </axis>
+      </joint>
+
+      <!-- thrust command in N on /model/auv/joint/<name>_joint/cmd_thrust -->
+      <plugin filename="gz-sim-thruster-system" name="gz::sim::systems::Thruster">
+        <namespace>auv</namespace>
+        <joint_name>${name}_joint</joint_name>
+        <!-- sign of the coefficient decides the spin direction, thrust direction is not changing -->
+        <thrust_coefficient>${0.02 * spin}</thrust_coefficient>
+        <fluid_density>1000</fluid_density>
+        <propeller_diameter>0.076</propeller_diameter>
+        <velocity_control>true</velocity_control>
+        <max_thrust_cmd>${cfg['max_thrust']}</max_thrust_cmd>
+        <min_thrust_cmd>${-cfg['max_thrust']}</min_thrust_cmd>
+      </plugin>
+    </xacro:macro>
+
+    <xacro:macro name="thruster_loop" params="i">
+      <xacro:if value="${i &lt; n_thrusters}">
+        <xacro:property name="t" value="${cfg['thrusters'][i]}"/>
+        <xacro:thruster name="${t['name']}" xyz="${t['xyz']}" rpy="${t['rpy']}" spin="${t['spin']}"/>
+        <xacro:thruster_loop i="${i + 1}"/>
+      </xacro:if>
+    </xacro:macro>
+    <xacro:thruster_loop i="0"/>
+
+    <!--
+      Drag only. Added mass is already given in the inertial above, so it is
+      disabled here to avoid counting the same twice.
+      Linear and quadratic damping are the BlueROV2 Heavy values from literature.
+    -->
+    <plugin filename="gz-sim-hydrodynamics-system" name="gz::sim::systems::Hydrodynamics">
+      <link_name>base_link</link_name>
+      <water_density>1000</water_density>
+      <disable_added_mass>true</disable_added_mass>
+      <disable_coriolis>true</disable_coriolis>
+
+      <xU>-4.03</xU>
+      <yV>-6.22</yV>
+      <zW>-5.18</zW>
+      <kP>-0.07</kP>
+      <mQ>-0.07</mQ>
+      <nR>-0.07</nR>
+
+      <xUabsU>-18.18</xUabsU>
+      <yVabsV>-21.66</yVabsV>
+      <zWabsW>-36.99</zWabsW>
+      <kPabsP>-1.55</kPabsP>
+      <mQabsQ>-1.55</mQabsQ>
+      <nRabsR>-1.55</nRabsR>
+    </plugin>
+
+    <!-- ground truth pose and body velocity, used for the simulated sensors and for evaluation -->
+    <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
+      <odom_frame>world</odom_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <odom_topic>/model/auv/odometry</odom_topic>
+      <odom_publish_frequency>50</odom_publish_frequency>
+      <dimensions>3</dimensions>
+    </plugin>
+
+  </model>
+</sdf>

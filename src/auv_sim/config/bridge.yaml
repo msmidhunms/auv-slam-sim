@@ -1,0 +1,58 @@
+# Topics bridged between Gazebo and ROS 2.
+
+# simulation time, all nodes are running with use_sim_time
+- ros_topic_name: /clock
+  gz_topic_name: /clock
+  ros_type_name: rosgraph_msgs/msg/Clock
+  gz_type_name: gz.msgs.Clock
+  direction: GZ_TO_ROS
+
+# ground truth from the simulator. Not to be used by localization or SLAM,
+# it is only for the simulated sensors and for evaluation.
+- ros_topic_name: /ground_truth/odom
+  gz_topic_name: /model/auv/odometry
+  ros_type_name: nav_msgs/msg/Odometry
+  gz_type_name: gz.msgs.Odometry
+  direction: GZ_TO_ROS
+
+# thrust command per thruster in N, names are as per auv_description/config/thrusters.yaml
+- ros_topic_name: /thrusters/thruster1/cmd_thrust
+  gz_topic_name: /model/auv/joint/thruster1_joint/cmd_thrust
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ
+- ros_topic_name: /thrusters/thruster2/cmd_thrust
+  gz_topic_name: /model/auv/joint/thruster2_joint/cmd_thrust
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ
+- ros_topic_name: /thrusters/thruster3/cmd_thrust
+  gz_topic_name: /model/auv/joint/thruster3_joint/cmd_thrust
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ
+- ros_topic_name: /thrusters/thruster4/cmd_thrust
+  gz_topic_name: /model/auv/joint/thruster4_joint/cmd_thrust
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ
+- ros_topic_name: /thrusters/thruster5/cmd_thrust
+  gz_topic_name: /model/auv/joint/thruster5_joint/cmd_thrust
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ
+- ros_topic_name: /thrusters/thruster6/cmd_thrust
+  gz_topic_name: /model/auv/joint/thruster6_joint/cmd_thrust
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ
+- ros_topic_name: /thrusters/thruster7/cmd_thrust
+  gz_topic_name: /model/auv/joint/thruster7_joint/cmd_thrust
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ
+- ros_topic_name: /thrusters/thruster8/cmd_thrust
+  gz_topic_name: /model/auv/joint/thruster8_joint/cmd_thrust
+  ros_type_name: std_msgs/msg/Float64
+  gz_type_name: gz.msgs.Double
+  direction: ROS_TO_GZ

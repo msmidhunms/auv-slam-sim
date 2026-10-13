@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="seabed">
+    <static>true</static>
+    <link name="link">
+      <collision name="collision">
+        <geometry>
+          <mesh><uri>meshes/seabed.obj</uri></mesh>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh><uri>meshes/seabed.obj</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.55 0.48 0.35 1</ambient>
+          <diffuse>0.65 0.57 0.40 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>
