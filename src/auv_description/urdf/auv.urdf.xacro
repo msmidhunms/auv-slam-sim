@@ -22,6 +22,34 @@
     </visual>
   </link>
 
+  <!-- sensor frames, poses are same as in auv_sim/models/auv/model.sdf.xacro -->
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="dvl_link"/>
+  <joint name="dvl_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="dvl_link"/>
+    <origin xyz="0 0 -0.10" rpy="0 0 0"/>
+  </joint>
+
+  <link name="sonar_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <geometry><cylinder radius="0.03" length="0.06"/></geometry>
+      <material name="thruster_black"/>
+    </visual>
+  </link>
+  <joint name="sonar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="sonar_link"/>
+    <origin xyz="0.22 0 -0.04" rpy="0 0.5236 0"/>
+  </joint>
+
   <xacro:macro name="thruster" params="name xyz rpy">
     <link name="${name}">
       <visual>
