@@ -6,7 +6,9 @@ from auv_control.torpedo import (
     drag_thrust,
     gain_schedule,
     Refs,
+    SpeedModel,
     State,
+    steady_speed,
     TorpedoController,
 )
 import pytest
@@ -97,3 +99,18 @@ def test_altitude_mode_uses_seabed():
     # altitude reference without a valid altitude falls back to depth mode
     out = c.update(level_state(z=-20.0, altitude=None), Refs(speed=1.0, yaw=0.0, z=-20.0, altitude=10.0), DT)
     assert out.z_ref == pytest.approx(-20.0)
+
+
+def test_steady_speed_is_inverse_of_drag():
+    for u in (0.3, 1.0, 1.5):
+        assert steady_speed(drag_thrust(u, 1.0, 6.2282), 1.0, 6.2282) == pytest.approx(u)
+    assert steady_speed(-3.0, 1.0, 6.2282) == 0.0
+
+
+def test_speed_model_lags_and_settles():
+    m = SpeedModel(1.0, 6.2282, time_constant=10.0)
+    thrust = drag_thrust(1.0, 1.0, 6.2282)
+    assert m.update(thrust, 1.0) == pytest.approx(0.1)
+    for _ in range(200):
+        m.update(thrust, 1.0)
+    assert m.speed == pytest.approx(1.0, abs=1e-3)

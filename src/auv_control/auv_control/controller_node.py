@@ -32,7 +32,7 @@ from std_msgs.msg import Float64
 from std_srvs.srv import SetBool
 
 from auv_control.pid import clamp, wrap_angle
-from auv_control.torpedo import Refs, State, TorpedoController
+from auv_control.torpedo import Refs, SpeedModel, State, TorpedoController
 
 GAIN_GROUPS = ('speed', 'heading', 'depth', 'pitch')
 GAIN_KEYS = ('kp', 'ki', 'kd', 'integral_limit', 'output_limit', 'integral_zone')
@@ -59,6 +59,10 @@ class ControllerNode(Node):
                 default = 1.0e9 if key == 'integral_zone' else 0.0
                 params[group][key] = self.declare_parameter(f'{group}.{key}', default).value
         self.control = TorpedoController(params)
+        self.speed_model = SpeedModel(params['drag_linear'], params['drag_quadratic'],
+                                      self.declare_parameter('speed_model_time_constant', 10.0).value)
+        self.speed_model_std = self.declare_parameter('speed_model_std', 0.15).value
+        self.ticks = 0
 
         self.max_speed = self.declare_parameter('max_speed', 1.6).value
         self.setpoint_timeout = self.declare_parameter('setpoint_timeout', 5.0).value
@@ -81,6 +85,8 @@ class ControllerNode(Node):
         self.thrust_pub = self.create_publisher(Float64, 'propeller/cmd_thrust', 10)
         self.rudder_pub = self.create_publisher(Float64, 'fins/rudder/cmd_angle', 10)
         self.elevator_pub = self.create_publisher(Float64, 'fins/elevator/cmd_angle', 10)
+        self.speed_model_pub = self.create_publisher(
+            TwistWithCovarianceStamped, 'speed_model/twist', 10)
         self.ref_pubs = {name: self.create_publisher(Float64, f'controller/{name}', 10)
                          for name in ('speed_reference', 'heading_reference',
                                       'depth_reference', 'pitch_reference')}
@@ -193,9 +199,26 @@ class ControllerNode(Node):
 
         out = self.control.update(state, refs, dt, speed_valid=dvl_ok)
         self.publish_actuators(out.thrust, out.rudder, out.elevator)
+        self.publish_speed_model(msg.header.stamp, out.thrust, dt)
         for name, value in (('speed_reference', self.speed_ref), ('heading_reference', self.yaw_ref),
                             ('depth_reference', out.z_ref), ('pitch_reference', out.pitch_ref)):
             self.ref_pubs[name].publish(Float64(data=float(value)))
+
+    def publish_speed_model(self, stamp, thrust, dt):
+        """Speed from the propeller command, at 10 Hz, for the EKF."""
+        speed = self.speed_model.update(thrust, dt)
+        self.ticks += 1
+        if self.ticks % 5:
+            return
+        msg = TwistWithCovarianceStamped()
+        msg.header.stamp = stamp
+        msg.header.frame_id = 'base_link'
+        msg.twist.twist.linear.x = speed
+        # a torpedo is hardly slipping sideways or vertically in body frame
+        msg.twist.covariance[0] = self.speed_model_std ** 2
+        msg.twist.covariance[7] = 0.1 ** 2
+        msg.twist.covariance[14] = 0.1 ** 2
+        self.speed_model_pub.publish(msg)
 
     def body_velocity(self, stamp):
         if self.velocity_stamp is None or \

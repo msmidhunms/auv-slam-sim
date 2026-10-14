@@ -66,6 +66,31 @@ def drag_thrust(speed, linear, quadratic):
     return linear * speed + quadratic * speed * abs(speed)
 
 
+def steady_speed(thrust, linear, quadratic):
+    """Speed at which the hull drag is equal to the thrust (inverse of drag_thrust)."""
+    if thrust <= 0.0:
+        return 0.0
+    return (-linear + math.sqrt(linear * linear + 4.0 * quadratic * thrust)) / (2.0 * quadratic)
+
+
+class SpeedModel:
+    """Forward speed estimated from the propeller command, for dead reckoning when
+    the DVL has no bottom lock (near the surface, or too high above the seabed).
+    Real AUVs use the same idea with the propeller RPM. First order lag with the
+    time constant of the vehicle, it is only good to some 10 cm/s."""
+
+    def __init__(self, linear, quadratic, time_constant):
+        self.linear = linear
+        self.quadratic = quadratic
+        self.time_constant = time_constant
+        self.speed = 0.0
+
+    def update(self, thrust, dt):
+        target = steady_speed(thrust, self.linear, self.quadratic)
+        self.speed += (target - self.speed) * min(1.0, dt / self.time_constant)
+        return self.speed
+
+
 def altitude_to_depth(z, altitude, altitude_ref):
     """Depth reference which puts the vehicle at altitude_ref above the seabed."""
     return z - (altitude - altitude_ref)

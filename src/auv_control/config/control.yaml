@@ -11,6 +11,10 @@ controller:
     setpoint_timeout: 5.0       # s, propeller is stopped if no command is coming
     dvl_timeout: 1.0            # s
 
+    # speed from the propeller command, for dead reckoning without DVL lock
+    speed_model_time_constant: 10.0   # s
+    speed_model_std: 0.15             # m/s
+
     nominal_speed: 1.0          # m/s, fin gains are tuned at this speed
     min_speed: 0.4              # m/s, below this the gain schedule is clipped
     max_schedule: 4.0
