@@ -4,10 +4,10 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle 
 sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
-> Being upgraded to a realistic torpedo survey AUV (MBARI Tethys LRAUV). The new vehicle
-> and world are in place. Control, navigation aids, survey sonars and the mission state
-> machine are being reworked phase by phase, so `make mission` and teleop are not working
-> for the new vehicle as of now.
+> Being upgraded to a realistic torpedo survey AUV (MBARI Tethys LRAUV). The new vehicle,
+> world, control and teleop are in place. Navigation aids, survey sonars and the mission
+> state machine are being reworked phase by phase, so `make mission` is not working for
+> the new vehicle as of now.
 
 ## Prerequisites
 
@@ -109,41 +109,53 @@ Vehicle is slightly positively buoyant, so if the controller is stopped it comes
 ## Control
 
 ```
-cmd_vel -> controller -> wrench_cmd -> allocator -> /thrusters/thruster<1-8>/cmd_thrust
+setpoints / cmd_vel -> controller -> /propeller/cmd_thrust, /fins/rudder/cmd_angle, /fins/elevator/cmd_angle
 ```
 
-The controller works like the depth hold mode of a ROV autopilot. Roll and pitch are held
-level, depth and heading are held, and the commands are moving their references. It is
-taking the feedback directly from AHRS, depth sensor and DVL (not from localisation), so
-the vehicle stays stable even if localisation or SLAM is down.
+The vehicle is under actuated (one propeller, a rudder and an elevator), so it is
+controlled the way survey AUVs are normally controlled:
+
+| Loop | How |
+|---|---|
+| Speed | propeller thrust = hull drag feed forward + PI on the DVL speed |
+| Heading | rudder from a PID on the heading error |
+| Depth | outer loop makes a pitch reference (max 25 deg) from the depth error, inner loop makes the elevator angle from the pitch error |
+| Altitude | same as depth, the depth reference is made from the DVL altitude (needs the DVL altitude topic, coming in the next phase) |
+| Roll | not controlled, the vehicle is stable in roll by itself |
+
+Fin force goes with speed square, so the fin loops are gain scheduled with
+(1 m/s / speed)^2. Feedback comes directly from AHRS, depth sensor and DVL (not from
+localisation), so the vehicle stays under control even if localisation or SLAM is down.
+Control laws are in `src/auv_control/auv_control/torpedo.py`, gains in
+`src/auv_control/config/control.yaml`.
 
 | ROS topic | Type | Meaning |
 |---|---|---|
-| `/cmd_vel` | `geometry_msgs/Twist` | `linear.x` surge and `linear.y` sway in m/s, `linear.z` depth rate in m/s (up is positive), `angular.z` heading rate in rad/s |
-| `/depth_setpoint` | `std_msgs/Float64` | absolute depth as z in m, for example `-4.0` |
-| `/heading_setpoint` | `std_msgs/Float64` | absolute heading in rad |
-| `/wrench_cmd` | `geometry_msgs/WrenchStamped` | controller output in `base_link` |
-| `/thrusters/cmd` | `std_msgs/Float64MultiArray` | all 8 thrusts in N, for plotting |
-| `/controller/depth_reference`, `/controller/heading_reference` | `std_msgs/Float64` | current references, for plotting |
+| `/speed_setpoint` | `std_msgs/Float64` | m/s, 0 .. 1.6 |
+| `/heading_setpoint` | `std_msgs/Float64` | rad |
+| `/depth_setpoint` | `std_msgs/Float64` | z in m, for example `-20.0`, switches to depth mode |
+| `/altitude_setpoint` | `std_msgs/Float64` | m above the seabed, switches to altitude mode |
+| `/cmd_vel` | `geometry_msgs/Twist` | teleop: `linear.x` speed in m/s, `linear.z` depth rate in m/s (up is positive), `angular.z` heading rate in rad/s |
+| `/controller/speed_reference`, `heading_reference`, `depth_reference`, `pitch_reference` | `std_msgs/Float64` | current references, for plotting |
 
-If `cmd_vel` is not coming for 1 s the vehicle holds its position, and if the wrench
-command is not coming for 0.5 s the allocator stops the thrusters. The controller can be
+If no setpoint and no `cmd_vel` is coming for 5 s, the propeller is switched off and the
+vehicle comes up to the surface by its own buoyancy, which is the normal safe behaviour of
+an AUV. If the IMU stops, a wall clock watchdog stops the propeller. The controller can be
 switched off with `ros2 service call /controller/enable std_srvs/srv/SetBool "{data: false}"`.
-
-Gains are in `src/auv_control/config/control.yaml`. Pitch and yaw gains are on higher side
-purposefully. The vehicle is having a destabilising (Munk) moment from the added mass which
-grows with speed, without the controller it starts spinning and pitching on surge.
 
 Measured against ground truth:
 
 | Test | Result |
 |---|---|
-| Depth step of 1.2 m and 4 m | settles within 5 cm in 3.7 s and 6.1 s, 3 cm overshoot |
-| Surge at 0.5 and 1.0 m/s | speed error within 2 cm/s, heading within 1.3 deg, pitch within 0.3 deg |
-| Sway at 0.3 m/s | 0.31 m/s, heading within 0.7 deg |
-| Station hold for 20 s | 7 cm horizontal drift, 1.3 cm in depth |
+| Dive from the surface to 10 m at 1 m/s | max pitch 25 deg, roll stays at 0 deg |
+| Depth steps of 2 to 10 m at 1 m/s | max 0.27 m overshoot, within 0.3 m after 60 s |
+| Depth hold at 0.6 m/s | within 0.55 m |
+| Heading step of 90 deg | within 3 deg after 24 s, 6 deg overshoot, depth within 0.33 m |
+| U turn (180 deg) | turning circle around 13 m diameter |
+| Speed 0.6 / 1.0 / 1.4 m/s | 0.59 / 1.01 / 1.42 m/s |
 
-Heading is held against the AHRS, so the compass error (around 1.5 deg) remains as it is.
+Depth holding is the weak point: the vehicle is 0.4 kg positive, so it needs a small nose
+down trim which the integral finds slowly.
 
 ### Teleop
 
@@ -153,14 +165,12 @@ make teleop
 
 | Key | Action |
 |---|---|
-| `w` / `s` | forward / backward |
-| `a` / `d` | left / right (sway) |
-| `q` / `e` | turn left / right |
-| `r` / `f` | up / down |
-| `space` | stop everything |
-| `+` / `-` | speed up / down |
+| `w` / `s` | speed up / down in steps of 0.2 m/s (0 .. 1.6) |
+| `a` / `d` | turn left / right, the opposite key goes straight again |
+| `r` / `f` | go up / down, the opposite key holds the depth again |
+| `space` | propeller off, stop turning, hold depth |
 
-Each press moves that axis by one step (stop to moving, or moving to stop) and the command
+The vehicle needs speed to turn and to dive. At 0 m/s it floats up slowly. The command
 stays till it is changed. The Teleop panel of Foxglove also works, it publishes on `/cmd_vel`.
 
 ## Sensors

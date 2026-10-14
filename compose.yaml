@@ -111,7 +111,7 @@ services:
       target: nodes
     command: ros2 launch auv_sensors sensor.launch.py node:=depth
 
-  # --- control: cmd_vel -> controller -> wrench -> allocator -> thrusters ------
+  # --- control: setpoints / cmd_vel -> controller -> propeller and fins -------
   controller:
     <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
@@ -224,8 +224,10 @@ services:
       ros2 bag record --use-sim-time --topics
       /clock /tf /tf_static /robot_description
       /sonar/points /imu/raw /imu/data /dvl/twist /depth/pose /pressure
-      /cmd_vel /depth_setpoint /heading_setpoint /wrench_cmd /thrusters/cmd
-      /controller/depth_reference /controller/heading_reference
+      /cmd_vel /speed_setpoint /depth_setpoint /heading_setpoint /altitude_setpoint
+      /propeller/cmd_thrust /fins/rudder/cmd_angle /fins/elevator/cmd_angle
+      /controller/speed_reference /controller/heading_reference
+      /controller/depth_reference /controller/pitch_reference
       /odometry/filtered /ground_truth/odom
       /mission/status /mission/path
       /eval/ekf_position_error /eval/slam_position_error /eval/depth_error

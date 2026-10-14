@@ -9,7 +9,6 @@ import sys
 import time
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
-from geometry_msgs.msg import WrenchStamped
 from nav_msgs.msg import Odometry, Path
 import rclpy
 from rclpy.node import Node
@@ -33,7 +32,9 @@ RATE_CHECKS = [
     ('/dvl/twist', TwistWithCovarianceStamped, 6.0, 'dvl'),
     ('/depth/pose', PoseWithCovarianceStamped, 15.0, 'depth'),
     ('/pressure', FluidPressure, 15.0, 'depth'),
-    ('/wrench_cmd', WrenchStamped, 30.0, 'controller'),
+    ('/propeller/cmd_thrust', Float64, 30.0, 'controller'),
+    ('/fins/rudder/cmd_angle', Float64, 30.0, 'controller'),
+    ('/fins/elevator/cmd_angle', Float64, 30.0, 'controller'),
     ('/odometry/filtered', Odometry, 30.0, 'localization'),
     ('/eval/ekf_position_error', Float64, 1.0, 'eval'),
     ('/eval/slam_position_error', Float64, 1.0, 'eval + slam'),
