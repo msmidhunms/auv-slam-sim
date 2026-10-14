@@ -39,6 +39,14 @@
     <origin xyz="0.3 0 -0.15" rpy="0 1.5708 0"/>
   </joint>
 
+  <!-- across track sonar fan (multibeam and sidescan), x down -->
+  <link name="sonar_fan_link"/>
+  <joint name="sonar_fan_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="sonar_fan_link"/>
+    <origin xyz="0.1 0 -0.15" rpy="0 1.5708 0"/>
+  </joint>
+
   <!-- GPS antenna on the top of the hull, out of water only at the surface -->
   <link name="gps_link"/>
   <joint name="gps_joint" type="fixed">

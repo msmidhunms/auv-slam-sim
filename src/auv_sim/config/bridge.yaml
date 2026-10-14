@@ -22,9 +22,16 @@
   gz_type_name: gz.msgs.IMU
   direction: GZ_TO_ROS
 
-# sonar point cloud
+# forward looking sonar (obstacle avoidance)
 - ros_topic_name: /sonar/points
   gz_topic_name: /model/auv/sonar/points
+  ros_type_name: sensor_msgs/msg/PointCloud2
+  gz_type_name: gz.msgs.PointCloudPacked
+  direction: GZ_TO_ROS
+
+# across track fan for the multibeam and the sidescan (auv_sonar)
+- ros_topic_name: /sonar_fan/points
+  gz_topic_name: /model/auv/sonar_fan/points
   ros_type_name: sensor_msgs/msg/PointCloud2
   gz_type_name: gz.msgs.PointCloudPacked
   direction: GZ_TO_ROS

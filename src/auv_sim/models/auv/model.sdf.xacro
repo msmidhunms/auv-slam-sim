@@ -41,11 +41,16 @@
   <!-- DVL on the bottom of the hull, a bit ahead of the centre -->
   <xacro:property name="dvl_xyz" value="0.3 0 -0.15"/>
 
-  <!-- forward looking sonar on the nose, used for SLAM till the multibeam is added -->
+  <!-- across track acoustic fan under the hull, for the multibeam and the sidescan -->
+  <xacro:property name="fan_xyz" value="0.1 0 -0.15"/>
+  <xacro:property name="fan_samples" value="512"/>
+  <xacro:property name="fan_rate" value="10"/>
+
+  <!-- forward looking sonar on the nose, low resolution, for obstacle avoidance -->
   <xacro:property name="sonar_xyz" value="0.70 0 -0.08"/>
   <xacro:property name="sonar_pitch" value="0.5236"/>
-  <xacro:property name="sonar_h_samples" value="128"/>
-  <xacro:property name="sonar_v_samples" value="32"/>
+  <xacro:property name="sonar_h_samples" value="64"/>
+  <xacro:property name="sonar_v_samples" value="16"/>
   <xacro:property name="sonar_rate" value="5"/>
 
   <xacro:macro name="tethys_material">
@@ -217,6 +222,46 @@
             <type>gaussian</type>
             <mean>0</mean>
             <stddev>0.03</stddev>
+          </noise>
+        </lidar>
+      </sensor>
+
+      <!--
+        Across track fan, 512 rays over +-85 deg from the nadir, in the plane
+        perpendicular to the hull. Sensor x is down and the horizontal sweep is
+        about the hull axis. The multibeam takes the inner +-60 deg of it and
+        the sidescan takes all of it (auv_sonar package).
+      -->
+      <sensor name="sonar_fan" type="gpu_lidar">
+        <pose>${fan_xyz} 0 ${pi / 2} 0</pose>
+        <always_on>1</always_on>
+        <update_rate>${fan_rate}</update_rate>
+        <topic>/model/auv/sonar_fan</topic>
+        <gz_frame_id>sonar_fan_link</gz_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>${fan_samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>-1.48353</min_angle>
+              <max_angle>1.48353</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>1</samples>
+              <resolution>1</resolution>
+              <min_angle>0</min_angle>
+              <max_angle>0</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.5</min>
+            <max>100</max>
+            <resolution>0.01</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.01</stddev>
           </noise>
         </lidar>
       </sensor>
