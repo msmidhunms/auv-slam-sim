@@ -29,44 +29,21 @@
   gz_type_name: gz.msgs.PointCloudPacked
   direction: GZ_TO_ROS
 
-# thrust command per thruster in N, names are as per auv_description/config/thrusters.yaml
-- ros_topic_name: /thrusters/thruster1/cmd_thrust
-  gz_topic_name: /model/auv/joint/thruster1_joint/cmd_thrust
+# actuators of the vehicle
+- ros_topic_name: /propeller/cmd_thrust          # N, positive is forward
+  gz_topic_name: /model/auv/joint/propeller_joint/cmd_thrust
   ros_type_name: std_msgs/msg/Float64
   gz_type_name: gz.msgs.Double
   direction: ROS_TO_GZ
-- ros_topic_name: /thrusters/thruster2/cmd_thrust
-  gz_topic_name: /model/auv/joint/thruster2_joint/cmd_thrust
+
+- ros_topic_name: /fins/rudder/cmd_angle         # rad, +-0.26
+  gz_topic_name: /model/auv/joint/vertical_fins_joint/0/cmd_pos
   ros_type_name: std_msgs/msg/Float64
   gz_type_name: gz.msgs.Double
   direction: ROS_TO_GZ
-- ros_topic_name: /thrusters/thruster3/cmd_thrust
-  gz_topic_name: /model/auv/joint/thruster3_joint/cmd_thrust
-  ros_type_name: std_msgs/msg/Float64
-  gz_type_name: gz.msgs.Double
-  direction: ROS_TO_GZ
-- ros_topic_name: /thrusters/thruster4/cmd_thrust
-  gz_topic_name: /model/auv/joint/thruster4_joint/cmd_thrust
-  ros_type_name: std_msgs/msg/Float64
-  gz_type_name: gz.msgs.Double
-  direction: ROS_TO_GZ
-- ros_topic_name: /thrusters/thruster5/cmd_thrust
-  gz_topic_name: /model/auv/joint/thruster5_joint/cmd_thrust
-  ros_type_name: std_msgs/msg/Float64
-  gz_type_name: gz.msgs.Double
-  direction: ROS_TO_GZ
-- ros_topic_name: /thrusters/thruster6/cmd_thrust
-  gz_topic_name: /model/auv/joint/thruster6_joint/cmd_thrust
-  ros_type_name: std_msgs/msg/Float64
-  gz_type_name: gz.msgs.Double
-  direction: ROS_TO_GZ
-- ros_topic_name: /thrusters/thruster7/cmd_thrust
-  gz_topic_name: /model/auv/joint/thruster7_joint/cmd_thrust
-  ros_type_name: std_msgs/msg/Float64
-  gz_type_name: gz.msgs.Double
-  direction: ROS_TO_GZ
-- ros_topic_name: /thrusters/thruster8/cmd_thrust
-  gz_topic_name: /model/auv/joint/thruster8_joint/cmd_thrust
+
+- ros_topic_name: /fins/elevator/cmd_angle       # rad, +-0.26
+  gz_topic_name: /model/auv/joint/horizontal_fins_joint/0/cmd_pos
   ros_type_name: std_msgs/msg/Float64
   gz_type_name: gz.msgs.Double
   direction: ROS_TO_GZ

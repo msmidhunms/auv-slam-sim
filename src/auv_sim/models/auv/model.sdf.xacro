@@ -1,61 +1,155 @@
 <?xml version="1.0"?>
 <!--
-  Gazebo model of the vehicle. Processed with xacro at build time, thruster
-  poses are coming from auv_description/config/thrusters.yaml.
+  Torpedo survey AUV, based on the MBARI Tethys long range AUV (LRAUV).
 
-  Frame: x forward, y left, z up. base_link origin is at the centre of mass.
+  Mesh and textures are the "MBARI Tethys LRAUV" model from Gazebo Fuel
+  (author Mabel Zhang, CC-BY 4.0), they are downloaded in the docker build.
+  Mass, inertia, added mass, drag and fin coefficients are as per the gz-sim
+  example world auv_controls.sdf.
+
+  The original model is having its tail on +x. Here base_link is as per
+  REP-103 (x forward, y left, z up), so the mesh is turned by 180 deg and the
+  fins and propeller are on -x.
+
+  Actuators:
+    propeller   thrust in N  on /model/auv/joint/propeller_joint/cmd_thrust
+    rudder      angle in rad on /model/auv/joint/vertical_fins_joint/0/cmd_pos
+    elevator    angle in rad on /model/auv/joint/horizontal_fins_joint/0/cmd_pos
 -->
 <sdf version="1.10" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:arg name="thrusters_file" default=""/>
-  <xacro:property name="cfg" value="${xacro.load_yaml('$(arg thrusters_file)')}"/>
-
-  <xacro:property name="total_mass" value="11.5"/>
-  <xacro:property name="propeller_mass" value="0.01"/>
-  <xacro:property name="n_thrusters" value="${len(cfg['thrusters'])}"/>
-
-  <!--
-    Buoyancy plugin takes the displaced volume from the collision shapes, so the
-    collision box is sized for buoyancy and not for the outer dimensions.
-    0.40 x 0.30 x 0.09625 = 0.01155 m3, i.e. 11.55 kg of water against 11.5 kg
-    mass. Vehicle is slightly positive, like a real ROV it floats up slowly
-    when thrusters are off.
-    Box is kept above the centre of mass to get the restoring moment in roll and pitch.
-  -->
-  <xacro:property name="buoy_x" value="0.40"/>
-  <xacro:property name="buoy_y" value="0.30"/>
-  <xacro:property name="buoy_z" value="0.09625"/>
-  <xacro:property name="buoy_offset_z" value="0.04"/>
+  <xacro:property name="pi" value="3.14159265"/>
+  <xacro:property name="fin_x" value="-1.05"/>
+  <xacro:property name="propeller_x" value="-1.43162"/>
+  <xacro:property name="fin_limit" value="0.261799"/>      <!-- 15 deg -->
+  <xacro:property name="max_thrust" value="20.0"/>         <!-- N, around 1.8 m/s -->
 
   <!--
-    Sonar: 3D multibeam, looking forward and down. In simulation it is a gpu_lidar,
-    which gives the same kind of range data (acoustic effects are not modelled).
-    Beam count is kept low as the rendering is on CPU.
+    Buoyancy is taken from the collision volume. Fins and propeller are neutral by
+    themselves (their small boxes displace their own mass), so the body box alone
+    decides the trim: 2.0 x 0.3 x 0.247112 = 0.148267 m3 = 148.27 kg of water
+    against 147.87 kg, i.e. 0.4 kg positive. Like a real AUV it comes up to the
+    surface if the propeller stops.
+    Box is kept 2 cm above the centre of mass, this gives the roll and pitch
+    restoring moment.
   -->
-  <xacro:property name="sonar_xyz" value="0.22 0 -0.04"/>
-  <xacro:property name="sonar_pitch" value="0.5236"/>      <!-- 30 deg down -->
+  <xacro:property name="buoy_x" value="2.0"/>
+  <xacro:property name="buoy_y" value="0.3"/>
+  <xacro:property name="buoy_z" value="0.247112"/>
+  <xacro:property name="buoy_offset_z" value="0.02"/>
+
+  <!-- forward looking sonar on the nose, used for SLAM till the multibeam is added -->
+  <xacro:property name="sonar_xyz" value="0.70 0 -0.08"/>
+  <xacro:property name="sonar_pitch" value="0.5236"/>
   <xacro:property name="sonar_h_samples" value="128"/>
   <xacro:property name="sonar_v_samples" value="32"/>
   <xacro:property name="sonar_rate" value="5"/>
+
+  <xacro:macro name="tethys_material">
+    <material>
+      <diffuse>1.0 1.0 1.0</diffuse>
+      <specular>1.0 1.0 1.0</specular>
+      <pbr>
+        <metal>
+          <albedo_map>materials/textures/Tethys_Albedo.png</albedo_map>
+          <normal_map>materials/textures/Tethys_Normal.png</normal_map>
+          <metalness_map>materials/textures/Tethys_Metalness.png</metalness_map>
+          <roughness_map>materials/textures/Tethys_Roughness.png</roughness_map>
+        </metal>
+      </pbr>
+    </material>
+  </xacro:macro>
+
+  <!-- one submesh of tethys.dae, placed so that the mesh origin is at base_link -->
+  <xacro:macro name="tethys_visual" params="submesh link_x">
+    <visual name="visual">
+      <pose>${-link_x} 0 0 0 0 ${pi}</pose>
+      <geometry>
+        <mesh>
+          <uri>meshes/tethys.dae</uri>
+          <submesh>
+            <name>${submesh}</name>
+            <center>false</center>
+          </submesh>
+        </mesh>
+      </geometry>
+      <xacro:tethys_material/>
+    </visual>
+  </xacro:macro>
+
+  <!-- fin hinge, position controller on the joint and lift / drag on the fin -->
+  <xacro:macro name="fin" params="name submesh axis upward">
+    <link name="${name}">
+      <pose relative_to="base_link">${fin_x} 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia>
+          <ixx>0.0007924568755</ixx><ixy>0</ixy><ixz>0.0003978158176</ixz>
+          <iyy>0.0010546736475</iyy><iyz>0</iyz>
+          <izz>0.0002633558262</izz>
+        </inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry><box><size>0.1 0.1 0.02</size></box></geometry>
+      </collision>
+      <xacro:tethys_visual submesh="${submesh}" link_x="${fin_x}"/>
+    </link>
+
+    <joint name="${name}_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>${name}</child>
+      <axis>
+        <xyz>${axis}</xyz>
+        <limit>
+          <lower>${-fin_limit}</lower>
+          <upper>${fin_limit}</upper>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+      </axis>
+    </joint>
+
+    <plugin filename="gz-sim-joint-position-controller-system"
+            name="gz::sim::systems::JointPositionController">
+      <joint_name>${name}_joint</joint_name>
+      <p_gain>0.1</p_gain>
+    </plugin>
+
+    <!-- forward is +x of base_link here, in the Fuel example it was the other way -->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <air_density>1000</air_density>
+      <cla>4.13</cla>
+      <cla_stall>-1.1</cla_stall>
+      <cda>0.2</cda>
+      <cda_stall>0.03</cda_stall>
+      <alpha_stall>0.17</alpha_stall>
+      <a0>0</a0>
+      <area>0.0244</area>
+      <upward>${upward}</upward>
+      <forward>1 0 0</forward>
+      <link_name>${name}</link_name>
+      <cp>0 0 0</cp>
+    </plugin>
+  </xacro:macro>
 
   <model name="auv">
 
     <link name="base_link">
       <inertial>
-        <mass>${total_mass - n_thrusters * propeller_mass}</mass>
+        <mass>147.8671</mass>
         <inertia>
-          <ixx>0.21</ixx><ixy>0</ixy><ixz>0</ixz>
-          <iyy>0.245</iyy><iyz>0</iyz>
-          <izz>0.245</izz>
+          <ixx>3.0</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>41.980233</iyy><iyz>0</iyz>
+          <izz>41.980233</izz>
         </inertia>
-        <!-- added mass of the water moving along with the vehicle (BlueROV2 Heavy values) -->
+        <!-- added mass of the water moving with the hull -->
         <fluid_added_mass>
-          <xx>5.5</xx>
-          <yy>12.7</yy>
-          <zz>14.57</zz>
-          <pp>0.12</pp>
-          <qq>0.12</qq>
-          <rr>0.12</rr>
+          <xx>4.876161</xx>
+          <yy>126.324739</yy>
+          <zz>126.324739</zz>
+          <pp>0.0</pp>
+          <qq>33.46</qq>
+          <rr>33.46</rr>
         </fluid_added_mass>
       </inertial>
 
@@ -66,26 +160,7 @@
         </geometry>
       </collision>
 
-      <visual name="frame_visual">
-        <pose>0 0 -0.03 0 0 0</pose>
-        <geometry>
-          <box><size>0.44 0.30 0.12</size></box>
-        </geometry>
-        <material>
-          <ambient>0.05 0.25 0.6 1</ambient>
-          <diffuse>0.05 0.25 0.6 1</diffuse>
-        </material>
-      </visual>
-      <visual name="foam_visual">
-        <pose>0 0 0.07 0 0 0</pose>
-        <geometry>
-          <box><size>0.44 0.34 0.07</size></box>
-        </geometry>
-        <material>
-          <ambient>0.95 0.75 0.1 1</ambient>
-          <diffuse>0.95 0.75 0.1 1</diffuse>
-        </material>
-      </visual>
+      <xacro:tethys_visual submesh="Body" link_x="0"/>
 
       <sensor name="imu" type="imu">
         <always_on>1</always_on>
@@ -144,69 +219,55 @@
       </sensor>
     </link>
 
-    <!-- one propeller link + joint + thruster plugin per entry in thrusters.yaml -->
-    <xacro:macro name="thruster" params="name xyz rpy spin">
-      <link name="${name}">
-        <pose relative_to="base_link">${xyz[0]} ${xyz[1]} ${xyz[2]} ${rpy[0]} ${rpy[1]} ${rpy[2]}</pose>
-        <inertial>
-          <mass>${propeller_mass}</mass>
-          <inertia>
-            <ixx>0.00002</ixx><ixy>0</ixy><ixz>0</ixz>
-            <iyy>0.00002</iyy><iyz>0</iyz>
-            <izz>0.00002</izz>
-          </inertia>
-        </inertial>
-        <visual name="visual">
-          <pose>0 0 0 0 1.5708 0</pose>
-          <geometry>
-            <cylinder><radius>0.045</radius><length>0.06</length></cylinder>
-          </geometry>
-          <material>
-            <ambient>0.1 0.1 0.1 1</ambient>
-            <diffuse>0.1 0.1 0.1 1</diffuse>
-          </material>
-        </visual>
-      </link>
+    <xacro:fin name="horizontal_fins" submesh="Fins_Horizontal" axis="0 1 0" upward="0 0 1"/>
+    <xacro:fin name="vertical_fins" submesh="Fins_vertical" axis="0 0 1" upward="0 1 0"/>
 
-      <joint name="${name}_joint" type="revolute">
-        <parent>base_link</parent>
-        <child>${name}</child>
-        <axis>
-          <xyz>1 0 0</xyz>
-          <limit>
-            <lower>-1e16</lower>
-            <upper>1e16</upper>
-          </limit>
-        </axis>
-      </joint>
+    <link name="propeller">
+      <pose relative_to="base_link">${propeller_x} 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.09</mass>
+        <inertia>
+          <ixx>0.000143971303</ixx><ixy>0</ixy><ixz>0</ixz>
+          <iyy>0.000140915448</iyy><iyz>0</iyz>
+          <izz>0.000033571862</izz>
+        </inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry><box><size>0.03 0.1 0.03</size></box></geometry>
+      </collision>
+      <xacro:tethys_visual submesh="Prop" link_x="${propeller_x}"/>
+    </link>
 
-      <!-- thrust command in N on /model/auv/joint/<name>_joint/cmd_thrust -->
-      <plugin filename="gz-sim-thruster-system" name="gz::sim::systems::Thruster">
-        <namespace>auv</namespace>
-        <joint_name>${name}_joint</joint_name>
-        <!-- sign of the coefficient decides the spin direction, thrust direction is not changing -->
-        <thrust_coefficient>${0.02 * spin}</thrust_coefficient>
-        <fluid_density>1000</fluid_density>
-        <propeller_diameter>0.076</propeller_diameter>
-        <velocity_control>true</velocity_control>
-        <max_thrust_cmd>${cfg['max_thrust']}</max_thrust_cmd>
-        <min_thrust_cmd>${-cfg['max_thrust']}</min_thrust_cmd>
-      </plugin>
-    </xacro:macro>
+    <joint name="propeller_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>propeller</child>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <limit>
+          <lower>-1e16</lower>
+          <upper>1e16</upper>
+        </limit>
+      </axis>
+    </joint>
 
-    <xacro:macro name="thruster_loop" params="i">
-      <xacro:if value="${i &lt; n_thrusters}">
-        <xacro:property name="t" value="${cfg['thrusters'][i]}"/>
-        <xacro:thruster name="${t['name']}" xyz="${t['xyz']}" rpy="${t['rpy']}" spin="${t['spin']}"/>
-        <xacro:thruster_loop i="${i + 1}"/>
-      </xacro:if>
-    </xacro:macro>
-    <xacro:thruster_loop i="0"/>
+    <plugin filename="gz-sim-thruster-system" name="gz::sim::systems::Thruster">
+      <namespace>auv</namespace>
+      <joint_name>propeller_joint</joint_name>
+      <thrust_coefficient>0.004422</thrust_coefficient>
+      <fluid_density>1000</fluid_density>
+      <propeller_diameter>0.2</propeller_diameter>
+      <velocity_control>true</velocity_control>
+      <max_thrust_cmd>${max_thrust}</max_thrust_cmd>
+      <min_thrust_cmd>${-max_thrust / 2}</min_thrust_cmd>
+    </plugin>
 
     <!--
-      Drag only. Added mass is already given in the inertial above, so it is
-      disabled here to avoid counting the same twice.
-      Linear and quadratic damping are the BlueROV2 Heavy values from literature.
+      Quadratic drag of the LRAUV hull. Added mass is given in the inertial
+      above, so it is disabled here.
+      No ocean current: this plugin can take a current, but the LiftDrag plugin
+      of the fins is not knowing about it and uses the velocity over ground.
+      With a cross current the fins then see a false side slip and the vehicle
+      keeps turning by itself, so current is left out (tested).
     -->
     <plugin filename="gz-sim-hydrodynamics-system" name="gz::sim::systems::Hydrodynamics">
       <link_name>base_link</link_name>
@@ -214,22 +275,22 @@
       <disable_added_mass>true</disable_added_mass>
       <disable_coriolis>true</disable_coriolis>
 
-      <xU>-4.03</xU>
-      <yV>-6.22</yV>
-      <zW>-5.18</zW>
-      <kP>-0.07</kP>
-      <mQ>-0.07</mQ>
-      <nR>-0.07</nR>
-
-      <xUabsU>-18.18</xUabsU>
-      <yVabsV>-21.66</yVabsV>
-      <zWabsW>-36.99</zWabsW>
-      <kPabsP>-1.55</kPabsP>
-      <mQabsQ>-1.55</mQabsQ>
-      <nRabsR>-1.55</nRabsR>
+      <xUabsU>-6.2282</xUabsU>
+      <yVabsV>-601.27</yVabsV>
+      <zWabsW>-601.27</zWabsW>
+      <kPabsP>-0.1916</kPabsP>
+      <mQabsQ>-632.698957</mQabsQ>
+      <nRabsR>-632.698957</nRabsR>
+      <!-- small linear terms, so that the vehicle settles at very low speed also -->
+      <xU>-1.0</xU>
+      <yV>-5.0</yV>
+      <zW>-5.0</zW>
+      <kP>-2.0</kP>
+      <mQ>-5.0</mQ>
+      <nR>-5.0</nR>
     </plugin>
 
-    <!-- ground truth pose and body velocity, used for the simulated sensors and for evaluation -->
+    <!-- ground truth pose and body velocity, for the sensor models and evaluation -->
     <plugin filename="gz-sim-odometry-publisher-system" name="gz::sim::systems::OdometryPublisher">
       <odom_frame>world</odom_frame>
       <robot_base_frame>base_link</robot_base_frame>

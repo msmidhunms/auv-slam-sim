@@ -3,16 +3,14 @@
 <package format="3">
   <name>auv_sim</name>
   <version>0.1.0</version>
-  <description>Gazebo Harmonic world, vehicle model and ROS bridge config for the underwater simulation</description>
+  <description>Gazebo Harmonic world, torpedo AUV model and ROS bridge config for the underwater simulation</description>
   <maintainer email="msmidhunms@gmail.com">Midhun M S</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>auv_description</build_depend>
   <build_depend>xacro</build_depend>
 
-  <exec_depend>auv_description</exec_depend>
   <exec_depend>ros_gz_sim</exec_depend>
   <exec_depend>ros_gz_bridge</exec_depend>
 

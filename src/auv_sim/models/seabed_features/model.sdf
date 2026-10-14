@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="seabed_features">
+    <static>true</static>
+    <link name="link">
+
+      <collision name="rocks_collision">
+        <geometry><mesh><uri>meshes/rocks.obj</uri></mesh></geometry>
+      </collision>
+      <visual name="rocks_visual">
+        <geometry><mesh><uri>meshes/rocks.obj</uri></mesh></geometry>
+        <material>
+          <ambient>0.32 0.31 0.29 1</ambient>
+          <diffuse>0.42 0.40 0.37 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+        </material>
+      </visual>
+
+      <collision name="pipeline_collision">
+        <geometry><mesh><uri>meshes/pipeline.obj</uri></mesh></geometry>
+      </collision>
+      <visual name="pipeline_visual">
+        <geometry><mesh><uri>meshes/pipeline.obj</uri></mesh></geometry>
+        <!-- concrete weight coat with some marine growth -->
+        <material>
+          <ambient>0.30 0.32 0.27 1</ambient>
+          <diffuse>0.40 0.42 0.35 1</diffuse>
+          <specular>0.05 0.05 0.05 1</specular>
+        </material>
+      </visual>
+
+      <collision name="wreck_collision">
+        <geometry><mesh><uri>meshes/wreck.obj</uri></mesh></geometry>
+      </collision>
+      <visual name="wreck_visual">
+        <geometry><mesh><uri>meshes/wreck.obj</uri></mesh></geometry>
+        <material>
+          <ambient>0.30 0.17 0.10 1</ambient>
+          <diffuse>0.42 0.24 0.14 1</diffuse>
+          <specular>0.08 0.06 0.05 1</specular>
+        </material>
+      </visual>
+
+    </link>
+  </model>
+</sdf>
