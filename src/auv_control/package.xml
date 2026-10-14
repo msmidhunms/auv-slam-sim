@@ -3,7 +3,7 @@
 <package format="3">
   <name>auv_control</name>
   <version>0.1.0</version>
-  <description>Thruster allocation and depth, heading, attitude and velocity control of the vehicle</description>
+  <description>Speed, heading and depth / altitude control of the torpedo AUV</description>
   <maintainer email="msmidhunms@gmail.com">Midhun M S</maintainer>
   <license>MIT</license>
 
@@ -12,9 +12,6 @@
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>std_srvs</exec_depend>
-  <exec_depend>auv_description</exec_depend>
-  <exec_depend>python3-numpy</exec_depend>
-  <exec_depend>python3-yaml</exec_depend>
   <exec_depend>launch_ros</exec_depend>
 
   <test_depend>python3-pytest</test_depend>

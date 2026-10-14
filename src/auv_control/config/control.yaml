@@ -1,63 +1,53 @@
-# Controller gains. Forces in N, torques in Nm, angles in rad.
+# Torpedo AUV controller (MBARI Tethys LRAUV class vehicle).
 #
-# Vehicle is around 11.5 kg, with added mass it is around 17 kg in surge,
-# 24 kg in sway and 26 kg in heave. Rotational inertia with added mass is
-# around 0.37 kg m^2 in all three axes.
+# Fin gains are for the nominal speed and are scaled with (nominal / speed)^2,
+# since the fin force goes with speed square. Angles are in rad.
 
 controller:
   ros__parameters:
     enabled: true
 
-    max_speed: 1.0          # m/s, surge and sway
-    max_heave_rate: 0.5     # m/s
-    max_yaw_rate: 0.8       # rad/s
-    min_depth: 0.3          # m, do not come above this
-    max_depth: 9.0          # m, seabed is around 10 m
-    cmd_timeout: 1.0        # s, hold position if cmd_vel is older than this
-    dvl_timeout: 0.5        # s
+    max_speed: 1.6              # m/s
+    setpoint_timeout: 5.0       # s, propeller is stopped if no command is coming
+    dvl_timeout: 1.0            # s
 
-    surge:
-      kp: 30.0
-      ki: 10.0
-      kd: 0.0
-      integral_limit: 20.0
-      output_limit: 80.0
-      # feed forward, same as the drag of the vehicle model
-      drag_linear: 4.03
-      drag_quadratic: 18.18
-    sway:
-      kp: 40.0
-      ki: 10.0
-      kd: 0.0
-      integral_limit: 20.0
-      output_limit: 80.0
-      drag_linear: 6.22
-      drag_quadratic: 21.66
-    depth:
-      kp: 40.0
-      ki: 5.0
-      kd: 45.0
-      integral_limit: 15.0
-      integral_zone: 0.3    # m, integral is off during big depth changes
-      output_limit: 80.0
-    roll:
+    nominal_speed: 1.0          # m/s, fin gains are tuned at this speed
+    min_speed: 0.4              # m/s, below this the gain schedule is clipped
+    max_schedule: 4.0
+
+    # thrust feed forward, same as the hull drag in the vehicle model
+    drag_linear: 1.0
+    drag_quadratic: 6.2282
+    min_thrust: -10.0           # N
+    max_thrust: 20.0            # N
+
+    max_depth: 45.0             # m
+    max_pitch_deg: 25.0         # pitch reference limit while changing depth
+    fin_limit: 0.26             # rad, mechanical limit is 15 deg
+
+    speed:                      # thrust in N from speed error in m/s
       kp: 8.0
-      ki: 0.0
-      kd: 2.0
-      integral_limit: 0.0
+      ki: 4.0
+      kd: 0.0
+      integral_limit: 6.0
       output_limit: 10.0
-    # pitch and yaw gains are kept on higher side. Vehicle is having a
-    # destabilising (Munk) moment in both which is growing with speed square,
-    # around 7 to 9 Nm/rad at 1 m/s, so kp has to be well above that.
-    pitch:
-      kp: 15.0
-      ki: 0.0
-      kd: 4.0
-      integral_limit: 0.0
-      output_limit: 12.0
-    yaw:
-      kp: 15.0
-      ki: 1.0
-      kd: 4.0
-      integral_limit: 2.0
-      output_limit: 12.0
+    heading:                    # rudder in rad from heading error in rad
+      kp: 0.35
+      ki: 0.01
+      kd: 0.8
+      integral_limit: 0.05
+      output_limit: 0.26
+      integral_zone: 0.2
+    depth:                      # pitch reference in rad from depth error in m
+      kp: 0.12
+      ki: 0.02
+      kd: 0.5
+      integral_limit: 0.15
+      output_limit: 0.45
+      integral_zone: 0.5          # m, integral only near the target, avoids overshoot on long dives
+    pitch:                      # elevator in rad from pitch error in rad
+      kp: 0.8
+      ki: 0.2
+      kd: 0.8
+      integral_limit: 0.15
+      output_limit: 0.26

@@ -18,7 +18,7 @@ setup(
     zip_safe=True,
     maintainer='Midhun M S',
     maintainer_email='msmidhunms@gmail.com',
-    description='Thruster allocation and depth, heading, attitude and velocity control of the vehicle',
+    description='Speed, heading and depth / altitude control of the torpedo AUV',
     license='MIT',
     tests_require=['pytest'],
     entry_points={

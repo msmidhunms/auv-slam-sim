@@ -1,32 +1,43 @@
-"""Depth, heading, attitude and velocity controller.
-
-Works like the depth hold mode of a ROV autopilot:
-  - roll and pitch are held level
-  - heading and depth are held, and the commands are moving their references
-  - surge and sway velocity are tracked using the DVL
+"""Speed, heading and depth / altitude controller of the torpedo AUV.
 
 Feedback is taken directly from the sensors (AHRS, depth sensor, DVL) and not
-from localization, so that the vehicle stays stable even if localization or
-SLAM is not running.
+from localisation, so the vehicle stays under control even if localisation or
+SLAM is down. Control laws are in torpedo.py.
 
-cmd_vel:  linear.x  surge velocity, m/s
-          linear.y  sway velocity, m/s
-          linear.z  depth reference rate, m/s (positive is up)
-          angular.z heading reference rate, rad/s
+Setpoints (absolute, used by the mission):
+  speed_setpoint     m/s
+  heading_setpoint   rad
+  depth_setpoint     z in m, negative below the surface, switches to depth mode
+  altitude_setpoint  m above the seabed, switches to altitude mode
+
+cmd_vel (teleop):
+  linear.x  speed setpoint, m/s
+  linear.z  depth reference rate, m/s (positive is up)
+  angular.z heading reference rate, rad/s
+
+If no setpoint or cmd_vel is coming for `setpoint_timeout`, the propeller is
+stopped and the vehicle comes up by its own buoyancy, which is the normal safe
+behaviour of an AUV.
 """
 
 import math
 
 from geometry_msgs.msg import PoseWithCovarianceStamped, Twist, TwistWithCovarianceStamped
-from geometry_msgs.msg import WrenchStamped
 import rclpy
+from rclpy.clock import Clock, ClockType
 from rclpy.node import Node
 from rclpy.time import Time
-from sensor_msgs.msg import Imu
+from sensor_msgs.msg import Imu, Range
 from std_msgs.msg import Float64
 from std_srvs.srv import SetBool
 
-from auv_control.pid import clamp, Pid, wrap_angle
+from auv_control.pid import clamp, wrap_angle
+from auv_control.torpedo import Refs, State, TorpedoController
+
+GAIN_GROUPS = ('speed', 'heading', 'depth', 'pitch')
+GAIN_KEYS = ('kp', 'ki', 'kd', 'integral_limit', 'output_limit', 'integral_zone')
+SCALAR_KEYS = ('nominal_speed', 'min_speed', 'max_schedule', 'drag_linear', 'drag_quadratic',
+               'min_thrust', 'max_thrust', 'max_depth', 'fin_limit')
 
 
 def rpy_from_quat(q):
@@ -40,55 +51,56 @@ class ControllerNode(Node):
 
     def __init__(self):
         super().__init__('controller')
-        p = self.declare_parameter
+        params = {k: self.declare_parameter(k, 0.0).value for k in SCALAR_KEYS}
+        params['max_pitch'] = math.radians(self.declare_parameter('max_pitch_deg', 25.0).value)
+        for group in GAIN_GROUPS:
+            params[group] = {}
+            for key in GAIN_KEYS:
+                default = 1.0e9 if key == 'integral_zone' else 0.0
+                params[group][key] = self.declare_parameter(f'{group}.{key}', default).value
+        self.control = TorpedoController(params)
 
-        def pid(name, kp, ki, kd, i_limit, out_limit, i_zone=1.0e9):
-            return Pid(p(f'{name}.kp', kp).value, p(f'{name}.ki', ki).value,
-                       p(f'{name}.kd', kd).value, p(f'{name}.integral_limit', i_limit).value,
-                       p(f'{name}.output_limit', out_limit).value,
-                       p(f'{name}.integral_zone', i_zone).value)
+        self.max_speed = self.declare_parameter('max_speed', 1.6).value
+        self.setpoint_timeout = self.declare_parameter('setpoint_timeout', 5.0).value
+        self.dvl_timeout = self.declare_parameter('dvl_timeout', 1.0).value
+        self.enabled = self.declare_parameter('enabled', True).value
 
-        self.surge = pid('surge', 30.0, 10.0, 0.0, 20.0, 80.0)
-        self.sway = pid('sway', 40.0, 10.0, 0.0, 20.0, 80.0)
-        self.depth = pid('depth', 40.0, 5.0, 45.0, 15.0, 80.0, 0.3)
-        self.roll = pid('roll', 8.0, 0.0, 2.0, 0.0, 10.0)
-        self.pitch = pid('pitch', 15.0, 0.0, 4.0, 0.0, 12.0)
-        self.yaw = pid('yaw', 15.0, 1.0, 4.0, 2.0, 12.0)
-
-        # drag feed forward for the velocity loops: F = linear * v + quadratic * v * |v|
-        self.surge_drag = (p('surge.drag_linear', 4.03).value, p('surge.drag_quadratic', 18.18).value)
-        self.sway_drag = (p('sway.drag_linear', 6.22).value, p('sway.drag_quadratic', 21.66).value)
-
-        self.max_speed = p('max_speed', 1.0).value                  # m/s, surge and sway
-        self.max_heave_rate = p('max_heave_rate', 0.5).value        # m/s
-        self.max_yaw_rate = p('max_yaw_rate', 0.8).value            # rad/s
-        self.min_depth = p('min_depth', 0.3).value                  # m below the surface
-        self.max_depth = p('max_depth', 9.0).value                  # m below the surface
-        self.cmd_timeout = p('cmd_timeout', 1.0).value              # s
-        self.dvl_timeout = p('dvl_timeout', 0.5).value              # s
-        self.enabled = p('enabled', True).value
-
-        self.cmd = Twist()
-        self.cmd_stamp = None
-        self.z = None
-        self.velocity = None            # body frame (u, v, w) from DVL
-        self.velocity_stamp = None
-        self.z_ref = None
+        self.speed_ref = 0.0
         self.yaw_ref = None
+        self.z_ref = None
+        self.altitude_ref = None
+        self.cmd_rates = (0.0, 0.0)          # depth rate, heading rate from cmd_vel
+        self.last_command = None
+        self.z = None
+        self.velocity = None
+        self.velocity_stamp = None
+        self.altitude = None
+        self.altitude_stamp = None
         self.last_stamp = None
 
-        self.wrench_pub = self.create_publisher(WrenchStamped, 'wrench_cmd', 10)
-        self.depth_ref_pub = self.create_publisher(Float64, 'controller/depth_reference', 10)
-        self.heading_ref_pub = self.create_publisher(Float64, 'controller/heading_reference', 10)
+        self.thrust_pub = self.create_publisher(Float64, 'propeller/cmd_thrust', 10)
+        self.rudder_pub = self.create_publisher(Float64, 'fins/rudder/cmd_angle', 10)
+        self.elevator_pub = self.create_publisher(Float64, 'fins/elevator/cmd_angle', 10)
+        self.ref_pubs = {name: self.create_publisher(Float64, f'controller/{name}', 10)
+                         for name in ('speed_reference', 'heading_reference',
+                                      'depth_reference', 'pitch_reference')}
 
         self.create_subscription(Imu, 'imu/data', self.on_imu, 10)
         self.create_subscription(PoseWithCovarianceStamped, 'depth/pose', self.on_depth, 10)
         self.create_subscription(TwistWithCovarianceStamped, 'dvl/twist', self.on_dvl, 10)
+        self.create_subscription(Range, 'dvl/altitude', self.on_altitude, 10)
         self.create_subscription(Twist, 'cmd_vel', self.on_cmd_vel, 10)
-        # absolute setpoints, used by the mission node
+        self.create_subscription(Float64, 'speed_setpoint', self.on_speed, 10)
+        self.create_subscription(Float64, 'heading_setpoint', self.on_heading, 10)
         self.create_subscription(Float64, 'depth_setpoint', self.on_depth_setpoint, 10)
-        self.create_subscription(Float64, 'heading_setpoint', self.on_heading_setpoint, 10)
+        self.create_subscription(Float64, 'altitude_setpoint', self.on_altitude_setpoint, 10)
         self.create_service(SetBool, 'controller/enable', self.on_enable)
+
+        # if the sensors stop, the control loop stops too. Watchdog on wall time
+        # switches the propeller off in that case.
+        self.steady = Clock(clock_type=ClockType.STEADY_TIME)
+        self.last_tick_wall = None
+        self.create_timer(0.5, self.on_watchdog, clock=self.steady)
 
     # --- inputs ---------------------------------------------------------------
 
@@ -100,121 +112,114 @@ class ControllerNode(Node):
         self.velocity = (v.x, v.y, v.z)
         self.velocity_stamp = Time.from_msg(msg.header.stamp)
 
+    def on_altitude(self, msg):
+        if msg.min_range <= msg.range <= msg.max_range:
+            self.altitude = msg.range
+            self.altitude_stamp = Time.from_msg(msg.header.stamp)
+
+    def touch(self):
+        self.last_command = self.last_stamp
+
     def on_cmd_vel(self, msg):
-        self.cmd = msg
-        self.cmd_stamp = self.last_stamp
+        self.speed_ref = clamp(msg.linear.x, 0.0, self.max_speed)
+        self.cmd_rates = (msg.linear.z, msg.angular.z)
+        self.touch()
+
+    def on_speed(self, msg):
+        self.speed_ref = clamp(msg.data, 0.0, self.max_speed)
+        self.cmd_rates = (0.0, 0.0)
+        self.touch()
+
+    def on_heading(self, msg):
+        self.yaw_ref = wrap_angle(msg.data)
+        self.touch()
 
     def on_depth_setpoint(self, msg):
-        # setpoint is given as z in world frame, negative below the surface
-        self.z_ref = clamp(msg.data, -self.max_depth, -self.min_depth)
+        self.z_ref = min(msg.data, 0.0)
+        self.altitude_ref = None
+        self.touch()
 
-    def on_heading_setpoint(self, msg):
-        self.yaw_ref = wrap_angle(msg.data)
+    def on_altitude_setpoint(self, msg):
+        self.altitude_ref = max(msg.data, 1.0)
+        self.touch()
 
     def on_enable(self, request, response):
         self.enabled = request.data
         if not self.enabled:
-            self.reset()
-            self.publish_wrench(self.last_stamp, [0.0] * 6)
+            self.control.reset()
+            self.publish_actuators(0.0, 0.0, 0.0)
         response.success = True
         response.message = 'controller enabled' if self.enabled else 'controller disabled'
         return response
-
-    def reset(self):
-        for pid in (self.surge, self.sway, self.depth, self.roll, self.pitch, self.yaw):
-            pid.reset()
-        self.z_ref = None
-        self.yaw_ref = None
 
     # --- control loop, runs on every IMU sample (50 Hz in sim time) -----------
 
     def on_imu(self, msg):
         stamp = Time.from_msg(msg.header.stamp)
-        dt = 0.0
-        if self.last_stamp is not None:
-            dt = (stamp - self.last_stamp).nanoseconds * 1e-9
+        dt = 0.0 if self.last_stamp is None else (stamp - self.last_stamp).nanoseconds * 1e-9
         self.last_stamp = stamp
-        if dt < 0.0 or dt > 0.5:        # simulation reset or a long gap
-            self.reset()
+        if dt < 0.0 or dt > 0.5:            # simulation reset or a long gap
+            self.control.reset()
             return
         if not self.enabled or self.z is None or dt == 0.0:
             return
+        self.last_tick_wall = self.steady.now()
 
         roll, pitch, yaw = rpy_from_quat(msg.orientation)
         rates = msg.angular_velocity
-
-        # hold the place where the controller was started
-        if self.z_ref is None:
-            self.z_ref = clamp(self.z, -self.max_depth, -self.min_depth)
         if self.yaw_ref is None:
             self.yaw_ref = yaw
+        if self.z_ref is None:
+            self.z_ref = self.z
 
-        cmd = self.active_command(stamp)
-        u_cmd = clamp(cmd.linear.x, -self.max_speed, self.max_speed)
-        v_cmd = clamp(cmd.linear.y, -self.max_speed, self.max_speed)
-        w_cmd = clamp(cmd.linear.z, -self.max_heave_rate, self.max_heave_rate)
-        r_cmd = clamp(cmd.angular.z, -self.max_yaw_rate, self.max_yaw_rate)
+        # no command for a while -> propeller off, vehicle floats up
+        if self.last_command is None or \
+                (stamp - self.last_command).nanoseconds * 1e-9 > self.setpoint_timeout:
+            self.speed_ref = 0.0
+            self.cmd_rates = (0.0, 0.0)
 
-        self.z_ref = clamp(self.z_ref + w_cmd * dt, -self.max_depth, -self.min_depth)
-        self.yaw_ref = wrap_angle(self.yaw_ref + r_cmd * dt)
+        depth_rate, heading_rate = self.cmd_rates
+        self.z_ref = min(self.z_ref + depth_rate * dt, 0.0)
+        self.yaw_ref = wrap_angle(self.yaw_ref + heading_rate * dt)
 
         u, v, w, dvl_ok = self.body_velocity(stamp)
         sr, cr = math.sin(roll), math.cos(roll)
         sp, cp = math.sin(pitch), math.cos(pitch)
+        state = State(
+            u=u, z=self.z, w_world=-sp * u + cp * sr * v + cp * cr * w,
+            pitch=pitch, yaw=yaw, q=rates.y, r=rates.z, altitude=self.current_altitude(stamp))
+        refs = Refs(speed=self.speed_ref, yaw=self.yaw_ref, z=self.z_ref,
+                    altitude=self.altitude_ref)
 
-        # attitude
-        torque_x = self.roll.update(-roll, -rates.x, dt)
-        torque_y = self.pitch.update(-pitch, -rates.y, dt)
-        torque_z = self.yaw.update(wrap_angle(self.yaw_ref - yaw), r_cmd - rates.z, dt)
-
-        # depth, in world frame. Vertical velocity is the DVL velocity rotated to world z
-        w_world = -sp * u + cp * sr * v + cp * cr * w
-        force_z_world = self.depth.update(self.z_ref - self.z, w_cmd - w_world, dt)
-
-        # horizontal velocity, in body frame. Without DVL it is feed forward alone
-        force_x = self.drag(u_cmd, self.surge_drag)
-        force_y = self.drag(v_cmd, self.sway_drag)
-        if dvl_ok:
-            force_x += self.surge.update(u_cmd - u, 0.0, dt)
-            force_y += self.sway.update(v_cmd - v, 0.0, dt)
-
-        # world z force expressed in body frame
-        force_x += -sp * force_z_world
-        force_y += cp * sr * force_z_world
-        force_z = cp * cr * force_z_world
-
-        self.publish_wrench(stamp, [force_x, force_y, force_z, torque_x, torque_y, torque_z])
-        self.depth_ref_pub.publish(Float64(data=self.z_ref))
-        self.heading_ref_pub.publish(Float64(data=self.yaw_ref))
-
-    def active_command(self, stamp):
-        """Latest cmd_vel, or zero if it is old. Vehicle then holds position."""
-        if self.cmd_stamp is None:
-            return Twist()
-        if (stamp - self.cmd_stamp).nanoseconds * 1e-9 > self.cmd_timeout:
-            return Twist()
-        return self.cmd
+        out = self.control.update(state, refs, dt, speed_valid=dvl_ok)
+        self.publish_actuators(out.thrust, out.rudder, out.elevator)
+        for name, value in (('speed_reference', self.speed_ref), ('heading_reference', self.yaw_ref),
+                            ('depth_reference', out.z_ref), ('pitch_reference', out.pitch_ref)):
+            self.ref_pubs[name].publish(Float64(data=float(value)))
 
     def body_velocity(self, stamp):
-        if self.velocity_stamp is None:
-            return 0.0, 0.0, 0.0, False
-        if (stamp - self.velocity_stamp).nanoseconds * 1e-9 > self.dvl_timeout:
+        if self.velocity_stamp is None or \
+                (stamp - self.velocity_stamp).nanoseconds * 1e-9 > self.dvl_timeout:
             return 0.0, 0.0, 0.0, False
         return (*self.velocity, True)
 
-    @staticmethod
-    def drag(velocity, coefficients):
-        linear, quadratic = coefficients
-        return linear * velocity + quadratic * velocity * abs(velocity)
+    def current_altitude(self, stamp):
+        if self.altitude_stamp is None or \
+                (stamp - self.altitude_stamp).nanoseconds * 1e-9 > self.dvl_timeout:
+            return None
+        return self.altitude
 
-    def publish_wrench(self, stamp, wrench):
-        msg = WrenchStamped()
-        if stamp is not None:
-            msg.header.stamp = stamp.to_msg()
-        msg.header.frame_id = 'base_link'
-        (msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z,
-         msg.wrench.torque.x, msg.wrench.torque.y, msg.wrench.torque.z) = wrench
-        self.wrench_pub.publish(msg)
+    def on_watchdog(self):
+        if self.last_tick_wall is None:
+            return
+        if (self.steady.now() - self.last_tick_wall).nanoseconds * 1e-9 > 1.0:
+            self.get_logger().warn('no IMU data, propeller stopped', throttle_duration_sec=10.0)
+            self.publish_actuators(0.0, 0.0, 0.0)
+
+    def publish_actuators(self, thrust, rudder, elevator):
+        self.thrust_pub.publish(Float64(data=float(thrust)))
+        self.rudder_pub.publish(Float64(data=float(rudder)))
+        self.elevator_pub.publish(Float64(data=float(elevator)))
 
 
 def main():

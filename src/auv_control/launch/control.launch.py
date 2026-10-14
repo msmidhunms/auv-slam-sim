@@ -1,5 +1,5 @@
 """Starts one control node. Each node is running in its own container, so the
-node is selected with the `node` argument (controller or thruster_allocator)."""
+node is selected with the `node` argument (only controller as of now)."""
 
 import os
 
@@ -23,6 +23,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        DeclareLaunchArgument('node', description='controller or thruster_allocator'),
+        DeclareLaunchArgument('node', default_value='controller', description='node to start'),
         control,
     ])
