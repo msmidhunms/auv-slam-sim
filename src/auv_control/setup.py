@@ -24,7 +24,6 @@ setup(
     entry_points={
         'console_scripts': [
             'controller_node = auv_control.controller_node:main',
-            'thruster_allocator_node = auv_control.thruster_allocator_node:main',
         ],
     },
 )

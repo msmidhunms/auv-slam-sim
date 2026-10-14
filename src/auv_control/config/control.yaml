@@ -61,7 +61,3 @@ controller:
       kd: 4.0
       integral_limit: 2.0
       output_limit: 12.0
-
-thruster_allocator:
-  ros__parameters:
-    command_timeout: 0.5    # s, thrusters are stopped if wrench command is not coming

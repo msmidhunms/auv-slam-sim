@@ -12,15 +12,13 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     params = os.path.join(get_package_share_directory('auv_control'), 'config', 'control.yaml')
-    thrusters = os.path.join(
-        get_package_share_directory('auv_description'), 'config', 'thrusters.yaml')
     node = LaunchConfiguration('node')
 
     control = Node(
         package='auv_control',
         executable=[node, '_node'],
         name=node,
-        parameters=[params, {'use_sim_time': True, 'thrusters_file': thrusters}],
+        parameters=[params, {'use_sim_time': True}],
         output='screen',
     )
 
