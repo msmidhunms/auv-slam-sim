@@ -1,8 +1,11 @@
-"""Keyboard teleop.
+"""Keyboard teleop for the torpedo AUV.
 
-teleop_twist_keyboard is publishing only once per key press, but the controller
-stops the vehicle if cmd_vel is older than one second (safety). So this node
-keeps publishing the current command at 10 Hz till it is changed.
+A torpedo AUV is driven by speed, heading and depth, it cannot move sideways or
+hover. This node keeps publishing the current command at 10 Hz, because the
+controller stops the propeller if commands stop coming (safety).
+
+cmd_vel: linear.x speed in m/s, linear.z depth rate in m/s (up is positive),
+         angular.z heading rate in rad/s
 """
 
 import select
@@ -15,63 +18,61 @@ import rclpy
 from rclpy.node import Node
 
 HELP = """
-Keyboard teleop
----------------
-   w / s : forward / backward        q / e : turn left / right
-   a / d : left / right (sway)       r / f : up / down
-
-   Each press moves that axis one step: stop -> moving, or moving -> stop.
-   space : stop everything           + / - : speed up / down
+Keyboard teleop (torpedo AUV)
+-----------------------------
+   w / s : speed up / down (0 .. 1.6 m/s, steps of 0.2)
+   a / d : turn left / right            (while turning left, d goes straight again)
+   r / f : go up / down                 (while going up, f holds the depth again)
+   space : propeller off, stop turning and hold depth
    Ctrl-C to quit
-"""
 
-# key -> (axis, direction)
-KEYS = {
-    'w': ('surge', 1), 's': ('surge', -1),
-    'a': ('sway', 1), 'd': ('sway', -1),
-    'r': ('heave', 1), 'f': ('heave', -1),
-    'q': ('yaw', 1), 'e': ('yaw', -1),
-}
+   The vehicle needs speed to turn and to dive, at 0 m/s it floats up slowly.
+"""
 
 
 class KeyboardTeleop(Node):
 
     def __init__(self):
         super().__init__('keyboard_teleop')
-        self.speed = self.declare_parameter('speed', 0.4).value             # m/s
-        self.heave_speed = self.declare_parameter('heave_speed', 0.3).value # m/s
-        self.yaw_rate = self.declare_parameter('yaw_rate', 0.4).value       # rad/s
-        self.scale = 1.0
-        self.axes = {'surge': 0, 'sway': 0, 'heave': 0, 'yaw': 0}
+        self.speed_step = self.declare_parameter('speed_step', 0.2).value      # m/s
+        self.max_speed = self.declare_parameter('max_speed', 1.6).value        # m/s
+        self.depth_rate = self.declare_parameter('depth_rate', 0.3).value      # m/s
+        self.turn_rate = self.declare_parameter('turn_rate', 0.12).value       # rad/s
+        self.speed = 0.0
+        self.turn = 0           # -1, 0, 1
+        self.climb = 0          # -1, 0, 1
         self.pub = self.create_publisher(Twist, 'cmd_vel', 10)
 
     def handle_key(self, key):
-        if key in KEYS:
-            axis, direction = KEYS[key]
-            self.axes[axis] = max(-1, min(1, self.axes[axis] + direction))
+        if key == 'w':
+            self.speed = min(self.max_speed, round(self.speed + self.speed_step, 2))
+        elif key == 's':
+            self.speed = max(0.0, round(self.speed - self.speed_step, 2))
+        elif key == 'a':
+            self.turn = max(-1, min(1, self.turn + 1))
+        elif key == 'd':
+            self.turn = max(-1, min(1, self.turn - 1))
+        elif key == 'r':
+            self.climb = max(-1, min(1, self.climb + 1))
+        elif key == 'f':
+            self.climb = max(-1, min(1, self.climb - 1))
         elif key == ' ':
-            self.axes = dict.fromkeys(self.axes, 0)
-        elif key in ('+', '='):
-            self.scale = min(2.5, self.scale * 1.25)
-        elif key in ('-', '_'):
-            self.scale = max(0.2, self.scale / 1.25)
+            self.speed, self.turn, self.climb = 0.0, 0, 0
         else:
             return
         self.print_status()
 
     def twist(self):
         msg = Twist()
-        msg.linear.x = self.axes['surge'] * self.speed * self.scale
-        msg.linear.y = self.axes['sway'] * self.speed * self.scale
-        msg.linear.z = self.axes['heave'] * self.heave_speed * self.scale
-        msg.angular.z = self.axes['yaw'] * self.yaw_rate * self.scale
+        msg.linear.x = self.speed
+        msg.linear.z = self.climb * self.depth_rate
+        msg.angular.z = self.turn * self.turn_rate
         return msg
 
     def print_status(self):
-        t = self.twist()
-        sys.stdout.write(
-            f'\rsurge {t.linear.x:+.2f}  sway {t.linear.y:+.2f}  heave {t.linear.z:+.2f} m/s'
-            f'  yaw {t.angular.z:+.2f} rad/s   ')
+        turn = {1: 'left ', 0: 'none ', -1: 'right'}[self.turn]
+        climb = {1: 'up  ', 0: 'hold', -1: 'down'}[self.climb]
+        sys.stdout.write(f'\rspeed {self.speed:.1f} m/s   turn {turn}   depth {climb}      ')
         sys.stdout.flush()
 
 
@@ -99,7 +100,8 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        node.pub.publish(Twist())       # stop the vehicle while leaving
+        # leave with the propeller off, the vehicle comes up by itself
+        node.pub.publish(Twist())
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
         print()
         node.destroy_node()
