@@ -8,7 +8,7 @@ topics and the TF chain. It does not move the vehicle.
 import sys
 import time
 
-from geometry_msgs.msg import PoseWithCovarianceStamped, TwistWithCovarianceStamped
+from geometry_msgs.msg import PointStamped, PoseWithCovarianceStamped, TwistWithCovarianceStamped
 from nav_msgs.msg import Odometry, Path
 import rclpy
 from rclpy.node import Node
@@ -16,20 +16,25 @@ from rclpy.parameter import Parameter
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
-from sensor_msgs.msg import FluidPressure, Imu, PointCloud2
+from sensor_msgs.msg import FluidPressure, Imu, NavSatFix, PointCloud2, Range
 from std_msgs.msg import Float64, String
 from tf2_ros import Buffer, TransformException, TransformListener
 
 DURATION = 10.0     # s of wall time
 
 # (topic, type, minimum rate in Hz, container which is publishing it)
+# /dvl/twist is not checked here, it comes only with bottom lock and the
+# vehicle is at the surface (out of DVL range) when the stack is started.
 RATE_CHECKS = [
     ('/clock', Clock, 50.0, 'sim + bridge'),
     ('/ground_truth/odom', Odometry, 30.0, 'sim + bridge'),
     ('/imu/raw', Imu, 30.0, 'sim + bridge'),
     ('/sonar/points', PointCloud2, 3.0, 'sim + bridge'),
     ('/imu/data', Imu, 30.0, 'ahrs'),
-    ('/dvl/twist', TwistWithCovarianceStamped, 6.0, 'dvl'),
+    ('/dvl/altitude', Range, 6.0, 'dvl'),
+    ('/gps/fix', NavSatFix, 0.5, 'gps'),
+    ('/usbl/pose', PoseWithCovarianceStamped, 0.08, 'usbl'),
+    ('/speed_model/twist', TwistWithCovarianceStamped, 6.0, 'controller'),
     ('/depth/pose', PoseWithCovarianceStamped, 15.0, 'depth'),
     ('/pressure', FluidPressure, 15.0, 'depth'),
     ('/propeller/cmd_thrust', Float64, 30.0, 'controller'),
@@ -42,6 +47,7 @@ RATE_CHECKS = [
 
 # latched topics, one message is enough
 LATCHED_CHECKS = [
+    ('/usbl/ship', PointStamped, 'usbl'),
     ('/robot_description', String, 'state-pub'),
     ('/mission/status', String, 'mission'),
     ('/mission/path', Path, 'mission'),

@@ -5,7 +5,8 @@ sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
 > Being upgraded to a realistic torpedo survey AUV (MBARI Tethys LRAUV). The new vehicle,
-> world, control and teleop are in place. Navigation aids, survey sonars and the mission
+> world, control, teleop and the navigation sensors (DVL with bottom lock, GPS, USBL) are
+> in place. Navigation aids, survey sonars and the mission
 > state machine are being reworked phase by phase, so `make mission` is not working for
 > the new vehicle as of now.
 
@@ -48,6 +49,8 @@ otherwise the EKF gets stuck when the clock goes back to zero.
 | `ahrs` | attitude and heading from the raw IMU, with compass error added |
 | `dvl` | DVL model, body velocity with noise and bottom lock dropouts |
 | `depth` | pressure sensor model, pressure and depth |
+| `gps` | GPS model, fix only at the surface |
+| `usbl` | USBL model, position fixes from the support ship |
 | `controller` | depth, heading, attitude and velocity controller, `cmd_vel` to body wrench |
 | `allocator` | thruster allocator, body wrench to 8 thrust commands |
 | `localization` | `robot_localization` EKF, AHRS + DVL + depth to `odom -> base_link` |
@@ -177,17 +180,40 @@ stays till it is changed. The Teleop panel of Foxglove also works, it publishes 
 
 | ROS topic | Type | Rate | Source |
 |---|---|---|---|
-| `/sonar/points` | `sensor_msgs/PointCloud2` | 5 Hz | Gazebo, 128 x 32 beams, 120 x 40 deg, 0.5 to 30 m, looking 30 deg down |
+| `/sonar/points` | `sensor_msgs/PointCloud2` | 5 Hz | Gazebo, forward looking, 128 x 32 beams, 120 x 40 deg, 0.5 to 30 m (to be replaced by multibeam and sidescan) |
 | `/imu/raw` | `sensor_msgs/Imu` | 50 Hz | Gazebo, gyro and accel with noise, orientation is perfect |
 | `/imu/data` | `sensor_msgs/Imu` | 50 Hz | `ahrs`, orientation with noise and slowly wandering heading error (1.5 deg) |
-| `/dvl/twist` | `geometry_msgs/TwistWithCovarianceStamped` | 10 Hz | `dvl`, 1 cm/s noise, 0.2 % scale error, 2 % dropouts |
+| `/dvl/twist` | `geometry_msgs/TwistWithCovarianceStamped` | 10 Hz, only with bottom lock | `dvl`, 1 cm/s noise, 0.2 % scale error, 2 % dropouts |
+| `/dvl/altitude` | `sensor_msgs/Range` | 10 Hz | `dvl`, altitude from the 4 beams, `inf` without bottom lock |
+| `/dvl/beams` | `sensor_msgs/PointCloud2` | 10 Hz | Gazebo, raw beam returns for the DVL node |
 | `/pressure` | `sensor_msgs/FluidPressure` | 25 Hz | `depth`, absolute pressure |
 | `/depth/pose` | `geometry_msgs/PoseWithCovarianceStamped` | 25 Hz | `depth`, only z is valid, 1 cm noise |
+| `/gps/fix` | `sensor_msgs/NavSatFix` | 1 Hz | `gps`, fix only at the surface, `NO_FIX` under water |
+| `/gps/pose` | `geometry_msgs/PoseWithCovarianceStamped` | 1 Hz, only with fix | `gps`, x and y in the map frame, 2.5 m noise |
+| `/usbl/pose` | `geometry_msgs/PoseWithCovarianceStamped` | every 5 s | `usbl`, position from the support ship, stamped at ping time |
+| `/usbl/ship` | `geometry_msgs/PointStamped` | latched | `usbl`, ship position (-20, -20, 0) |
+| `/speed_model/twist` | `geometry_msgs/TwistWithCovarianceStamped` | 10 Hz | `controller`, speed from the propeller command, 0.15 m/s |
 
-Noise values are in `src/auv_sensors/config/sensors.yaml`. Sonar is a `gpu_lidar` in Gazebo,
-so it gives the geometry of a multibeam sonar but acoustic effects (multipath, speckle,
-beam width) are not modelled. Beam count and rate are kept low as the rendering is on CPU,
-they can be changed at the top of `src/auv_sim/models/auv/model.sdf.xacro`.
+How they behave, like the real instruments:
+
+- **DVL** has bottom lock only within 30 m slant range (a 1200 kHz unit). Four Janus beams
+  at 30 deg are traced in Gazebo and at least 3 of them have to hit the seabed. The seabed
+  is 34 to 46 m deep, so there is no lock at the surface, and it comes at around 14 m depth
+  during the dive (measured 13.9 m). Altitude is the mean of the beams, on the dunes it
+  differs from the height straight below by up to 3 m (measured mean +0.6 m).
+- **GPS** works only at the surface, after 10 s there (antenna has to be out of water and
+  the receiver has to get the satellites). Measured mean error 3.0 m.
+- **USBL** fixes come from the support ship every 5 s, 10 % of the pings get no reply.
+  Error is 0.5 % of slant range (minimum 0.2 m) per axis, and the fix comes 0.4 s plus two
+  way sound travel late. Measured: 26 fixes in 140 s, 0.4 to 0.6 s late, 0.49 m mean error.
+- **Speed model**: without DVL lock the only velocity is the speed worked out from the
+  propeller command, like real AUVs do with the propeller RPM. It is crude. In a dive
+  from the surface the EKF was 11.5 m off by the time the DVL locked (around 80 s without
+  DVL). GPS before the dive and USBL fixes are there to remove this, which is the next phase.
+
+Noise values are in `src/auv_sensors/config/sensors.yaml`. The forward sonar is a
+`gpu_lidar` in Gazebo, so it gives the geometry but acoustic effects (multipath, speckle,
+beam width) are not modelled.
 
 Localisation and SLAM nodes are supposed to use only these topics.
 `/ground_truth/odom` is for the sensor models and for evaluation.
@@ -195,7 +221,8 @@ Localisation and SLAM nodes are supposed to use only these topics.
 ## Localisation
 
 `robot_localization` EKF is fusing the heading and angular rates from AHRS, body velocity
-from DVL and z from the depth sensor. Config is in `src/auv_localization/config/ekf.yaml`.
+from DVL (and the propeller speed model when the DVL has no lock) and z from the depth
+sensor. GPS and USBL are not fused yet. Config is in `src/auv_localization/config/ekf.yaml`.
 
 | Output | Type | Meaning |
 |---|---|---|

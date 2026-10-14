@@ -111,6 +111,24 @@ services:
       target: nodes
     command: ros2 launch auv_sensors sensor.launch.py node:=depth
 
+  # GPS, fix only at the surface
+  gps:
+    <<: *sim-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_sensors sensor.launch.py node:=gps
+
+  # USBL fixes from the support ship
+  usbl:
+    <<: *sim-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_sensors sensor.launch.py node:=usbl
+
   # --- control: setpoints / cmd_vel -> controller -> propeller and fins -------
   controller:
     <<: *sim-node
@@ -223,7 +241,8 @@ services:
     command: >
       ros2 bag record --use-sim-time --topics
       /clock /tf /tf_static /robot_description
-      /sonar/points /imu/raw /imu/data /dvl/twist /depth/pose /pressure
+      /sonar/points /imu/raw /imu/data /dvl/twist /dvl/altitude /depth/pose /pressure
+      /gps/fix /gps/pose /usbl/pose /usbl/ship /speed_model/twist
       /cmd_vel /speed_setpoint /depth_setpoint /heading_setpoint /altitude_setpoint
       /propeller/cmd_thrust /fins/rudder/cmd_angle /fins/elevator/cmd_angle
       /controller/speed_reference /controller/heading_reference

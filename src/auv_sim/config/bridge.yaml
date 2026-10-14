@@ -29,6 +29,13 @@
   gz_type_name: gz.msgs.PointCloudPacked
   direction: GZ_TO_ROS
 
+# DVL beams, auv_sensors/dvl_node is making bottom lock and altitude from them
+- ros_topic_name: /dvl/beams
+  gz_topic_name: /model/auv/dvl_beams/points
+  ros_type_name: sensor_msgs/msg/PointCloud2
+  gz_type_name: gz.msgs.PointCloudPacked
+  direction: GZ_TO_ROS
+
 # actuators of the vehicle
 - ros_topic_name: /propeller/cmd_thrust          # N, positive is forward
   gz_topic_name: /model/auv/joint/propeller_joint/cmd_thrust
