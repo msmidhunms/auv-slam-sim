@@ -24,11 +24,27 @@
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
+  <!-- DVL velocity is in dvl_link (body axes), beams are traced in dvl_beams_link (x down) -->
   <link name="dvl_link"/>
   <joint name="dvl_joint" type="fixed">
     <parent link="base_link"/>
     <child link="dvl_link"/>
-    <origin xyz="0 0 -0.10" rpy="0 0 0"/>
+    <origin xyz="0.3 0 -0.15" rpy="0 0 0"/>
+  </joint>
+
+  <link name="dvl_beams_link"/>
+  <joint name="dvl_beams_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="dvl_beams_link"/>
+    <origin xyz="0.3 0 -0.15" rpy="0 1.5708 0"/>
+  </joint>
+
+  <!-- GPS antenna on the top of the hull, out of water only at the surface -->
+  <link name="gps_link"/>
+  <joint name="gps_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="gps_link"/>
+    <origin xyz="-0.2 0 0.18" rpy="0 0 0"/>
   </joint>
 
   <link name="sonar_link"/>
