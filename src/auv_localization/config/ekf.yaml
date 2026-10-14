@@ -1,7 +1,9 @@
 # robot_localization EKF, odom -> base_link.
 #
 # This is dead reckoning: heading from AHRS, velocity from DVL and depth from the
-# pressure sensor. Nothing here is observing x and y, so the horizontal position
+# pressure sensor. When the DVL has no bottom lock (at the surface and in the
+# first part of the dive) the speed estimated from the propeller command is
+# the only velocity, so the error grows faster there. Nothing here is observing x and y, so the horizontal position
 # drifts with distance travelled (mainly from the compass error). Correcting that
 # drift is the job of SLAM, which publishes map -> odom.
 #
@@ -41,6 +43,15 @@ ekf:
                     false, false, false,
                     false, false, false]
     twist0_queue_size: 10
+
+    # speed from the propeller command (controller), much weaker than the DVL
+    twist1: speed_model/twist
+    twist1_config: [false, false, false,
+                    false, false, false,
+                    true,  true,  true,
+                    false, false, false,
+                    false, false, false]
+    twist1_queue_size: 10
 
     # pressure sensor: only z
     pose0: depth/pose
