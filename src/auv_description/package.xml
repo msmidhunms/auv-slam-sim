@@ -3,13 +3,14 @@
 <package format="3">
   <name>auv_description</name>
   <version>0.1.0</version>
-  <description>URDF and thruster layout of the underwater vehicle</description>
+  <description>URDF, sensor frames and RViz config of the torpedo AUV</description>
   <maintainer email="msmidhunms@gmail.com">Midhun M S</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>xacro</exec_depend>
+  <exec_depend>auv_sim</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>rviz2</exec_depend>

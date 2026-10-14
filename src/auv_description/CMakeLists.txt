@@ -3,7 +3,7 @@ project(auv_description)
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY config launch rviz urdf
+install(DIRECTORY launch rviz urdf
   DESTINATION share/${PROJECT_NAME}
 )
 
