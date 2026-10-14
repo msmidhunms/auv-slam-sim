@@ -129,6 +129,31 @@ services:
       target: nodes
     command: ros2 launch auv_sensors sensor.launch.py node:=usbl
 
+  # --- survey sonars: across track fan -> multibeam swath / submaps, sidescan ---
+  multibeam:
+    <<: *sim-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_sonar sonar.launch.py node:=multibeam
+
+  swath-assembler:
+    <<: *sim-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_sonar sonar.launch.py node:=swath_assembler
+
+  sidescan:
+    <<: *sim-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_sonar sonar.launch.py node:=sidescan
+
   # --- control: setpoints / cmd_vel -> controller -> propeller and fins -------
   controller:
     <<: *sim-node
@@ -243,6 +268,7 @@ services:
       /clock /tf /tf_static /robot_description
       /sonar/points /imu/raw /imu/data /dvl/twist /dvl/altitude /depth/pose /pressure
       /gps/fix /gps/pose /usbl/pose /usbl/ship /speed_model/twist
+      /multibeam/swath /multibeam/submap /sidescan/waterfall
       /cmd_vel /speed_setpoint /depth_setpoint /heading_setpoint /altitude_setpoint
       /propeller/cmd_thrust /fins/rudder/cmd_angle /fins/elevator/cmd_angle
       /controller/speed_reference /controller/heading_reference

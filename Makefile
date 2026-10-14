@@ -45,7 +45,7 @@ bag: ## record a rosbag into ./bags, Ctrl-C to stop
 	$(COMPOSE) run --rm bag
 
 test: ## unit tests of our packages
-	@for pkg in auv_sensors auv_control auv_mission; do \
+	@for pkg in auv_sensors auv_control auv_mission auv_sonar; do \
 	  echo "--- $$pkg"; \
 	  $(COMPOSE) run --rm -T -v $(CURDIR)/src:/ws/src:ro -w /ws/src/$$pkg shell python3 -m pytest -q -p no:cacheprovider test || exit 1; \
 	done

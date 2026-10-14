@@ -5,8 +5,8 @@ sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
 > Being upgraded to a realistic torpedo survey AUV (MBARI Tethys LRAUV). The new vehicle,
-> world, control, teleop and the navigation sensors (DVL with bottom lock, GPS, USBL) are
-> in place. Navigation aids, survey sonars and the mission
+> world, control, teleop, the navigation sensors (DVL with bottom lock, GPS, USBL) and the
+> survey sonars (multibeam, sidescan) are in place. Navigation aids, survey sonars and the mission
 > state machine are being reworked phase by phase, so `make mission` is not working for
 > the new vehicle as of now.
 
@@ -50,6 +50,9 @@ otherwise the EKF gets stuck when the clock goes back to zero.
 | `dvl` | DVL model, body velocity with noise and bottom lock dropouts |
 | `depth` | pressure sensor model, pressure and depth |
 | `gps` | GPS model, fix only at the surface |
+| `multibeam` | multibeam swath from the sonar fan |
+| `swath-assembler` | bathymetry submaps from the swaths |
+| `sidescan` | sidescan waterfall image from the sonar fan |
 | `usbl` | USBL model, position fixes from the support ship |
 | `controller` | depth, heading, attitude and velocity controller, `cmd_vel` to body wrench |
 | `allocator` | thruster allocator, body wrench to 8 thrust commands |
@@ -180,7 +183,7 @@ stays till it is changed. The Teleop panel of Foxglove also works, it publishes 
 
 | ROS topic | Type | Rate | Source |
 |---|---|---|---|
-| `/sonar/points` | `sensor_msgs/PointCloud2` | 5 Hz | Gazebo, forward looking, 128 x 32 beams, 120 x 40 deg, 0.5 to 30 m (to be replaced by multibeam and sidescan) |
+| `/sonar/points` | `sensor_msgs/PointCloud2` | 5 Hz | Gazebo, forward looking sonar for obstacle avoidance, 64 x 16 beams, 120 x 40 deg, 0.5 to 30 m |
 | `/imu/raw` | `sensor_msgs/Imu` | 50 Hz | Gazebo, gyro and accel with noise, orientation is perfect |
 | `/imu/data` | `sensor_msgs/Imu` | 50 Hz | `ahrs`, orientation with noise and slowly wandering heading error (1.5 deg) |
 | `/dvl/twist` | `geometry_msgs/TwistWithCovarianceStamped` | 10 Hz, only with bottom lock | `dvl`, 1 cm/s noise, 0.2 % scale error, 2 % dropouts |
@@ -217,6 +220,38 @@ beam width) are not modelled.
 
 Localisation and SLAM nodes are supposed to use only these topics.
 `/ground_truth/odom` is for the sensor models and for evaluation.
+
+## Survey sonars
+
+Real survey AUVs carry a multibeam echosounder (depth across the track) and a sidescan
+sonar (seabed image). Both are made here from one acoustic fan which is traced in Gazebo:
+512 rays across the track, +-85 deg from the nadir, 10 Hz (`sonar_fan_link`, x down).
+
+| ROS topic | Type | Rate | Meaning |
+|---|---|---|---|
+| `/sonar_fan/points` | `sensor_msgs/PointCloud2` | 10 Hz | raw fan from Gazebo |
+| `/multibeam/swath` | `sensor_msgs/PointCloud2` | 10 Hz | `multibeam`, depth points of one ping, +-60 deg (120 deg swath) |
+| `/multibeam/submap` | `sensor_msgs/PointCloud2` | every 15 m of track | `swath-assembler`, swaths put together with the dead reckoning, 0.25 m voxels, in `base_link` |
+| `/sidescan/waterfall` | `sensor_msgs/Image` | 2 Hz | `sidescan`, scrolling waterfall, port on the left, newest ping on the top |
+
+- **Multibeam**: range noise is 0.2 % at the nadir and 4 times more at the outer beams. The
+  swath is 3.5 times the altitude wide (35 m at 10 m altitude).
+- **Submaps**: a single swath is only a line and cannot be matched to anything, so 15 m of
+  track is put together into one bathymetry submap (around 13 000 points). This is the
+  input for SLAM in the next phase, same idea as submap based bathymetric SLAM.
+- **Sidescan**: echo strength comes from the angle between the ray and the seabed (Lambert),
+  with Rayleigh speckle. Rays hidden behind an object leave a dark acoustic shadow, and the
+  water column under the vehicle is dark. 60 m range per side, 0.2 m bins, slant range (not
+  corrected to ground range), like a raw sidescan record. Open it in the Image panel of
+  Foxglove.
+
+Measured on a run in altitude mode (10 m) across the pipeline and the rock field: the
+pipeline shows as a bright line, rocks with their shadows, dune crests as bands. Altitude
+was held at 10.5 m mean, 1.0 m std (9.0 to 12.6 m) over the dunes. 20 submaps were made.
+
+Limits: there is no material information, so a rock and sand at the same angle give the
+same echo; there is no beam pattern, multipath or surface reflection; far out on the dunes
+the shadows come in blocky bands because the fan has only 512 rays.
 
 ## Localisation
 
@@ -362,7 +397,7 @@ into `./bags` (not tracked in git). Sonar cloud is the bulky one, a bag is aroun
 
 ```bash
 make check    # smoke test of the running stack: topic rates, latched topics and TF chain
-make test     # unit tests of sensor models, thruster allocation, PID and survey guidance
+make test     # unit tests of sensor models, control laws, sonar models and survey guidance
 ```
 
 ## Visualisation

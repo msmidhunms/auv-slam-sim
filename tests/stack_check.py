@@ -16,7 +16,7 @@ from rclpy.parameter import Parameter
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
-from sensor_msgs.msg import FluidPressure, Imu, NavSatFix, PointCloud2, Range
+from sensor_msgs.msg import FluidPressure, Image, Imu, NavSatFix, PointCloud2, Range
 from std_msgs.msg import Float64, String
 from tf2_ros import Buffer, TransformException, TransformListener
 
@@ -30,6 +30,9 @@ RATE_CHECKS = [
     ('/ground_truth/odom', Odometry, 30.0, 'sim + bridge'),
     ('/imu/raw', Imu, 30.0, 'sim + bridge'),
     ('/sonar/points', PointCloud2, 3.0, 'sim + bridge'),
+    ('/sonar_fan/points', PointCloud2, 6.0, 'sim + bridge'),
+    ('/multibeam/swath', PointCloud2, 6.0, 'multibeam'),
+    ('/sidescan/waterfall', Image, 1.0, 'sidescan'),
     ('/imu/data', Imu, 30.0, 'ahrs'),
     ('/dvl/altitude', Range, 6.0, 'dvl'),
     ('/gps/fix', NavSatFix, 0.5, 'gps'),
