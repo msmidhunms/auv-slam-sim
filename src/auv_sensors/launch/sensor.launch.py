@@ -1,5 +1,5 @@
 """Starts one sensor node. Each sensor is running in its own container, so the
-node is selected with the `node` argument (ahrs, dvl or depth)."""
+node is selected with the `node` argument (ahrs, dvl, depth, gps or usbl)."""
 
 import os
 
@@ -23,6 +23,6 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        DeclareLaunchArgument('node', description='ahrs, dvl or depth'),
+        DeclareLaunchArgument('node', description='ahrs, dvl, depth, gps or usbl'),
         sensor,
     ])

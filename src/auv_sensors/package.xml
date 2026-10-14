@@ -3,7 +3,7 @@
 <package format="3">
   <name>auv_sensors</name>
   <version>0.1.0</version>
-  <description>Simulated navigation sensors (AHRS, DVL, depth) with realistic noise models</description>
+  <description>Simulated navigation sensors (AHRS, DVL, depth, GPS, USBL) with realistic noise models</description>
   <maintainer email="msmidhunms@gmail.com">Midhun M S</maintainer>
   <license>MIT</license>
 
@@ -11,6 +11,7 @@
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>sensor_msgs_py</exec_depend>
   <exec_depend>launch_ros</exec_depend>
 
   <test_depend>python3-pytest</test_depend>

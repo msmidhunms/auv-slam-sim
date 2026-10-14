@@ -18,7 +18,7 @@ setup(
     zip_safe=True,
     maintainer='Midhun M S',
     maintainer_email='msmidhunms@gmail.com',
-    description='Simulated navigation sensors (AHRS, DVL, depth) with realistic noise models',
+    description='Simulated navigation sensors (AHRS, DVL, depth, GPS, USBL) with realistic noise models',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
@@ -26,6 +26,8 @@ setup(
             'ahrs_node = auv_sensors.ahrs_node:main',
             'dvl_node = auv_sensors.dvl_node:main',
             'depth_node = auv_sensors.depth_node:main',
+            'gps_node = auv_sensors.gps_node:main',
+            'usbl_node = auv_sensors.usbl_node:main',
         ],
     },
 )
