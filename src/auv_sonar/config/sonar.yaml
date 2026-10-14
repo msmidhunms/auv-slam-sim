@@ -1,0 +1,29 @@
+# Survey sonars. Both are made from one across track fan which is traced in the
+# simulator (sonar_fan_link, x down, y to port), 512 rays over +-85 deg.
+
+multibeam:
+  ros__parameters:
+    fan_min_angle_deg: -85.0
+    fan_max_angle_deg: 85.0
+    swath_half_angle_deg: 60.0      # 120 deg swath, 3.5 x altitude wide
+    range_noise: 0.002              # 0.2 % of range at nadir
+    angle_noise_gain: 3.0           # 4 x more noise at the outer beams
+    seed: 21
+
+swath_assembler:
+  ros__parameters:
+    submap_length: 15.0             # m of track per submap
+    voxel_size: 0.25                # m
+    odom_frame: odom
+    base_frame: base_link
+
+sidescan:
+  ros__parameters:
+    fan_min_angle_deg: -85.0
+    fan_max_angle_deg: 85.0
+    max_range: 60.0                 # m slant range per side
+    bins: 300                       # 0.2 m range resolution
+    waterfall_rows: 400             # 40 s of pings at 10 Hz
+    publish_every: 5                # pings, image at 2 Hz
+    gain: 1.6
+    seed: 22
