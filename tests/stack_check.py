@@ -18,7 +18,7 @@ from rclpy.qos import DurabilityPolicy, QoSProfile
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import FluidPressure, Imu, PointCloud2
-from std_msgs.msg import Float64, Float64MultiArray, String
+from std_msgs.msg import Float64, String
 from tf2_ros import Buffer, TransformException, TransformListener
 
 DURATION = 10.0     # s of wall time
@@ -34,7 +34,6 @@ RATE_CHECKS = [
     ('/depth/pose', PoseWithCovarianceStamped, 15.0, 'depth'),
     ('/pressure', FluidPressure, 15.0, 'depth'),
     ('/wrench_cmd', WrenchStamped, 30.0, 'controller'),
-    ('/thrusters/cmd', Float64MultiArray, 30.0, 'allocator'),
     ('/odometry/filtered', Odometry, 30.0, 'localization'),
     ('/eval/ekf_position_error', Float64, 1.0, 'eval'),
     ('/eval/slam_position_error', Float64, 1.0, 'eval + slam'),

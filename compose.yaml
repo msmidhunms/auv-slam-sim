@@ -120,14 +120,6 @@ services:
       target: nodes
     command: ros2 launch auv_control control.launch.py node:=controller
 
-  allocator:
-    <<: *sim-node
-    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
-    build:
-      <<: *ros-build
-      target: nodes
-    command: ros2 launch auv_control control.launch.py node:=thruster_allocator
-
   # --- localization: AHRS + DVL + depth -> odom -> base_link -------------------
   localization:
     <<: *sim-node

@@ -4,8 +4,10 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle 
 sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
 Every node runs in its own Docker container.
 
-> Simulation only as of now. There is no GPU inside Docker on macOS, so the sonar and the
-> GUIs are rendered on CPU.
+> Being upgraded to a realistic torpedo survey AUV (MBARI Tethys LRAUV). The new vehicle
+> and world are in place. Control, navigation aids, survey sonars and the mission state
+> machine are being reworked phase by phase, so `make mission` and teleop are not working
+> for the new vehicle as of now.
 
 ## Prerequisites
 
@@ -62,16 +64,36 @@ otherwise the EKF gets stuck when the clock goes back to zero.
 
 ## Simulation
 
-The vehicle is a BlueROV2 Heavy style ROV with 8 thrusters (4 vectored horizontal, 4 vertical).
-Thruster layout is kept in `src/auv_description/config/thrusters.yaml` and the Gazebo model
-is generated from it at build time. Water surface is at `z = 0` and the seabed is around
-`z = -10` with a pipeline, a wreck and some rocks on it.
+The vehicle is a torpedo survey AUV based on the MBARI Tethys LRAUV: 2.3 m long, 0.3 m
+diameter, 148 kg, one propeller, a rudder and an elevator. Like a real AUV it cannot hover
+or turn on the spot, it needs forward speed to steer and dive, and it is 0.4 kg positively
+buoyant so it comes up to the surface if the propeller stops. Mass, added mass, drag and
+fin coefficients are from the Gazebo `auv_controls.sdf` example.
+
+The survey area is 300 x 300 m of sandy seabed around 40 m depth (between -46 and -34 m),
+with four rock fields, a 270 m pipeline lying on the seabed and a ship wreck. All of it is
+generated at build time from `src/auv_sim/scripts/` (`terrain.py` is the shared seabed
+height). Water surface is at `z = 0` and the vehicle starts at the surface.
 
 | ROS topic | Type | Direction |
 |---|---|---|
 | `/clock` | `rosgraph_msgs/Clock` | sim -> ROS |
 | `/ground_truth/odom` | `nav_msgs/Odometry` | sim -> ROS, for sensors simulation and evaluation only |
-| `/thrusters/thruster<1-8>/cmd_thrust` | `std_msgs/Float64` | ROS -> sim, thrust in N (max 40) |
+| `/propeller/cmd_thrust` | `std_msgs/Float64` | ROS -> sim, thrust in N, positive is forward (max 20 N) |
+| `/fins/rudder/cmd_angle` | `std_msgs/Float64` | ROS -> sim, rad, +-0.26, positive turns to the right |
+| `/fins/elevator/cmd_angle` | `std_msgs/Float64` | ROS -> sim, rad, +-0.26, negative is nose down |
+
+Measured open loop at the surface: 7 N gives 0.95 m/s and 15 N gives 1.37 m/s, it runs
+straight with the fins at zero, and -0.1 rad of elevator at 0.8 m/s pitches it 16 deg
+nose down and it dives.
+
+Ocean current is not simulated. The hydrodynamics plugin supports it, but the LiftDrag
+plugin of the fins is not taking it into account, so with a cross current the fins see a
+false side slip and the vehicle keeps turning by itself.
+
+Vehicle 3D model and textures: "MBARI Tethys LRAUV" by Mabel Zhang, from Gazebo Fuel,
+licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/). It is downloaded
+during `make build`, so the first build needs internet.
 
 Checking the simulation:
 
