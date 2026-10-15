@@ -1,24 +1,44 @@
-# Survey mission. Positions are in the map frame, which is same as the world
-# frame of the simulator when everything is started together.
+# Survey mission of the AUV. Positions are in the map frame (survey frame,
+# origin at the launch point).
 
 mission:
   ros__parameters:
-    autostart: false
-    pose_frame: map             # SLAM pose. Give `odom` to run on dead reckoning alone
-    depth: -5.0                 # z in m, seabed is around -10
-    cruise_speed: 0.5           # m/s
-    accept_radius: 1.0          # m, waypoint is taken as reached inside this
-    turn_in_place_angle_deg: 25.0
-    slow_down_gain: 0.4         # 1/s, speed is reduced on approaching the waypoint
-    min_speed: 0.15             # m/s
-    depth_tolerance: 0.5        # m, vehicle starts moving only after reaching the depth
-    pose_timeout: 1.0           # s
+    cruise_speed: 1.0               # m/s
+    abort_speed: 0.6                # m/s, while climbing after an abort
+    transit_depth: -15.0            # z in m, dive and transit depth
+    survey_altitude: 10.0           # m above the seabed on the lanes
+    lookahead: 12.0                 # m, line of sight guidance
+    switch_distance: 6.0            # m before the waypoint the next segment is taken
+    accept_radius: 8.0              # m
+    home: [-20.0, -20.0]            # recovery point, next to the support ship
 
-    # lawnmower over the pipeline and the rocks, lanes are along x
+    pre_dive_fix_time: 10.0         # s of GPS fix at the surface before diving
+    surface_fix_time: 15.0          # s of GPS fix when surfacing during the survey
+    surface_wait_max: 90.0          # s, dive again even without a fix after this
+    surface_interval: 400.0         # s, surface for a GPS fix at the next lane end, 0 = never
+
+    # abort rules
+    dive_timeout: 300.0             # s
+    mission_timeout: 3600.0         # s
+    max_depth: 45.0                 # m
+    min_altitude: 3.0               # m, for more than 2 s
+    obstacle_distance: 8.0          # m, forward looking sonar
+    dvl_loss_time: 60.0             # s without bottom lock during the survey
+    min_battery: 0.15               # 15 %
+    operating_area: [-140.0, -140.0, 140.0, 140.0]   # x_min, y_min, x_max, y_max
+
+    fls_half_angle_deg: 20.0        # obstacle cone of the forward looking sonar
+    fls_clearance: 2.0              # m above the seabed to count as an obstacle
+
+    # lane survey over the pipeline and the rock field. Lane spacing comes from
+    # the multibeam swath at the survey altitude and the overlap.
     survey:
-      center_x: 5.0
+      center_x: 20.0
       center_y: 0.0
-      length: 30.0              # m, along x
-      width: 24.0               # m, along y
-      spacing: 6.0              # m between the lanes
-      tie_line: true            # run the first lane again at the end for loop closure
+      heading_deg: 0.0              # direction of the lanes
+      lane_length: 100.0            # m
+      lanes: 4
+      lead_in: 10.0                 # m added at both ends of each lane
+      swath_half_angle_deg: 60.0
+      overlap: 0.3
+      turn_radius: 7.0              # m, measured U turn is around 13 m wide

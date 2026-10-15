@@ -18,7 +18,7 @@ setup(
     zip_safe=True,
     maintainer='Midhun M S',
     maintainer_email='msmidhunms@gmail.com',
-    description='Waypoint following and lawnmower survey mission',
+    description='Survey mission state machine with line following, surfacing for GPS and abort rules',
     license='MIT',
     tests_require=['pytest'],
     entry_points={

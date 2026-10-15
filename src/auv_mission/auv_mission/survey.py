@@ -1,4 +1,4 @@
-"""Survey pattern and guidance maths, free from ROS so that it can be unit tested."""
+"""Survey pattern and path following maths, free from ROS so that it can be unit tested."""
 
 import math
 
@@ -7,34 +7,53 @@ def wrap_angle(angle):
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
 
 
-def lawnmower(center, length, width, spacing, tie_line=True):
-    """Waypoints of a lawnmower pattern.
+def swath_width(altitude, half_angle):
+    """Seabed width covered by the multibeam at this altitude (flat seabed)."""
+    return 2.0 * altitude * math.tan(half_angle)
 
-    Lanes are along x with `length`, and they are stacked along y over `width`
-    with `spacing` between them. First lane is the one with the lowest y.
 
-    Neighbouring lanes are run in opposite directions, so the forward looking
-    sonar is not seeing the same seabed again on them. With `tie_line` the
-    vehicle goes back at the end and runs the first lane once more in the same
-    direction, which gives SLAM a proper revisit to close the loop.
+def lane_spacing(altitude, half_angle, overlap):
+    """Distance between survey lanes so that neighbouring swaths overlap by `overlap` (0..1)."""
+    return swath_width(altitude, half_angle) * (1.0 - overlap)
+
+
+def lane_order(count, spacing, turn_radius):
+    """Order in which the lanes are run.
+
+    A torpedo AUV cannot turn tighter than its turning circle. If the lanes are
+    closer than the turning diameter, going to the neighbouring lane needs a
+    loop, so every second lane is skipped and the skipped ones are run on the
+    way back (interleaved pattern), like survey planners do.
     """
-    if length <= 0 or width < 0 or spacing <= 0:
-        raise ValueError('length and spacing have to be positive')
-    cx, cy = center
-    lanes = int(math.floor(width / spacing)) + 1
-    y0 = cy - (lanes - 1) * spacing / 2.0
-    x_low, x_high = cx - length / 2.0, cx + length / 2.0
+    if spacing >= 2.0 * turn_radius or count <= 2:
+        return list(range(count))
+    forward = list(range(0, count, 2))
+    back = [i for i in range(count - 1, -1, -1) if i % 2 == 1]
+    return forward + back
+
+
+def survey_lanes(center, length, count, spacing, heading, lead_in, turn_radius):
+    """Waypoints of a lane survey: start and end of each lane, in the order they are run.
+
+    Lanes are `length` long along `heading` and stacked to the left of it with
+    `spacing` between them, centred on `center`. Each lane is extended by
+    `lead_in` at both ends, so the vehicle is settled on the line before the
+    data part starts. Direction alternates from lane to lane.
+    """
+    if length <= 0 or count < 1 or spacing <= 0:
+        raise ValueError('length, count and spacing have to be positive')
+    ux, uy = math.cos(heading), math.sin(heading)          # along the lanes
+    vx, vy = -uy, ux                                       # across, to the left
+    half = length / 2.0 + lead_in
+    offset0 = -(count - 1) * spacing / 2.0
 
     waypoints = []
-    for lane in range(lanes):
-        y = y0 + lane * spacing
-        ends = (x_low, x_high) if lane % 2 == 0 else (x_high, x_low)
-        waypoints.append((ends[0], y))
-        waypoints.append((ends[1], y))
-
-    if tie_line and lanes > 1:
-        waypoints.append((x_low, y0))
-        waypoints.append((x_high, y0))
+    for n, lane in enumerate(lane_order(count, spacing, turn_radius)):
+        off = offset0 + lane * spacing
+        cx, cy = center[0] + vx * off, center[1] + vy * off
+        a = (cx - ux * half, cy - uy * half)
+        b = (cx + ux * half, cy + uy * half)
+        waypoints += [a, b] if n % 2 == 0 else [b, a]
     return waypoints
 
 
@@ -42,22 +61,21 @@ def path_length(waypoints):
     return sum(math.dist(a, b) for a, b in zip(waypoints, waypoints[1:]))
 
 
-def guidance(x, y, yaw, target, cruise_speed, turn_in_place_angle, slow_down_gain, min_speed):
-    """Heading and surge speed to reach the target waypoint.
+def line_of_sight(position, start, end, lookahead):
+    """Line of sight guidance along the segment start -> end.
 
-    Vehicle is pointed at the waypoint. If the heading error is large it turns
-    on the spot first, otherwise the speed is reduced with the heading error and
-    also on approaching the waypoint.
-
-    Returns (heading, surge_speed, distance).
+    Returns (heading, cross_track, along_track, length). Cross track error is
+    positive when the vehicle is to the left of the line, and the heading then
+    points back to the right towards a point `lookahead` ahead on the line.
     """
-    dx, dy = target[0] - x, target[1] - y
-    distance = math.hypot(dx, dy)
-    heading = math.atan2(dy, dx)
-    error = wrap_angle(heading - yaw)
-
-    if abs(error) > turn_in_place_angle:
-        return heading, 0.0, distance
-
-    speed = min(cruise_speed, min_speed + slow_down_gain * distance)
-    return heading, speed * math.cos(error), distance
+    sx, sy = start
+    dx, dy = end[0] - sx, end[1] - sy
+    length = math.hypot(dx, dy)
+    path_angle = math.atan2(dy, dx)
+    if length < 1e-6:
+        return math.atan2(end[1] - position[1], end[0] - position[0]), 0.0, 0.0, 0.0
+    px, py = position[0] - sx, position[1] - sy
+    along = (px * dx + py * dy) / length
+    cross = (dx * py - dy * px) / length
+    heading = wrap_angle(path_angle - math.atan2(cross, lookahead))
+    return heading, cross, along, length

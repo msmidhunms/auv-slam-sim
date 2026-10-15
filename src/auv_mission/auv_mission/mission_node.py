@@ -1,166 +1,210 @@
-"""Waypoint mission. Runs a lawnmower survey using the SLAM pose.
+"""Survey mission of the AUV. ROS wrapper around the state machine in mission.py.
 
-It is only the outer loop: it gives heading and depth setpoints and the surge
-speed to the controller, and the controller is doing the stabilisation.
+Navigation comes from the global EKF (/odometry/global, USBL and GPS aided),
+altitude from the DVL, the obstacle range from the forward looking sonar. The
+output is setpoints for the controller (speed, heading, depth or altitude).
 
   ros2 service call /mission/start std_srvs/srv/Trigger
-  ros2 service call /mission/stop std_srvs/srv/Trigger
+  ros2 service call /mission/stop  std_srvs/srv/Trigger    propeller off, floats up
+  ros2 service call /mission/abort std_srvs/srv/Trigger    climb to the surface
 """
 
 import math
 
-from geometry_msgs.msg import PoseStamped, Twist
-from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
+from nav_msgs.msg import Odometry, Path
+import numpy as np
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
-from rclpy.time import Time
-from std_msgs.msg import Float64, String
+from sensor_msgs.msg import BatteryState, NavSatFix, NavSatStatus, PointCloud2, Range
+from sensor_msgs_py import point_cloud2
+from std_msgs.msg import Bool, Float64, String
 from std_srvs.srv import Trigger
-from tf2_ros import Buffer, TransformException, TransformListener
 
-from auv_mission.survey import guidance, lawnmower, path_length
+from auv_mission.mission import Command, Config, fls_obstacle_range, Inputs, Mission
+from auv_mission.survey import lane_spacing, path_length, survey_lanes
+
+# forward looking sonar mount in base_link, same as in the URDF
+FLS_XYZ = (0.70, 0.0, -0.08)
+FLS_PITCH = 0.5236
 
 
 class MissionNode(Node):
 
     def __init__(self):
         super().__init__('mission')
-        p = self.declare_parameter
-        self.pose_frame = p('pose_frame', 'map').value
-        self.base_frame = p('base_frame', 'base_link').value
-        self.depth = p('depth', -5.0).value                         # z in m
-        self.cruise_speed = p('cruise_speed', 0.5).value            # m/s
-        self.accept_radius = p('accept_radius', 1.0).value          # m
-        self.turn_in_place_angle = math.radians(p('turn_in_place_angle_deg', 25.0).value)
-        self.slow_down_gain = p('slow_down_gain', 0.4).value        # 1/s
-        self.min_speed = p('min_speed', 0.15).value                 # m/s
-        self.depth_tolerance = p('depth_tolerance', 0.5).value      # m
-        self.pose_timeout = p('pose_timeout', 1.0).value            # s
+        p = lambda name, default: self.declare_parameter(name, default).value   # noqa: E731
 
-        center = (p('survey.center_x', 0.0).value, p('survey.center_y', 0.0).value)
-        self.waypoints = lawnmower(
-            center, p('survey.length', 30.0).value, p('survey.width', 24.0).value,
-            p('survey.spacing', 6.0).value, p('survey.tie_line', True).value)
+        defaults = Config()
+        self.config = Config(
+            cruise_speed=p('cruise_speed', defaults.cruise_speed),
+            abort_speed=p('abort_speed', defaults.abort_speed),
+            transit_depth=p('transit_depth', defaults.transit_depth),
+            survey_altitude=p('survey_altitude', defaults.survey_altitude),
+            lookahead=p('lookahead', defaults.lookahead),
+            switch_distance=p('switch_distance', defaults.switch_distance),
+            accept_radius=p('accept_radius', defaults.accept_radius),
+            home=tuple(p('home', list(defaults.home))),
+            pre_dive_fix_time=p('pre_dive_fix_time', defaults.pre_dive_fix_time),
+            surface_fix_time=p('surface_fix_time', defaults.surface_fix_time),
+            surface_wait_max=p('surface_wait_max', defaults.surface_wait_max),
+            surface_interval=p('surface_interval', defaults.surface_interval),
+            dive_timeout=p('dive_timeout', defaults.dive_timeout),
+            mission_timeout=p('mission_timeout', defaults.mission_timeout),
+            max_depth=p('max_depth', defaults.max_depth),
+            min_altitude=p('min_altitude', defaults.min_altitude),
+            obstacle_distance=p('obstacle_distance', defaults.obstacle_distance),
+            dvl_loss_time=p('dvl_loss_time', defaults.dvl_loss_time),
+            min_battery=p('min_battery', defaults.min_battery),
+            area=tuple(p('operating_area', list(defaults.area))),
+        )
 
-        self.state = 'IDLE'
-        self.index = 0
-        self.start_time = None
+        spacing = lane_spacing(self.config.survey_altitude,
+                               math.radians(p('survey.swath_half_angle_deg', 60.0)),
+                               p('survey.overlap', 0.3))
+        self.waypoints = survey_lanes(
+            (p('survey.center_x', 20.0), p('survey.center_y', 0.0)),
+            p('survey.lane_length', 100.0), p('survey.lanes', 4), spacing,
+            math.radians(p('survey.heading_deg', 0.0)), p('survey.lead_in', 10.0),
+            p('survey.turn_radius', 7.0))
+        self.mission = Mission(self.config, self.waypoints)
+        self.fls_half_angle = math.radians(p('fls_half_angle_deg', 20.0))
+        self.fls_clearance = p('fls_clearance', 2.0)
 
-        self.tf_buffer = Buffer()
-        self.tf_listener = TransformListener(self.tf_buffer, self)
+        self.nav = None
+        self.altitude = None
+        self.gps_fix = False
+        self.battery = 1.0
+        self.leak = False
+        self.obstacle_range = math.inf
+        self.last_status = None
 
         latched = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
-        self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
-        self.heading_pub = self.create_publisher(Float64, 'heading_setpoint', 10)
-        self.depth_pub = self.create_publisher(Float64, 'depth_setpoint', 10)
+        self.pubs = {k: self.create_publisher(Float64, f'{k}_setpoint', 10)
+                     for k in ('speed', 'heading', 'depth', 'altitude')}
         self.status_pub = self.create_publisher(String, 'mission/status', latched)
         self.path_pub = self.create_publisher(Path, 'mission/path', latched)
+        self.obstacle_pub = self.create_publisher(Float64, 'mission/obstacle_range', 10)
 
+        self.create_subscription(Odometry, 'odometry/global', self.on_nav, 10)
+        self.create_subscription(Range, 'dvl/altitude', self.on_altitude, 10)
+        self.create_subscription(NavSatFix, 'gps/fix', self.on_gps, 10)
+        self.create_subscription(BatteryState, 'battery/state', self.on_battery, 10)
+        self.create_subscription(Bool, 'faults/leak', self.on_leak, 10)
+        self.create_subscription(PointCloud2, 'sonar/points', self.on_fls, 5)
         self.create_service(Trigger, 'mission/start', self.on_start)
         self.create_service(Trigger, 'mission/stop', self.on_stop)
-        self.timer = self.create_timer(0.1, self.on_timer)
+        self.create_service(Trigger, 'mission/abort', self.on_abort)
+        self.create_timer(0.1, self.on_timer)
 
         self.publish_path()
-        self.set_state('IDLE')
+        self.publish_status()
         self.get_logger().info(
-            f'survey with {len(self.waypoints)} waypoints, {path_length(self.waypoints):.0f} m, '
-            f'at z = {self.depth} m')
-        if p('autostart', False).value:
-            self.set_state('RUNNING')
+            f'survey: {len(self.waypoints) // 2} lanes, {spacing:.1f} m apart, '
+            f'{path_length(self.waypoints):.0f} m of track at {self.config.survey_altitude:.0f} m altitude')
 
-    # --- services ---------------------------------------------------------------
+    # --- inputs ----------------------------------------------------------------
+
+    def on_nav(self, msg):
+        self.nav = msg
+
+    def on_altitude(self, msg):
+        self.altitude = msg.range if math.isfinite(msg.range) else None
+
+    def on_gps(self, msg):
+        self.gps_fix = msg.status.status >= NavSatStatus.STATUS_FIX
+
+    def on_battery(self, msg):
+        self.battery = msg.percentage
+
+    def on_leak(self, msg):
+        self.leak = msg.data
+
+    def on_fls(self, msg):
+        raw = point_cloud2.read_points_numpy(msg, field_names=('x', 'y', 'z')).reshape(-1, 3)
+        raw = raw[np.all(np.isfinite(raw), axis=1)]
+        c, s = math.cos(FLS_PITCH), math.sin(FLS_PITCH)
+        x = c * raw[:, 0] + s * raw[:, 2] + FLS_XYZ[0]
+        z = -s * raw[:, 0] + c * raw[:, 2] + FLS_XYZ[2]
+        points = np.stack([x, raw[:, 1], z], axis=1)
+        self.obstacle_range = fls_obstacle_range(points, self.altitude, self.fls_half_angle,
+                                                 self.fls_clearance)
+        self.obstacle_pub.publish(Float64(data=min(self.obstacle_range, 100.0)))
+
+    # --- services --------------------------------------------------------------
+
+    def now(self):
+        return self.get_clock().now().nanoseconds * 1e-9
 
     def on_start(self, request, response):
-        self.index = 0
-        self.start_time = None
-        self.set_state('RUNNING')
+        if self.nav is None:
+            response.success = False
+            response.message = 'no navigation yet (/odometry/global)'
+            return response
+        self.mission.start(self.now())
+        self.publish_status()
         response.success = True
         response.message = f'mission started, {len(self.waypoints)} waypoints'
         return response
 
     def on_stop(self, request, response):
-        self.set_state('IDLE')
-        self.cmd_pub.publish(Twist())
+        self.mission.stop()
+        for name in ('speed',):
+            self.pubs[name].publish(Float64(data=0.0))
+        self.publish_status()
         response.success = True
-        response.message = 'mission stopped, vehicle is holding position'
+        response.message = 'mission stopped, propeller off'
         return response
 
-    def set_state(self, state):
-        self.state = state
-        text = state
-        if state == 'RUNNING':
-            text = f'RUNNING waypoint {self.index + 1}/{len(self.waypoints)}'
-        self.status_pub.publish(String(data=text))
+    def on_abort(self, request, response):
+        self.mission.abort('manual abort', self.now())
+        self.publish_status()
+        response.success = self.mission.state == 'ABORT'
+        response.message = self.mission.status
+        return response
 
-    # --- guidance loop, 10 Hz ----------------------------------------------------
+    # --- 10 Hz -----------------------------------------------------------------
 
     def on_timer(self):
-        # when not running nothing is published, so teleop can be used
-        if self.state != 'RUNNING':
+        if self.nav is None:
             return
-
-        pose = self.current_pose()
-        if pose is None:
-            self.cmd_pub.publish(Twist())
-            self.get_logger().warn(
-                f'no {self.pose_frame} -> {self.base_frame} pose, waiting',
-                throttle_duration_sec=5.0)
-            return
-        x, y, z, yaw = pose
-        if self.start_time is None:
-            self.start_time = self.get_clock().now()
-
-        self.depth_pub.publish(Float64(data=self.depth))
-
-        target = self.waypoints[self.index]
-        heading, speed, distance = guidance(
-            x, y, yaw, target, self.cruise_speed, self.turn_in_place_angle,
-            self.slow_down_gain, self.min_speed)
-
-        if distance < self.accept_radius:
-            self.index += 1
-            if self.index >= len(self.waypoints):
-                self.cmd_pub.publish(Twist())
-                elapsed = (self.get_clock().now() - self.start_time).nanoseconds * 1e-9
-                self.get_logger().info(f'mission completed in {elapsed:.0f} s')
-                self.set_state('DONE')
-                return
-            self.get_logger().info(f'waypoint {self.index}/{len(self.waypoints)} reached')
-            self.set_state('RUNNING')
-            return
-
-        # go to the survey depth first, then start moving
-        if abs(z - self.depth) > self.depth_tolerance:
-            speed = 0.0
-
-        self.heading_pub.publish(Float64(data=heading))
-        cmd = Twist()
-        cmd.linear.x = speed
-        self.cmd_pub.publish(cmd)
-
-    def current_pose(self):
-        try:
-            tf = self.tf_buffer.lookup_transform(self.pose_frame, self.base_frame, Time())
-        except TransformException:
-            return None
-        age = (self.get_clock().now() - Time.from_msg(tf.header.stamp)).nanoseconds * 1e-9
-        if age > self.pose_timeout:
-            return None
-        t, q = tf.transform.translation, tf.transform.rotation
+        p = self.nav.pose.pose.position
+        q = self.nav.pose.pose.orientation
         yaw = math.atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z))
-        return t.x, t.y, t.z, yaw
+        inputs = Inputs(t=self.now(), x=p.x, y=p.y, z=p.z, yaw=yaw, altitude=self.altitude,
+                        gps_fix=self.gps_fix, battery=self.battery, leak=self.leak,
+                        obstacle_range=self.obstacle_range)
+        command = self.mission.step(inputs)
+        self.publish_status()
+        if command is not None:
+            self.send(command)
+
+    def send(self, cmd: Command):
+        self.pubs['speed'].publish(Float64(data=cmd.speed))
+        self.pubs['heading'].publish(Float64(data=cmd.heading))
+        if cmd.altitude is not None:
+            self.pubs['altitude'].publish(Float64(data=cmd.altitude))
+        else:
+            self.pubs['depth'].publish(Float64(data=cmd.depth))
+
+    def publish_status(self):
+        status = self.mission.status
+        if status != self.last_status:
+            self.status_pub.publish(String(data=status))
+            log = self.get_logger().warn if status.startswith('ABORT') else self.get_logger().info
+            log(f'mission: {status}')
+            self.last_status = status
 
     def publish_path(self):
         path = Path()
-        path.header.frame_id = self.pose_frame
+        path.header.frame_id = 'map'
         path.header.stamp = self.get_clock().now().to_msg()
         for x, y in self.waypoints:
             pose = PoseStamped()
             pose.header = path.header
-            pose.pose.position.x = x
-            pose.pose.position.y = y
-            pose.pose.position.z = self.depth
+            pose.pose.position.x, pose.pose.position.y = x, y
+            pose.pose.position.z = self.config.transit_depth
             pose.pose.orientation.w = 1.0
             path.poses.append(pose)
         self.path_pub.publish(path)

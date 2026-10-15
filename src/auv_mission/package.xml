@@ -3,7 +3,7 @@
 <package format="3">
   <name>auv_mission</name>
   <version>0.1.0</version>
-  <description>Waypoint following and lawnmower survey mission</description>
+  <description>Survey mission state machine with line following, surfacing for GPS and abort rules</description>
   <maintainer email="msmidhunms@gmail.com">Midhun M S</maintainer>
   <license>MIT</license>
 
@@ -12,7 +12,9 @@
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>std_srvs</exec_depend>
-  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>sensor_msgs_py</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
   <exec_depend>launch_ros</exec_depend>
 
   <test_depend>python3-pytest</test_depend>
