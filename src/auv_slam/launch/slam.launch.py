@@ -1,4 +1,4 @@
-"""RTAB-Map SLAM on the sonar point cloud, publishes map -> odom and the 3D map."""
+"""RTAB-Map bathymetric SLAM on the multibeam submaps, publishes slam_map -> map and the 3D map."""
 
 import os
 
@@ -20,7 +20,7 @@ def generate_launch_description():
         'name': 'rtabmap',
         'namespace': 'rtabmap',
         'parameters': [params, {'use_sim_time': True}],
-        'remappings': [('scan_cloud', '/sonar/points')],
+        'remappings': [('scan_cloud', '/multibeam/submap')],
         'output': 'screen',
     }
 
