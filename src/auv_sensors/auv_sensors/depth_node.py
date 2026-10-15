@@ -19,7 +19,11 @@ class DepthNode(Node):
         super().__init__('depth')
         self.period = 1.0 / self.declare_parameter('rate', 20.0).value
         self.noise_std = self.declare_parameter('noise_std', 0.01).value
-        self.world_frame = self.declare_parameter('world_frame', 'odom').value
+        # depth is the same in every world fixed frame, it is published once per
+        # frame so that each EKF gets it in its own world frame. Otherwise the
+        # global EKF has to transform it with the map -> odom TF which it is
+        # publishing itself, and that feedback made it diverge (tested).
+        self.world_frames = self.declare_parameter('world_frames', ['odom', 'map']).value
         self.frame_id = self.declare_parameter('frame_id', 'base_link').value
         self.density = self.declare_parameter('water_density', 1000.0).value
         self.atmospheric = self.declare_parameter('atmospheric_pressure', 101325.0).value
@@ -29,7 +33,10 @@ class DepthNode(Node):
         self.last_stamp = None
 
         self.pressure_pub = self.create_publisher(FluidPressure, 'pressure', 10)
-        self.depth_pub = self.create_publisher(PoseWithCovarianceStamped, 'depth/pose', 10)
+        self.depth_pubs = {
+            frame: self.create_publisher(
+                PoseWithCovarianceStamped, 'depth/pose' if i == 0 else f'depth/pose_{frame}', 10)
+            for i, frame in enumerate(self.world_frames)}
         self.sub = self.create_subscription(Odometry, 'ground_truth/odom', self.on_odom, 10)
 
     def on_odom(self, msg):
@@ -52,13 +59,15 @@ class DepthNode(Node):
         self.pressure_pub.publish(p)
 
         # only z is valid here, EKF config is taking z alone from this topic
-        d = PoseWithCovarianceStamped()
-        d.header.stamp = msg.header.stamp
-        d.header.frame_id = self.world_frame
-        d.pose.pose.position.z = -pressure_to_depth(pressure, self.density, self.atmospheric)
-        d.pose.pose.orientation.w = 1.0
-        d.pose.covariance[14] = self.noise_std ** 2
-        self.depth_pub.publish(d)
+        z = -pressure_to_depth(pressure, self.density, self.atmospheric)
+        for frame, pub in self.depth_pubs.items():
+            d = PoseWithCovarianceStamped()
+            d.header.stamp = msg.header.stamp
+            d.header.frame_id = frame
+            d.pose.pose.position.z = z
+            d.pose.pose.orientation.w = 1.0
+            d.pose.covariance[14] = self.noise_std ** 2
+            pub.publish(d)
 
 
 def main():

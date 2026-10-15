@@ -62,3 +62,80 @@ ekf:
                    false, false, false]
     pose0_queue_size: 10
     pose0_differential: false
+
+# Second EKF, map -> odom. Same sensors as above plus the absolute fixes: USBL
+# from the support ship and GPS at the surface. This is how real AUVs combine
+# the inertial / DVL navigation with USBL. The map frame is the world frame
+# of the survey (USBL and GPS give world coordinates), the odom frame stays
+# continuous and drifts, map -> odom takes up the drift.
+#
+# USBL fixes come 0.4 to 0.6 s late with the ping time in the stamp, so the
+# filter keeps some history and puts them in at the right time.
+
+ekf_global:
+  ros__parameters:
+    frequency: 30.0
+    sensor_timeout: 0.5
+    two_d_mode: false
+    publish_tf: true
+    print_diagnostics: false
+
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: map
+
+    smooth_lagged_data: true
+    history_length: 3.0
+
+    imu0: imu/data
+    imu0_config: [false, false, false,
+                  true,  true,  true,
+                  false, false, false,
+                  true,  true,  true,
+                  false, false, false]
+    imu0_queue_size: 20
+
+    twist0: dvl/twist
+    twist0_config: [false, false, false,
+                    false, false, false,
+                    true,  true,  true,
+                    false, false, false,
+                    false, false, false]
+    twist0_queue_size: 10
+
+    twist1: speed_model/twist
+    twist1_config: [false, false, false,
+                    false, false, false,
+                    true,  true,  true,
+                    false, false, false,
+                    false, false, false]
+    twist1_queue_size: 10
+
+    pose0: depth/pose_map               # same depth, but stamped in the map frame
+    pose0_config: [false, false, true,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    pose0_queue_size: 10
+
+    # USBL: x y z, a fix too far from the estimate (more than 5 sigma) is dropped
+    pose1: usbl/pose
+    pose1_config: [true,  true,  true,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    pose1_queue_size: 5
+    pose1_rejection_threshold: 5.0
+
+    # GPS: x y, only at the surface
+    pose2: gps/pose
+    pose2_config: [true,  true,  false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    pose2_queue_size: 5
+    pose2_rejection_threshold: 5.0

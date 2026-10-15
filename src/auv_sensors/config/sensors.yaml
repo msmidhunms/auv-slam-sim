@@ -34,7 +34,8 @@ depth:
   ros__parameters:
     rate: 25.0                      # Hz, ground truth is at 50 Hz so keep it a divisor of 50
     noise_std: 0.01                 # m
-    world_frame: odom
+    # depth/pose in odom (local EKF) and depth/pose_map in map (global EKF)
+    world_frames: [odom, map]
     frame_id: base_link
     water_density: 1000.0           # kg/m^3
     atmospheric_pressure: 101325.0  # Pa
