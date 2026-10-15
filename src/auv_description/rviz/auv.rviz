@@ -106,7 +106,28 @@ Visualization Manager:
       Covariance:
         Value: false
     - Class: rviz_default_plugins/Odometry
-      Name: Estimate (EKF)
+      Name: Navigation (aided)
+      Enabled: true
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /odometry/global
+      Keep: 300
+      Position Tolerance: 1.0
+      Angle Tolerance: 0.5
+      Shape:
+        Value: Arrow
+        Color: 80; 160; 255
+        Shaft Length: 0.6
+        Shaft Radius: 0.04
+        Head Length: 0.25
+        Head Radius: 0.1
+      Covariance:
+        Value: false
+    - Class: rviz_default_plugins/Odometry
+      Name: Dead reckoning (EKF)
       Enabled: true
       Topic:
         Depth: 5

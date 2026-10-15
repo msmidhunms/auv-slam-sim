@@ -6,7 +6,8 @@ Every node runs in its own Docker container.
 
 > Being upgraded to a realistic torpedo survey AUV (MBARI Tethys LRAUV). The new vehicle,
 > world, control, teleop, the navigation sensors (DVL with bottom lock, GPS, USBL) and the
-> survey sonars (multibeam, sidescan) are in place. Navigation aids, survey sonars and the mission
+> survey sonars (multibeam, sidescan) and the aided navigation (USBL and GPS fusion,
+> bathymetric SLAM) are in place. Navigation aids, survey sonars and the mission
 > state machine are being reworked phase by phase, so `make mission` is not working for
 > the new vehicle as of now.
 
@@ -56,8 +57,9 @@ otherwise the EKF gets stuck when the clock goes back to zero.
 | `usbl` | USBL model, position fixes from the support ship |
 | `controller` | depth, heading, attitude and velocity controller, `cmd_vel` to body wrench |
 | `allocator` | thruster allocator, body wrench to 8 thrust commands |
-| `localization` | `robot_localization` EKF, AHRS + DVL + depth to `odom -> base_link` |
-| `slam` | RTAB-Map, sonar cloud + odometry to `map -> odom` and the 3D map |
+| `localization` | local EKF, AHRS + DVL + speed model + depth to `odom -> base_link` |
+| `navigation` | global EKF, same plus USBL and GPS to `map -> odom` |
+| `slam` | RTAB-Map, multibeam submaps + aided navigation to `slam_map -> map` and the bathymetry map |
 | `mission` | survey mission, waypoints to `cmd_vel` and setpoints for the controller |
 | `eval` | estimate against ground truth, errors as topics for plotting (simulation only) |
 | `state-pub` | `robot_state_publisher` with the vehicle URDF |
@@ -253,77 +255,73 @@ Limits: there is no material information, so a rock and sand at the same angle g
 same echo; there is no beam pattern, multipath or surface reflection; far out on the dunes
 the shadows come in blocky bands because the fan has only 512 rays.
 
-## Localisation
+## Navigation
 
-`robot_localization` EKF is fusing the heading and angular rates from AHRS, body velocity
-from DVL (and the propeller speed model when the DVL has no lock) and z from the depth
-sensor. GPS and USBL are not fused yet. Config is in `src/auv_localization/config/ekf.yaml`.
+Two `robot_localization` EKFs, same way as on real AUVs which combine the inertial / DVL
+navigation with USBL:
 
-| Output | Type | Meaning |
-|---|---|---|
-| `/odometry/filtered` | `nav_msgs/Odometry` | estimated pose and velocity, 50 Hz |
-| TF `odom -> base_link` | | same estimate as TF |
-| TF `world -> map` | static | only for showing the ground truth along with the estimate in RViz |
+| Filter | Container | Inputs | Output |
+|---|---|---|---|
+| local | `localization` | AHRS, DVL, propeller speed model, depth | `odom -> base_link`, `/odometry/filtered`. Continuous, but drifts |
+| global | `navigation` | same plus USBL fixes and GPS (at surface) | `map -> odom`, `/odometry/global`. Absolute, drift is taken out at every fix |
 
-This is dead reckoning. Depth and heading are absolute, but nothing is observing x and y,
-so the horizontal position drifts with the distance travelled. Correcting that drift is the
-job of SLAM.
+USBL fixes come 0.4 to 0.6 s late with the ping time in the stamp, the global filter keeps
+3 s of history and puts them in at the right time. A fix more than 5 sigma away from the
+estimate is dropped. The `map` frame is the world frame of the survey (USBL and GPS give
+world coordinates). Config is in `src/auv_localization/config/ekf.yaml`.
 
-Measured against ground truth, two 15 m squares at 0.5 m/s and 5 m depth (118 m in 313 s):
-
-| Quantity | Error |
-|---|---|
-| Horizontal position | max 1.06 m, 0.97 m at the end (0.8 % of distance travelled) |
-| Depth | max 3.1 cm |
-| Heading | mean -0.5 deg, between -2.4 and +1.2 deg (it is the compass error of the AHRS) |
-
-The error is not growing steadily in this run because the path is a closed square, the
-heading error partly cancels on opposite legs. On a long straight run it will grow more.
-
-`world` and `map` frames are the same only when the simulator and the localisation node
-are started together (`make up` does that), since the filter starts from x = y = 0.
-If the `localization` container alone is restarted in between, ground truth and estimate
-will be shown with an offset in RViz.
+The depth sensor publishes the same depth twice, as `/depth/pose` in `odom` for the local
+filter and `/depth/pose_map` in `map` for the global one. With one topic in `odom`, the
+global filter had to transform it with the `map -> odom` TF which it publishes itself, and
+this feedback made it run away to 35 km with a tiny covariance (found in testing).
 
 ## SLAM
 
-RTAB-Map is running in sonar only mode. The EKF dead reckoning is its odometry, a node is
-added to the graph on every 0.5 m, and the sonar cloud of the new node is matched with ICP
-against the clouds of nearby older nodes (proximity detection). On a successful match the
-graph is optimised and the correction comes out as the `map -> odom` TF. Config is in
-`src/auv_slam/config/rtabmap.yaml`.
+RTAB-Map builds the bathymetric map from the multibeam submaps (one graph node per 15 m
+submap, 35 to 40 m wide). The submap of a new node is matched with ICP against older
+submaps nearby (25 m radius). Bathymetry looks the same from any heading, so the
+neighbouring survey lanes, which are run in opposite direction, also match.
+
+Odometry for RTAB-Map is the aided navigation (`map -> base_link`), so the graph is close
+to the truth already, and RTAB-Map makes the map consistent where the lanes overlap. Its
+correction is published as `slam_map -> map`.
 
 | Output | Type | Meaning |
 |---|---|---|
-| TF `map -> odom` | | drift correction, so `map -> base_link` is the SLAM pose |
-| `/rtabmap/cloud_map` | `sensor_msgs/PointCloud2` | 3D map, 0.25 m voxels |
+| TF `slam_map -> map` | | SLAM correction on top of the aided navigation |
+| `/rtabmap/cloud_map` | `sensor_msgs/PointCloud2` | bathymetry map, 0.5 m voxels |
 | `/rtabmap/mapPath` | `nav_msgs/Path` | optimised trajectory |
 | `/rtabmap/mapGraph` | `rtabmap_msgs/MapGraph` | pose graph with the loop closure links |
 
-Measured against ground truth, two laps of a 20 m square at 0.5 m/s and 5 m depth
-(163 m in 392 s). 260 graph nodes and 127 proximity links were created.
+TF tree: `world -> slam_map -> map -> odom -> base_link`. `world -> slam_map` is a static
+identity, only for showing the simulator ground truth in RViz.
 
-| Position error | EKF alone | SLAM |
-|---|---|---|
-| Back at the start after lap 1 | 0.51 m | 0.09 m |
-| Back at the start after lap 2 | 0.34 m | 0.03 m |
-| RMS over the full run | 0.45 m | 0.42 m |
-| Maximum | 0.54 m | 0.66 m |
+The vehicle navigates on `map -> base_link` (aided navigation), not on the SLAM pose. Real
+survey AUVs do the same: the navigation is INS / DVL with USBL, and the bathymetry is made
+consistent afterwards. Feeding the SLAM loop closures back into the navigation would need
+the USBL fixes inside the SLAM graph as priors, which was not done here.
 
-So SLAM is pulling the position back when the vehicle comes to an already mapped place,
-but in between the revisits it is only as good as the dead reckoning. In this run the dead
-reckoning itself was within 0.55 m, so the gain is small. It will matter more on longer runs.
+### Measured
 
-Points to note:
+Survey test: GPS fix at the surface, dive and transit to the survey area, then 4 lanes of
+100 m, 25 m apart, at 10 m altitude and 1 m/s (526 m, 630 s, 118 USBL fixes, 36 GPS fixes).
+Horizontal position error against ground truth:
 
-- ICP between consecutive clouds is switched off (`RGBD/NeighborLinkRefining`). On open
-  seabed nothing is holding x and y and ICP slides, DVL dead reckoning is better there.
-- There is no camera, so appearance based loop closure is not available. The vehicle has
-  to come within 8 m of an old pose (`RGBD/LocalRadius`) for a loop closure.
-- RTAB-Map prints `Missing visual features ...` warnings, these are from the visual
-  proximity check which has nothing to work with. They can be ignored.
-- A new map is started on every start of the `slam` container. The database is kept in the
-  `slam_data` volume at `/data/rtabmap.db`.
+| Estimate | RMS | Max | At the end |
+|---|---|---|---|
+| Dead reckoning (local EKF) | 4.28 m | 6.13 m | 5.06 m |
+| Aided navigation (global EKF, USBL + GPS) | 0.90 m | 3.68 m | 0.34 m |
+| SLAM (`slam_map -> base_link`) | 0.91 m | 3.68 m | 0.47 m |
+
+- USBL aiding keeps the error bounded, dead reckoning keeps growing. The maximum of the
+  aided navigation comes in the dive, when the DVL has no bottom lock yet and the speed
+  model is the only velocity. It comes down to 0.2 to 0.4 m once the DVL locks.
+- SLAM is not adding accuracy here: with these settings it made only 1 loop closure in 41
+  submaps, so it stays on the aided navigation. With a wider search (35 m) and a lower
+  overlap requirement it made 14 loop closures, but got worse (1.34 m rms), because the
+  sparse and noisy multibeam over smooth dunes gives wrong matches. With 0.3 to 0.9 m USBL
+  aiding there is not much left for SLAM to correct. It is useful where there is no USBL,
+  and over rough seabed (rock fields, the wreck).
 
 ## Mission
 
@@ -358,8 +356,9 @@ plotting in Foxglove. A summary is also logged every 60 s (`make logs S=eval`).
 
 | ROS topic (`std_msgs/Float64`) | Meaning |
 |---|---|
-| `/eval/ekf_position_error` | horizontal error of the EKF dead reckoning, m |
-| `/eval/slam_position_error` | horizontal error of the SLAM pose, m |
+| `/eval/ekf_position_error` | horizontal error of the local EKF (dead reckoning), m |
+| `/eval/nav_position_error` | horizontal error of the global EKF (USBL and GPS aided), m |
+| `/eval/slam_position_error` | horizontal error of the SLAM pose (`slam_map -> base_link`), m |
 | `/eval/depth_error` | m |
 | `/eval/heading_error_deg` | deg |
 | `/eval/distance_travelled` | m |

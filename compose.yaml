@@ -163,17 +163,27 @@ services:
       target: nodes
     command: ros2 launch auv_control control.launch.py node:=controller
 
-  # --- localization: AHRS + DVL + depth -> odom -> base_link -------------------
+  # --- navigation: local EKF (odom -> base_link) and global EKF (map -> odom) ---
   localization:
     <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
     build:
       <<: *ros-build
       target: nodes
-    # ground truth frame is attached to map, SLAM is giving map -> odom
-    command: ros2 launch auv_localization localization.launch.py world_child_frame:=map
+    # also gives world -> slam_map, for showing the ground truth in RViz
+    command: >
+      ros2 launch auv_localization localization.launch.py filter:=local
+      publish_world_tf:=true world_child_frame:=slam_map
 
-  # --- SLAM: sonar cloud + odom -> map -> odom and the 3D map -------------------
+  navigation:
+    <<: *sim-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_localization localization.launch.py filter:=global
+
+  # --- SLAM: bathymetry submaps + navigation -> slam_map -> map and the 3D map ---
   slam:
     <<: *sim-node
     image: auv-slam-sim/slam:${ROS_DISTRO:-jazzy}
@@ -273,7 +283,7 @@ services:
       /propeller/cmd_thrust /fins/rudder/cmd_angle /fins/elevator/cmd_angle
       /controller/speed_reference /controller/heading_reference
       /controller/depth_reference /controller/pitch_reference
-      /odometry/filtered /ground_truth/odom
+      /odometry/filtered /odometry/global /ground_truth/odom
       /mission/status /mission/path
       /eval/ekf_position_error /eval/slam_position_error /eval/depth_error
       /eval/heading_error_deg /eval/distance_travelled

@@ -44,6 +44,8 @@ RATE_CHECKS = [
     ('/fins/rudder/cmd_angle', Float64, 30.0, 'controller'),
     ('/fins/elevator/cmd_angle', Float64, 30.0, 'controller'),
     ('/odometry/filtered', Odometry, 30.0, 'localization'),
+    ('/odometry/global', Odometry, 20.0, 'navigation'),
+    ('/eval/nav_position_error', Float64, 1.0, 'eval'),
     ('/eval/ekf_position_error', Float64, 1.0, 'eval'),
     ('/eval/slam_position_error', Float64, 1.0, 'eval + slam'),
 ]
@@ -59,7 +61,8 @@ LATCHED_CHECKS = [
 # (parent, child, container which is publishing it)
 TF_CHECKS = [
     ('odom', 'base_link', 'localization'),
-    ('map', 'odom', 'slam'),
+    ('map', 'odom', 'navigation'),
+    ('slam_map', 'map', 'slam'),
     ('base_link', 'sonar_link', 'state-pub'),
     ('world', 'base_link', 'full chain'),
 ]

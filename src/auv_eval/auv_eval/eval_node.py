@@ -1,11 +1,16 @@
-"""Compares the EKF and SLAM estimates with the simulator ground truth.
+"""Compares the navigation estimates with the simulator ground truth.
+
+  ekf   local EKF, dead reckoning only (odom frame, /odometry/filtered)
+  nav   global EKF, with USBL and GPS (map frame, /odometry/global)
+  slam  RTAB-Map corrected pose (slam_map -> base_link TF)
 
 Errors are published as plain numbers so they can be plotted live in Foxglove,
 and a summary is logged at regular interval. This node is only for simulation,
 on the real vehicle there is no ground truth.
 
-World frame of the simulator and the map frame are taken as the same, which
-holds when the simulator and localisation are started together.
+World frame of the simulator, odom, map and slam_map all start at the same
+origin (the vehicle start point), which holds when everything is started
+together.
 """
 
 import math
@@ -50,11 +55,12 @@ class EvalNode(Node):
         super().__init__('eval')
         rate = self.declare_parameter('rate', 2.0).value
         self.summary_period = self.declare_parameter('summary_period', 60.0).value
-        self.map_frame = self.declare_parameter('map_frame', 'map').value
+        self.slam_frame = self.declare_parameter('slam_frame', 'slam_map').value
         self.base_frame = self.declare_parameter('base_frame', 'base_link').value
 
         self.truth = None
         self.ekf = None
+        self.nav = None
         self.last_truth_xy = None
         self.reset()
 
@@ -62,10 +68,11 @@ class EvalNode(Node):
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
         self.pubs = {name: self.create_publisher(Float64, f'eval/{name}', 10) for name in (
-            'ekf_position_error', 'slam_position_error', 'depth_error',
+            'ekf_position_error', 'nav_position_error', 'slam_position_error', 'depth_error',
             'heading_error_deg', 'distance_travelled')}
         self.create_subscription(Odometry, 'ground_truth/odom', self.on_truth, 10)
         self.create_subscription(Odometry, 'odometry/filtered', self.on_ekf, 10)
+        self.create_subscription(Odometry, 'odometry/global', self.on_nav, 10)
         self.create_service(Trigger, 'eval/reset', self.on_reset)
         self.create_timer(1.0 / rate, self.on_timer)
         self.create_timer(self.summary_period, self.on_summary)
@@ -73,6 +80,7 @@ class EvalNode(Node):
     def reset(self):
         self.distance = 0.0
         self.ekf_stats = RunningStats()
+        self.nav_stats = RunningStats()
         self.slam_stats = RunningStats()
 
     def on_reset(self, request, response):
@@ -91,6 +99,9 @@ class EvalNode(Node):
     def on_ekf(self, msg):
         self.ekf = msg
 
+    def on_nav(self, msg):
+        self.nav = msg
+
     def on_timer(self):
         if self.truth is None or self.ekf is None:
             return
@@ -105,9 +116,15 @@ class EvalNode(Node):
             wrap_angle(yaw_from_quat(e.orientation) - yaw_from_quat(t.orientation))))
         self.publish('distance_travelled', self.distance)
 
-        # SLAM pose is map -> base_link, it is not there till the slam node is up
+        if self.nav is not None:
+            n = self.nav.pose.pose.position
+            nav_error = math.hypot(n.x - t.position.x, n.y - t.position.y)
+            self.nav_stats.add(nav_error)
+            self.publish('nav_position_error', nav_error)
+
+        # SLAM pose is slam_map -> base_link, it is not there till the slam node is up
         try:
-            tf = self.tf_buffer.lookup_transform(self.map_frame, self.base_frame, Time())
+            tf = self.tf_buffer.lookup_transform(self.slam_frame, self.base_frame, Time())
         except TransformException:
             return
         s = tf.transform.translation
@@ -119,9 +136,10 @@ class EvalNode(Node):
         if self.ekf_stats.count == 0:
             return
         self.get_logger().info(
-            f'{self.distance:.0f} m travelled | position error: '
-            f'EKF rms {self.ekf_stats.rms:.2f} max {self.ekf_stats.maximum:.2f} m, '
-            f'SLAM rms {self.slam_stats.rms:.2f} max {self.slam_stats.maximum:.2f} m')
+            f'{self.distance:.0f} m travelled | position error rms / max: '
+            f'dead reckoning {self.ekf_stats.rms:.2f} / {self.ekf_stats.maximum:.2f} m, '
+            f'aided nav {self.nav_stats.rms:.2f} / {self.nav_stats.maximum:.2f} m, '
+            f'SLAM {self.slam_stats.rms:.2f} / {self.slam_stats.maximum:.2f} m')
 
     def publish(self, name, value):
         self.pubs[name].publish(Float64(data=float(value)))
