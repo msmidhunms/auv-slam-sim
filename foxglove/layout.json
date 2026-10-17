@@ -4,9 +4,9 @@
       "followTf": "base_link",
       "followMode": "follow-position",
       "cameraState": {
-        "distance": 25,
+        "distance": 45,
         "phi": 55,
-        "thetaOffset": 45,
+        "thetaOffset": 200,
         "perspective": true,
         "targetOffset": [
           0,
@@ -29,29 +29,38 @@
         "far": 5000
       },
       "scene": {
-        "backgroundColor": "#0c1e30"
+        "backgroundColor": "#081a28"
       },
       "topics": {
         "/robot_description": {
           "visible": true
         },
-        "/sonar/points": {
-          "visible": true,
-          "pointSize": 3,
-          "colorMode": "flat",
-          "flatColor": "#ffffffff"
-        },
         "/rtabmap/cloud_map": {
           "visible": true,
-          "pointSize": 3,
+          "pointSize": 4,
           "colorMode": "colormap",
           "colorField": "z",
           "colorMap": "turbo"
         },
-        "/rtabmap/mapPath": {
-          "visible": true
+        "/multibeam/swath": {
+          "visible": true,
+          "pointSize": 3,
+          "colorMode": "flat",
+          "flatColor": "#ffffffff",
+          "decayTime": 8
         },
         "/mission/path": {
+          "visible": true,
+          "lineWidth": 0.3,
+          "gradient": [
+            "#ffff00ff",
+            "#ffff00ff"
+          ]
+        },
+        "/usbl/pose": {
+          "visible": true
+        },
+        "/odometry/global": {
           "visible": true
         }
       },
@@ -60,9 +69,9 @@
           "layerId": "foxglove.Grid",
           "visible": true,
           "frameId": "map",
-          "size": 100,
-          "divisions": 20,
-          "color": "#4682aa66",
+          "size": 300,
+          "divisions": 30,
+          "color": "#4682aa55",
           "position": [
             0,
             0,
@@ -76,7 +85,170 @@
           "order": 1
         }
       },
-      "foxglovePanelTitle": "Vehicle, sonar and SLAM map"
+      "foxglovePanelTitle": "Vehicle, multibeam and bathymetry map"
+    },
+    "Image!sidescan": {
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 45,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26
+      },
+      "imageMode": {
+        "imageTopic": "/sidescan/waterfall"
+      },
+      "foxglovePanelTitle": "Sidescan (port | starboard)"
+    },
+    "RawMessages!status": {
+      "topicPath": "/mission/status.data",
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "foxglovePanelTitle": "Mission state"
+    },
+    "Plot!depth": {
+      "paths": [
+        {
+          "value": "/ground_truth/odom.pose.pose.position.z",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "true"
+        },
+        {
+          "value": "/odometry/global.pose.pose.position.z",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "navigation"
+        },
+        {
+          "value": "/controller/depth_reference.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "reference"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 180,
+      "foxglovePanelTitle": "Depth (m)"
+    },
+    "Plot!altitude": {
+      "paths": [
+        {
+          "value": "/dvl/altitude.range",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "DVL"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 180,
+      "foxglovePanelTitle": "Altitude above seabed (m)",
+      "minYValue": 0
+    },
+    "Plot!speed": {
+      "paths": [
+        {
+          "value": "/dvl/twist.twist.twist.linear.x",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "DVL"
+        },
+        {
+          "value": "/speed_model/twist.twist.twist.linear.x",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "propeller model"
+        },
+        {
+          "value": "/controller/speed_reference.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "reference"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 180,
+      "foxglovePanelTitle": "Speed (m/s)",
+      "minYValue": 0
+    },
+    "Plot!actuators": {
+      "paths": [
+        {
+          "value": "/propeller/cmd_thrust.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "thrust (N)"
+        },
+        {
+          "value": "/fins/rudder/cmd_angle.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "rudder (rad)"
+        },
+        {
+          "value": "/fins/elevator/cmd_angle.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "elevator (rad)"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 180,
+      "foxglovePanelTitle": "Actuators"
     },
     "Plot!error": {
       "paths": [
@@ -84,7 +256,13 @@
           "value": "/eval/ekf_position_error.data",
           "enabled": true,
           "timestampMethod": "receiveTime",
-          "label": "EKF dead reckoning"
+          "label": "dead reckoning"
+        },
+        {
+          "value": "/eval/nav_position_error.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime",
+          "label": "USBL aided"
         },
         {
           "value": "/eval/slam_position_error.data",
@@ -99,29 +277,17 @@
       "legendDisplay": "floating",
       "isSynced": true,
       "xAxisVal": "timestamp",
-      "followingViewWidth": 120,
+      "followingViewWidth": 180,
       "foxglovePanelTitle": "Position error against ground truth (m)",
       "minYValue": 0
     },
-    "Plot!depth": {
+    "Plot!battery": {
       "paths": [
         {
-          "value": "/controller/depth_reference.data",
+          "value": "/battery/state.percentage",
           "enabled": true,
           "timestampMethod": "receiveTime",
-          "label": "reference"
-        },
-        {
-          "value": "/ground_truth/odom.pose.pose.position.z",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "actual"
-        },
-        {
-          "value": "/odometry/filtered.pose.pose.position.z",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "estimated"
+          "label": "charge"
         }
       ],
       "showXAxisLabels": true,
@@ -130,127 +296,31 @@
       "legendDisplay": "floating",
       "isSynced": true,
       "xAxisVal": "timestamp",
-      "followingViewWidth": 120,
-      "foxglovePanelTitle": "Depth (m)"
-    },
-    "Plot!speed": {
-      "paths": [
-        {
-          "value": "/dvl/twist.twist.twist.linear.x",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "surge"
-        },
-        {
-          "value": "/dvl/twist.twist.twist.linear.y",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "sway"
-        },
-        {
-          "value": "/dvl/twist.twist.twist.linear.z",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "heave"
-        }
-      ],
-      "showXAxisLabels": true,
-      "showYAxisLabels": true,
-      "showLegend": true,
-      "legendDisplay": "floating",
-      "isSynced": true,
-      "xAxisVal": "timestamp",
-      "followingViewWidth": 120,
-      "foxglovePanelTitle": "Body velocity from DVL (m/s)"
-    },
-    "Plot!thrust": {
-      "paths": [
-        {
-          "value": "/thrusters/cmd.data[0]",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "thruster 1"
-        },
-        {
-          "value": "/thrusters/cmd.data[1]",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "thruster 2"
-        },
-        {
-          "value": "/thrusters/cmd.data[2]",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "thruster 3"
-        },
-        {
-          "value": "/thrusters/cmd.data[3]",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "thruster 4"
-        },
-        {
-          "value": "/thrusters/cmd.data[4]",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "thruster 5"
-        },
-        {
-          "value": "/thrusters/cmd.data[5]",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "thruster 6"
-        },
-        {
-          "value": "/thrusters/cmd.data[6]",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "thruster 7"
-        },
-        {
-          "value": "/thrusters/cmd.data[7]",
-          "enabled": true,
-          "timestampMethod": "receiveTime",
-          "label": "thruster 8"
-        }
-      ],
-      "showXAxisLabels": true,
-      "showYAxisLabels": true,
-      "showLegend": true,
-      "legendDisplay": "floating",
-      "isSynced": true,
-      "xAxisVal": "timestamp",
-      "followingViewWidth": 120,
-      "foxglovePanelTitle": "Thruster commands (N)"
-    },
-    "RawMessages!mission": {
-      "topicPath": "/mission/status.data",
-      "diffEnabled": false,
-      "diffMethod": "custom",
-      "diffTopicPath": "",
-      "showFullMessageForDiff": false,
-      "foxglovePanelTitle": "Mission status"
+      "followingViewWidth": 180,
+      "foxglovePanelTitle": "Battery (%)",
+      "minYValue": 0,
+      "maxYValue": 1
     },
     "Teleop!drive": {
       "topic": "/cmd_vel",
       "publishRate": 10,
       "upButton": {
         "field": "linear-x",
-        "value": 0.4
+        "value": 1.0
       },
       "downButton": {
         "field": "linear-x",
-        "value": -0.4
+        "value": 0.0
       },
       "leftButton": {
         "field": "angular-z",
-        "value": 0.4
+        "value": 0.12
       },
       "rightButton": {
         "field": "angular-z",
-        "value": -0.4
+        "value": -0.12
       },
-      "foxglovePanelTitle": "Teleop"
+      "foxglovePanelTitle": "Teleop (only when no mission is running)"
     }
   },
   "globalVariables": {},
@@ -260,32 +330,47 @@
   },
   "layout": {
     "direction": "row",
-    "splitPercentage": 55,
+    "splitPercentage": 50,
     "first": {
       "direction": "column",
-      "splitPercentage": 78,
+      "splitPercentage": 62,
       "first": "3D!auv",
       "second": {
         "direction": "row",
-        "splitPercentage": 60,
-        "first": "RawMessages!mission",
-        "second": "Teleop!drive"
+        "splitPercentage": 62,
+        "first": "Image!sidescan",
+        "second": {
+          "direction": "column",
+          "splitPercentage": 40,
+          "first": "RawMessages!status",
+          "second": "Teleop!drive"
+        }
       }
     },
     "second": {
       "direction": "column",
-      "splitPercentage": 50,
+      "splitPercentage": 34,
       "first": {
-        "direction": "column",
+        "direction": "row",
         "splitPercentage": 50,
-        "first": "Plot!error",
-        "second": "Plot!depth"
+        "first": "Plot!depth",
+        "second": "Plot!altitude"
       },
       "second": {
         "direction": "column",
         "splitPercentage": 50,
-        "first": "Plot!speed",
-        "second": "Plot!thrust"
+        "first": {
+          "direction": "row",
+          "splitPercentage": 50,
+          "first": "Plot!speed",
+          "second": "Plot!actuators"
+        },
+        "second": {
+          "direction": "row",
+          "splitPercentage": 60,
+          "first": "Plot!error",
+          "second": "Plot!battery"
+        }
       }
     }
   }

@@ -7,8 +7,7 @@ with multibeam and sidescan sonar, USBL / GPS aided navigation, bathymetric SLAM
 > Realistic torpedo survey AUV (MBARI Tethys LRAUV) which runs a full autonomous survey
 > mission: GPS fix at the surface, dive, multibeam and sidescan survey at constant altitude,
 > surfacing for GPS, return. Navigation is DVL / inertial dead reckoning aided by USBL and
-> GPS, with bathymetric SLAM. Simulation only. Visual polish and the Foxglove layout are
-> pending.
+> GPS, with bathymetric SLAM. Simulation only.
 
 ## Prerequisites
 
@@ -458,27 +457,42 @@ make test     # unit tests of sensor models, control laws, sonar models, survey 
 
 ## Visualisation
 
-**RViz and Gazebo GUI** - open `http://localhost:6080` (or `make gui`). RViz is on the left
-and Gazebo is on the right. Give 20 to 30 seconds after `make up`, Gazebo window takes
-some time to come.
+**RViz and Gazebo** - open `http://localhost:6080` (or `make gui`). Give 30 to 40 seconds
+after `make up`, the Gazebo window takes some time to come.
+
+- RViz (left), fixed frame `map`:
+  - the vehicle mesh
+  - the bathymetry map built by SLAM, coloured by depth
+  - the live multibeam swath (white, kept for 8 s)
+  - the mission lanes (yellow)
+  - navigation (blue arrows) and ground truth (green arrows)
+  - USBL fixes with their uncertainty, and the support ship
+  - the sidescan waterfall in a panel on the top left
+
+  Forward looking sonar, SLAM trajectory and dead reckoning are there but switched off.
+- Gazebo (right): the camera follows the vehicle from behind (it is set at start up by the
+  `gazebo_follow` program in `docker/gui/supervisord.conf`).
 
 **Foxglove** - in the Foxglove app (desktop or `app.foxglove.dev` in Chrome) select
-Open connection -> Foxglove WebSocket -> `ws://localhost:8765`. Then import the layout from
-`foxglove/layout.json` (Layouts -> Import from file). It is having the 3D view with sonar
-and SLAM map, plots of position error, depth, DVL velocity and thruster commands, mission
-status and a teleop panel.
+Open connection -> Foxglove WebSocket -> `ws://localhost:8765`, then import the layout from
+`foxglove/layout.json` (Layouts -> Import from file). It has:
+
+- a 3D view with the vehicle, multibeam swath, bathymetry map, lanes and USBL fixes
+- the sidescan waterfall
+- the mission state
+- plots: depth (true, navigation, reference), altitude, speed (DVL, propeller model,
+  reference), propeller and fins, position error (dead reckoning, USBL aided, SLAM), battery
+- a teleop panel, for use when no mission is running
+
+The layout file is checked to be valid, but it was not opened in the Foxglove app during
+development, so some panel settings may need a touch after import.
 
 Both the ports are bound to localhost only, as there is no password on the VNC.
 
-Gazebo GUI is the heaviest one on CPU rendering (around 5 cores). If the machine is
+The Gazebo GUI is the heaviest one on CPU rendering (around 4 to 5 cores). If the machine is
 struggling, make `START_GZ_GUI=false` in `.env` and do `make up` again, RViz alone is light.
-Desktop resolution can be changed with `VNC_RESOLUTION`.
-
-In RViz the fixed frame is `map` and the vehicle model is drawn at the SLAM pose. Coloured
-boxes are the SLAM map, white points are the live sonar cloud, pink line is the SLAM
-trajectory, yellow line is the mission plan, orange arrows are the EKF estimate and green
-arrows are the ground truth.
-The `slam` container has to be running for RViz to show anything, since it gives `map -> odom`.
+Desktop resolution can be changed with `VNC_RESOLUTION`. There is no fog or light falloff
+in the Gazebo view, the CPU renderer (ogre2 on llvmpipe) is kept simple.
 
 ## Comms smoke test
 
