@@ -9,7 +9,14 @@ dive, multibeam and sidescan survey at constant altitude above the seabed, surfa
 return to the recovery point. Navigation is DVL / inertial dead reckoning aided by USBL and
 GPS, with bathymetric SLAM on the multibeam data. Simulation only.
 
+![Survey mission concept: support ship with USBL, GPS at the surface, AUV with multibeam, sidescan, DVL and forward sonar over the seabed](docs/mission_concept.svg)
+
 ## Architecture
+
+![System architecture: Gazebo, bridge, sensor and sonar containers, navigation, SLAM, mission and controller over Zenoh](docs/architecture.svg)
+
+<details>
+<summary>Text version</summary>
 
 ```
                         Gazebo (sim) ── bridge ──┐
@@ -34,7 +41,28 @@ GPS, with bathymetric SLAM on the multibeam data. Simulation only.
  viewing: gui (RViz + Gazebo in the browser), foxglove, eval (error against ground truth)
 ```
 
+</details>
+
 Each box line is one container, 21 in total, talking over Zenoh (`rmw_zenoh_cpp`).
+
+### Layers
+
+![Layered architecture: host, container OS, container runtime, ROS 2 middleware, simulation, sensor and sonar models, estimation and mapping, autonomy and control, visualisation](docs/layered_architecture.svg)
+
+| Layer | What is there |
+|---|---|
+| 8 Visualisation and ops | RViz and Gazebo GUI over noVNC, Foxglove, eval, rosbag, make targets and tests |
+| 7 Autonomy and control | mission state machine, torpedo controller, teleop, fault injection |
+| 6 Estimation and mapping | local and global EKF (`robot_localization`), RTAB-Map, TF from the URDF |
+| 5 Sensor and sonar models | AHRS, DVL, depth, GPS, USBL, battery, multibeam, swath assembler, sidescan |
+| 4 Simulation | Gazebo Harmonic with the vehicle physics, raw sensors and the world, `ros_gz_bridge` |
+| 3 ROS 2 middleware | ROS 2 Jazzy, `rmw_zenoh_cpp` with the Zenoh router, tf2, sim time, Gazebo transport |
+| 2 Container runtime | Docker Compose, `auv_net`, multi-stage images (`base`, `sim`, `nodes`, `slam`, `gui`) |
+| 1 Container OS | Ubuntu 24.04 from `ros:jazzy-ros-base`, Mesa llvmpipe for CPU rendering |
+| 0 Host | macOS with Docker Desktop (tested on Apple M4), or Linux with an NVIDIA GPU |
+
+Layers 4 and 5 are simulation only. On a real vehicle they are replaced by the drivers
+publishing the same topics, and layers 6 and 7 stay as they are (see Feasibility).
 
 ## What is realistic and what is simulated
 
