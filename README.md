@@ -4,10 +4,68 @@ ROS 2 Jazzy + Gazebo Harmonic simulation of a torpedo survey AUV (MBARI Tethys L
 with multibeam and sidescan sonar, USBL / GPS aided navigation, bathymetric SLAM
 (RTAB-Map) and an autonomous survey mission. Every node runs in its own Docker container.
 
-> Realistic torpedo survey AUV (MBARI Tethys LRAUV) which runs a full autonomous survey
-> mission: GPS fix at the surface, dive, multibeam and sidescan survey at constant altitude,
-> surfacing for GPS, return. Navigation is DVL / inertial dead reckoning aided by USBL and
-> GPS, with bathymetric SLAM. Simulation only.
+The vehicle runs a full autonomous survey mission like a real AUV: GPS fix at the surface,
+dive, multibeam and sidescan survey at constant altitude above the seabed, surfacing for GPS,
+return to the recovery point. Navigation is DVL / inertial dead reckoning aided by USBL and
+GPS, with bathymetric SLAM on the multibeam data. Simulation only.
+
+## Architecture
+
+```
+                        Gazebo (sim) ── bridge ──┐
+   vehicle physics, IMU, DVL beams,              │  raw sensor data, ground truth
+   sonar fan, forward sonar                      ▼
+ ┌──────────────── sensors ────────────────┐   ┌──────────── sonars ─────────────┐
+ │ ahrs  dvl  depth  gps  usbl  battery    │   │ multibeam  swath-assembler       │
+ └───────────────┬─────────────────────────┘   │ sidescan                         │
+                 │                              └──────────────┬───────────────────┘
+                 ▼                                             ▼
+ ┌──────────── navigation ─────────────────┐   ┌──────────── slam ───────────────┐
+ │ localization (local EKF, odom)          │──▶│ RTAB-Map on bathymetry submaps   │
+ │ navigation (global EKF + USBL + GPS)    │   │ -> bathymetry map                │
+ └───────────────┬─────────────────────────┘   └──────────────────────────────────┘
+                 ▼
+ ┌──────────── mission ────────────────────┐
+ │ state machine, lanes, aborts            │── speed / heading / depth / altitude ──┐
+ └─────────────────────────────────────────┘                                        ▼
+                                              ┌──────────── controller ─────────────┐
+                                              │ propeller, rudder, elevator          │── bridge ──▶ Gazebo
+                                              └──────────────────────────────────────┘
+ viewing: gui (RViz + Gazebo in the browser), foxglove, eval (error against ground truth)
+```
+
+Each box line is one container, 21 in total, talking over Zenoh (`rmw_zenoh_cpp`).
+
+## What is realistic and what is simulated
+
+| Part | Like the real thing | Simplified or missing |
+|---|---|---|
+| Vehicle | Tethys LRAUV mass, added mass, drag, fins (LiftDrag), one propeller, positive buoyancy, cannot hover | no ocean current (fins in Gazebo do not see it), no waves at the surface |
+| Control | speed / heading / depth through pitch cascade, altitude keeping, gain scheduled fins | |
+| DVL | bottom lock from 4 traced beams, lost above 30 m slant range | velocity is ground truth plus noise |
+| AHRS | slowly wandering compass heading error | |
+| GPS | only at the surface, after 10 s | flat earth datum |
+| USBL | error with slant range, late fixes, missed pings | no acoustic modem, the fix is given directly |
+| Multibeam / sidescan | geometry traced in Gazebo, shadows, speckle, grazing angle intensity | no material, beam pattern, multipath; rendered on CPU with 512 rays |
+| Navigation | dual EKF like INS + USBL, late fixes put in at the right time | |
+| SLAM | submap based bathymetric SLAM | not fed back into the navigation |
+| Mission | dive, survey, surfacing for GPS, aborts, battery, fault injection | no acoustic comms to the ship, no mission planning UI |
+
+## Feasibility (on this Mac)
+
+- **Works**: the full stack of 21 containers runs at real time factor 0.9 to 1.0 on an
+  Apple M4 with Docker Desktop at 8 GB, and a complete survey mission runs end to end.
+- **Limit: no GPU in Docker on macOS**. Gazebo sensors and both GUIs are rendered on CPU
+  (Mesa llvmpipe). This is why the sonar has 512 rays and the forward sonar 64 x 16, and why
+  the Gazebo window takes 4 to 5 cores. On a Linux machine with an NVIDIA GPU the same code
+  can run much denser sonars and a nicer underwater scene.
+- **Limit: acoustics are geometric**. Good for navigation, SLAM and mission logic, not for
+  developing sonar signal processing.
+- **Path to a real vehicle**: the `sim`, `bridge` and the sensor model containers are
+  replaced by drivers which publish the same topics (`/imu/data`, `/dvl/twist`,
+  `/dvl/altitude`, `/depth/pose`, `/gps/fix`, `/usbl/pose`, sonar point clouds) and take the
+  same commands (`/propeller/cmd_thrust`, `/fins/*/cmd_angle`). Navigation, SLAM, control and
+  mission stay as they are; gains and the vehicle numbers have to be tuned for the real hull.
 
 ## Prerequisites
 
@@ -31,8 +89,11 @@ make check             # smoke test of the running stack
 ```
 
 Tested on a MacBook with Apple M4 and Docker Desktop having 8 GB memory and 10 CPUs. The full
-stack is using around 2.5 GB of memory. CPU is what matters, the Gazebo GUI alone takes
-around 5 cores since all the rendering is on CPU.
+stack (21 containers) is using around 3.5 GB of memory and runs at real time factor 1.0
+during a mission. CPU is what matters: the Gazebo GUI alone takes 3 to 5 cores and the
+simulator around 1 core, since all the rendering is on CPU. The first `make build` downloads
+around 10 GB of images; later builds only redo the changed parts, but exporting the images
+for all the services still takes a few minutes.
 
 All the nodes are running on simulation time. So if the `sim` container is restarted, the
 other containers are also restarted by compose (`depends_on` with `restart: true`),
@@ -54,8 +115,7 @@ otherwise the EKF gets stuck when the clock goes back to zero.
 | `swath-assembler` | bathymetry submaps from the swaths |
 | `sidescan` | sidescan waterfall image from the sonar fan |
 | `usbl` | USBL model, position fixes from the support ship |
-| `controller` | depth, heading, attitude and velocity controller, `cmd_vel` to body wrench |
-| `allocator` | thruster allocator, body wrench to 8 thrust commands |
+| `controller` | speed, heading and depth / altitude controller, setpoints to propeller and fins |
 | `localization` | local EKF, AHRS + DVL + speed model + depth to `odom -> base_link` |
 | `navigation` | global EKF, same plus USBL and GPS to `map -> odom` |
 | `slam` | RTAB-Map, multibeam submaps + aided navigation to `slam_map -> map` and the bathymetry map |
@@ -127,7 +187,7 @@ controlled the way survey AUVs are normally controlled:
 | Speed | propeller thrust = hull drag feed forward + PI on the DVL speed |
 | Heading | rudder from a PID on the heading error |
 | Depth | outer loop makes a pitch reference (max 25 deg) from the depth error, inner loop makes the elevator angle from the pitch error |
-| Altitude | same as depth, the depth reference is made from the DVL altitude (needs the DVL altitude topic, coming in the next phase) |
+| Altitude | same as depth, the depth reference is made from the DVL altitude |
 | Roll | not controlled, the vehicle is stable in roll by itself |
 
 Fin force goes with speed square, so the fin loops are gain scheduled with
@@ -212,8 +272,9 @@ How they behave, like the real instruments:
   way sound travel late. Measured: 26 fixes in 140 s, 0.4 to 0.6 s late, 0.49 m mean error.
 - **Speed model**: without DVL lock the only velocity is the speed worked out from the
   propeller command, like real AUVs do with the propeller RPM. It is crude. In a dive
-  from the surface the EKF was 11.5 m off by the time the DVL locked (around 80 s without
-  DVL). GPS before the dive and USBL fixes are there to remove this, which is the next phase.
+  from the surface the dead reckoning was 11.5 m off by the time the DVL locked (around
+  80 s without DVL). The GPS fix before the dive and the USBL fixes take this out in the
+  global EKF (see Navigation).
 
 Noise values are in `src/auv_sensors/config/sensors.yaml`. The forward sonar is a
 `gpu_lidar` in Gazebo, so it gives the geometry but acoustic effects (multipath, speckle,
@@ -239,7 +300,7 @@ sonar (seabed image). Both are made here from one acoustic fan which is traced i
   swath is 3.5 times the altitude wide (35 m at 10 m altitude).
 - **Submaps**: a single swath is only a line and cannot be matched to anything, so 15 m of
   track is put together into one bathymetry submap (around 13 000 points). This is the
-  input for SLAM in the next phase, same idea as submap based bathymetric SLAM.
+  input for SLAM, same idea as submap based bathymetric SLAM.
 - **Sidescan**: echo strength comes from the angle between the ray and the seabed (Lambert),
   with Rayleigh speckle. Rays hidden behind an object leave a dark acoustic shadow, and the
   water column under the vehicle is dark. 60 m range per side, 0.2 m bins, slant range (not
@@ -390,20 +451,29 @@ make fault-clear F=dvl_failure
 
 ### Measured
 
-Full mission: GPS fix, dive, 4 lanes, one surfacing for GPS, dive again, last lane,
-return. 1058 m in about 1100 s, 15 Wh of battery.
+End to end test from a clean start (`make down`, `make build`, `make up`, `make check`,
+`make mission`): GPS fix, dive, 4 lanes, one surfacing for GPS, dive again, last lane,
+return, end. All the smoke test checks passed before the mission.
 
 | | Result |
 |---|---|
-| Dive to 24 m | 100 s, on a straight heading |
+| Whole mission | 1166 m in 1153 s of simulation time, 17 Wh of battery, real time factor 1.0 |
+| Dive to 24 m | about 100 s, on a straight heading |
 | Lane of 104 m | 125 s |
-| End position | 2.5 m from the recovery point |
-| Aided navigation error | 1.2 m rms, 6.5 m max (just after the surfacing, without DVL), 0.14 m at the end |
-| Dead reckoning error | 11.8 m rms, 21.6 m max (it drifted a lot during the surfacing) |
-| Leak during the survey | `ABORT: leak detected`, climbed from 25 m to the surface in less than 50 s, propeller off |
+| `END` reached | 7.7 m from the recovery point (8 m acceptance radius) |
+| Aided navigation error | 1.15 m rms, 6.4 m max (just after the surfacing, without DVL), 0.2 m at the end |
+| Dead reckoning error | up to 19 m at the end, most of it from the surfacing and the dive without DVL |
+| Leak during the survey (separate run) | `ABORT: leak detected`, climbed from 25 m to the surface in less than 50 s, propeller off |
 
-The surfacing overshoots: the vehicle climbs straight at 1.4 m/s, so it covers around 100 m
-on the way up and has to come back after the GPS fix.
+Known weak points:
+
+- The surfacing overshoots: the vehicle climbs straight at 1.4 m/s, so it covers around
+  100 m on the way up and has to come back after the GPS fix. The dive after it also goes
+  straight, so it passes the next lane start and loops back.
+- At `END` the vehicle climbs straight on its last heading, so it comes up some 50 m away
+  from the recovery point.
+- Only the leak abort was run in the full simulation, the other aborts are covered by unit
+  tests.
 
 ## Evaluation
 
@@ -419,24 +489,7 @@ plotting in Foxglove. A summary is also logged every 60 s (`make logs S=eval`).
 | `/eval/heading_error_deg` | deg |
 | `/eval/distance_travelled` | m |
 
-Result of the full survey mission (249 m travelled, completed in 506 s, 369 graph nodes,
-61 proximity links, all of them on the tie line):
-
-| Position error | EKF alone | SLAM |
-|---|---|---|
-| RMS over the mission | 0.55 m | 0.50 m |
-| Maximum | 0.81 m | 0.81 m |
-| At the end | 0.73 m | 0.66 m |
-
-The vehicle stopped 0.66 m away from the last waypoint in ground truth. Depth error at the
-end was 1.7 cm and heading error was 0.4 deg.
-
-SLAM gain is small in this mission, and it has to be understood properly. A loop closure
-brings the vehicle back to where SLAM believes the first lane was, and the first lane
-itself was mapped with around 0.5 m of dead reckoning error by its end. So SLAM is making
-the map consistent with itself, it cannot remove the error which was already there when
-the place was mapped first. To get absolute accuracy an absolute reference is needed
-(USBL, or GPS fix at the surface).
+The measured results are in the Navigation / SLAM and Mission sections above.
 
 ## Recording
 
@@ -444,9 +497,9 @@ the place was mapped first. To get absolute accuracy an absolute reference is ne
 make bag      # Ctrl-C to stop
 ```
 
-Sensor, control, estimate, ground truth and evaluation topics are recorded in MCAP format
-into `./bags` (not tracked in git). Sonar cloud is the bulky one, a bag is around
-50 MB per minute. The MCAP file can be opened directly in Foxglove.
+Sensor, sonar, control, estimate, mission, ground truth and evaluation topics are recorded
+in MCAP format into `./bags` (not tracked in git). The point clouds are the bulky part, a
+bag is some tens of MB per minute. The MCAP file can be opened directly in Foxglove.
 
 ## Tests
 
@@ -546,6 +599,7 @@ make smoke-down
 | `make mission-abort` | abort the mission, vehicle climbs to the surface |
 | `make mission-status` | current state of the mission |
 | `make fault F=...` | inject a fault: `leak`, `battery_low`, `dvl_failure`, `usbl_off` |
+| `make fault-clear F=...` | clear a fault |
 | `make gui` | open the browser desktop with RViz and Gazebo GUI |
 | `make test` | unit tests of our packages |
 | `make check` | smoke test of the running stack |
