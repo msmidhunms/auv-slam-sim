@@ -81,7 +81,9 @@ def test_survey_walks_the_waypoints_then_returns():
     m.step(Inputs(t=t + 100, x=-18.0, y=-18.0, z=-15.0, yaw=0.0, altitude=10.0))
     assert m.state == 'END'
     cmd = m.step(Inputs(t=t + 101, x=-18.0, y=-18.0, z=-15.0, yaw=0.0))
-    assert cmd.speed == 0.0 and cmd.depth == 0.0
+    assert cmd.speed > 0.0 and cmd.depth == 0.0             # climbs actively
+    cmd = m.step(Inputs(t=t + 160, x=-18.0, y=-18.0, z=-0.2, yaw=0.0))
+    assert cmd.speed == 0.0                                 # propeller off at the surface
 
 
 def test_surfacing_only_at_lane_end_then_dives_again():
@@ -161,3 +163,21 @@ def test_fls_ignores_seabed_and_sees_obstacle():
     to_the_side = seabed + [(5.0, 8.0, -5.0)]
     assert fls_obstacle_range(to_the_side, altitude, math.radians(20), 1.5) == math.inf
     assert fls_obstacle_range(wreck, None, math.radians(20), 1.5) == math.inf
+
+
+def test_every_command_is_complete():
+    """Each command has a heading and exactly one of depth / altitude. A None heading
+    at the dive -> survey change crashed the node once."""
+    m = started(Config(surface_interval=100.0))
+    steps = [surface(0.0), surface(20.0),
+             Inputs(t=30.0, x=-10.0, y=-10.0, z=-5.0, yaw=0.0),
+             Inputs(t=50.0, x=-5.0, y=-5.0, z=-14.5, yaw=0.0),            # dive -> survey
+             Inputs(t=60.0, x=0.0, y=0.0, z=-20.0, yaw=0.0, altitude=10.0),
+             Inputs(t=200.0, x=100.0, y=0.0, z=-20.0, yaw=0.0, altitude=10.0),
+             Inputs(t=201.0, x=100.0, y=0.0, z=-20.0, yaw=0.0),
+             Inputs(t=260.0, x=100.0, y=10.0, z=-0.1, yaw=1.5, gps_fix=True)]
+    for inputs in steps:
+        cmd = m.step(inputs)
+        assert cmd is not None
+        assert isinstance(cmd.heading, float) and isinstance(cmd.speed, float)
+        assert (cmd.depth is None) != (cmd.altitude is None)

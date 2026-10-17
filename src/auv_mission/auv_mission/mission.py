@@ -198,7 +198,8 @@ class Mission:
             self.segment_start = (s.x, s.y)
             self.dvl_lost_since = None
             self.enter('SURVEY', s.t)
-        elif s.t - self.state_time > c.dive_timeout:
+            return self.do_survey(s)
+        if s.t - self.state_time > c.dive_timeout:
             self.abort('dive took too long', s.t)
             return self.do_abort(s)
         return Command(speed=c.climb_speed, heading=self.fixed_heading, depth=c.transit_depth)
@@ -267,15 +268,20 @@ class Mission:
         return Command(speed=c.cruise_speed, heading=heading, depth=c.transit_depth)
 
     def do_end(self, s):
-        return Command(speed=0.0, heading=s.yaw, depth=0.0)
+        # climb to the surface for recovery, then propeller off
+        return self.climb_and_stop(s)
 
     def do_abort(self, s):
-        # climb straight on the heading the vehicle had at the abort
+        return self.climb_and_stop(s)
+
+    def climb_and_stop(self, s):
+        """Climb straight on the heading the vehicle had when the state started,
+        propeller off once at the surface."""
         if self.fixed_heading is None:
             self.fixed_heading = s.yaw
         if s.z < self.c.surfaced_z:
             return Command(speed=self.c.climb_speed, heading=self.fixed_heading, depth=0.0)
-        return Command(speed=0.0, heading=s.yaw, depth=0.0)
+        return Command(speed=0.0, heading=self.fixed_heading, depth=0.0)
 
 
 def fls_obstacle_range(points, altitude, half_angle, clearance):

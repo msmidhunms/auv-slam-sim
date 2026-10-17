@@ -1,15 +1,14 @@
 # auv-slam-sim
 
-ROS 2 Jazzy + Gazebo Harmonic simulation of a BlueROV2-style underwater vehicle with
-sonar-based 3D SLAM (RTAB-Map), EKF localisation and 6-DOF thruster control.
-Every node runs in its own Docker container.
+ROS 2 Jazzy + Gazebo Harmonic simulation of a torpedo survey AUV (MBARI Tethys LRAUV)
+with multibeam and sidescan sonar, USBL / GPS aided navigation, bathymetric SLAM
+(RTAB-Map) and an autonomous survey mission. Every node runs in its own Docker container.
 
-> Being upgraded to a realistic torpedo survey AUV (MBARI Tethys LRAUV). The new vehicle,
-> world, control, teleop, the navigation sensors (DVL with bottom lock, GPS, USBL) and the
-> survey sonars (multibeam, sidescan) and the aided navigation (USBL and GPS fusion,
-> bathymetric SLAM) are in place. Navigation aids, survey sonars and the mission
-> state machine are being reworked phase by phase, so `make mission` is not working for
-> the new vehicle as of now.
+> Realistic torpedo survey AUV (MBARI Tethys LRAUV) which runs a full autonomous survey
+> mission: GPS fix at the surface, dive, multibeam and sidescan survey at constant altitude,
+> surfacing for GPS, return. Navigation is DVL / inertial dead reckoning aided by USBL and
+> GPS, with bathymetric SLAM. Simulation only. Visual polish and the Foxglove layout are
+> pending.
 
 ## Prerequisites
 
@@ -51,6 +50,7 @@ otherwise the EKF gets stuck when the clock goes back to zero.
 | `dvl` | DVL model, body velocity with noise and bottom lock dropouts |
 | `depth` | pressure sensor model, pressure and depth |
 | `gps` | GPS model, fix only at the surface |
+| `battery` | battery model, hotel load plus propulsion |
 | `multibeam` | multibeam swath from the sonar fan |
 | `swath-assembler` | bathymetry submaps from the swaths |
 | `sidescan` | sidescan waterfall image from the sonar fan |
@@ -60,7 +60,7 @@ otherwise the EKF gets stuck when the clock goes back to zero.
 | `localization` | local EKF, AHRS + DVL + speed model + depth to `odom -> base_link` |
 | `navigation` | global EKF, same plus USBL and GPS to `map -> odom` |
 | `slam` | RTAB-Map, multibeam submaps + aided navigation to `slam_map -> map` and the bathymetry map |
-| `mission` | survey mission, waypoints to `cmd_vel` and setpoints for the controller |
+| `mission` | mission state machine, setpoints for the controller |
 | `eval` | estimate against ground truth, errors as topics for plotting (simulation only) |
 | `state-pub` | `robot_state_publisher` with the vehicle URDF |
 | `gui` | desktop in the browser (noVNC) with RViz and Gazebo GUI, port 6080 |
@@ -326,28 +326,85 @@ Horizontal position error against ground truth:
 ## Mission
 
 ```bash
-make mission        # start the survey
-make mission-stop   # stop it, vehicle holds position
+make mission          # start the survey mission
+make mission-status   # current state
+make mission-abort    # abort: climb to the surface
+make mission-stop     # stop: propeller off, the vehicle floats up
 make logs S=mission
 ```
 
-The mission node runs a lawnmower survey over the pipeline and the rocks: 5 lanes of 30 m
-with 6 m spacing at 5 m depth, 242 m in total. It takes the position from the SLAM pose
-(`map -> base_link`), points the vehicle at the next waypoint and gives the heading and
-depth setpoints and the surge speed to the controller. Survey area, depth and speed are in
+The mission node is a state machine like on a real survey AUV
+(`src/auv_mission/auv_mission/mission.py`):
+
+| State | What the vehicle does |
+|---|---|
+| `IDLE` | nothing, teleop can be used |
+| `PRE_DIVE` | at the surface, waits for 10 s of GPS fix |
+| `DIVE` | dives to the transit depth (25 m) at 1.4 m/s on a straight heading towards the first waypoint |
+| `SURVEY` | follows the lanes with line of sight guidance at 10 m altitude (depth mode if the DVL has no lock) |
+| `SURFACE_FOR_FIX` | every 400 s, at the end of a lane: turns at depth towards the next lane, climbs, waits for 15 s of GPS fix, then `DIVE` again |
+| `RETURN` | goes back to the recovery point next to the ship at the transit depth |
+| `END` | climbs to the surface, then propeller off |
+| `ABORT` | climbs to the surface on its heading, then propeller off |
+
+The survey is 4 lanes of 100 m (plus 10 m lead in at both ends) over the pipeline and the
+rock field. Lane spacing comes from the multibeam swath at the survey altitude with 30 %
+overlap (24.2 m). If the lanes are closer than the turning circle, every second lane is
+skipped and run on the way back. Area, altitude, speeds and timing are in
 `src/auv_mission/config/mission.yaml`.
 
-Neighbouring lanes are run in opposite directions, so the forward looking sonar is not
-seeing the same seabed again on them and no loop closure comes there. For that reason the
-first lane is run once more at the end (tie line).
+Dives and climbs are straight, with extra propeller (1.4 m/s set point). Near the surface
+the DVL has no bottom lock, so the speed is not measured and the vehicle runs slower than
+commanded; if it is also turning, the fins are not strong enough at that speed against the
+hull and it ends up circling. This was seen in testing, so all the turns are done at depth.
+
+Abort rules, checked all the time while the vehicle is active:
+
+| Rule | Limit |
+|---|---|
+| Leak | leak sensor (`/faults/leak`) |
+| Battery | below 15 % |
+| Too deep | below 45 m |
+| Too close to the seabed | altitude below 3 m for 2 s |
+| Obstacle ahead | forward looking sonar, something 2 m above the seabed within 8 m and +-20 deg |
+| DVL lost | no bottom lock for 60 s during the survey |
+| Operating area | outside x, y = +-140 m |
+| Too long | dive over 300 s, mission over 1 hour |
 
 | ROS interface | Type | Meaning |
 |---|---|---|
-| `/mission/start`, `/mission/stop` | `std_srvs/Trigger` | start from the first waypoint, stop |
-| `/mission/status` | `std_msgs/String` | `IDLE`, `RUNNING waypoint n/N` or `DONE` |
-| `/mission/path` | `nav_msgs/Path` | planned waypoints, shown in RViz as yellow line |
+| `/mission/start`, `/mission/stop`, `/mission/abort` | `std_srvs/Trigger` | |
+| `/mission/status` | `std_msgs/String` | state, for example `SURVEY waypoint 3/8` or `ABORT: leak detected` (latched) |
+| `/mission/path` | `nav_msgs/Path` | planned lanes, shown in RViz as yellow line |
+| `/mission/obstacle_range` | `std_msgs/Float64` | nearest obstacle from the forward looking sonar, m |
+| `/battery/state` | `sensor_msgs/BatteryState` | `battery` container, 1 kWh pack, hotel load plus propulsion |
 
-When the mission is not running it does not publish any command, so teleop can be used.
+### Fault injection
+
+```bash
+make fault F=leak            # leak -> abort
+make fault F=battery_low     # battery at 10 % -> abort
+make fault F=dvl_failure     # DVL gives nothing -> abort after 60 s in the survey
+make fault F=usbl_off        # no USBL fixes, navigation drifts like dead reckoning
+make fault-clear F=dvl_failure
+```
+
+### Measured
+
+Full mission: GPS fix, dive, 4 lanes, one surfacing for GPS, dive again, last lane,
+return. 1058 m in about 1100 s, 15 Wh of battery.
+
+| | Result |
+|---|---|
+| Dive to 24 m | 100 s, on a straight heading |
+| Lane of 104 m | 125 s |
+| End position | 2.5 m from the recovery point |
+| Aided navigation error | 1.2 m rms, 6.5 m max (just after the surfacing, without DVL), 0.14 m at the end |
+| Dead reckoning error | 11.8 m rms, 21.6 m max (it drifted a lot during the surfacing) |
+| Leak during the survey | `ABORT: leak detected`, climbed from 25 m to the surface in less than 50 s, propeller off |
+
+The surfacing overshoots: the vehicle climbs straight at 1.4 m/s, so it covers around 100 m
+on the way up and has to come back after the GPS fix.
 
 ## Evaluation
 
@@ -396,7 +453,7 @@ into `./bags` (not tracked in git). Sonar cloud is the bulky one, a bag is aroun
 
 ```bash
 make check    # smoke test of the running stack: topic rates, latched topics and TF chain
-make test     # unit tests of sensor models, control laws, sonar models and survey guidance
+make test     # unit tests of sensor models, control laws, sonar models, survey and mission logic
 ```
 
 ## Visualisation
@@ -471,7 +528,10 @@ make smoke-down
 | `make shell` | open a ROS 2 shell on the network |
 | `make teleop` | drive the vehicle from keyboard |
 | `make mission` | start the survey mission |
-| `make mission-stop` | stop the mission, vehicle holds position |
+| `make mission-stop` | stop the mission, propeller off, vehicle floats up |
+| `make mission-abort` | abort the mission, vehicle climbs to the surface |
+| `make mission-status` | current state of the mission |
+| `make fault F=...` | inject a fault: `leak`, `battery_low`, `dvl_failure`, `usbl_off` |
 | `make gui` | open the browser desktop with RViz and Gazebo GUI |
 | `make test` | unit tests of our packages |
 | `make check` | smoke test of the running stack |

@@ -131,7 +131,7 @@ class MissionNode(Node):
         points = np.stack([x, raw[:, 1], z], axis=1)
         self.obstacle_range = fls_obstacle_range(points, self.altitude, self.fls_half_angle,
                                                  self.fls_clearance)
-        self.obstacle_pub.publish(Float64(data=min(self.obstacle_range, 100.0)))
+        self.obstacle_pub.publish(Float64(data=float(min(self.obstacle_range, 100.0))))
 
     # --- services --------------------------------------------------------------
 
@@ -143,6 +143,7 @@ class MissionNode(Node):
             response.success = False
             response.message = 'no navigation yet (/odometry/global)'
             return response
+        self.get_logger().info('start requested (service /mission/start)')
         self.mission.start(self.now())
         self.publish_status()
         response.success = True
@@ -150,15 +151,16 @@ class MissionNode(Node):
         return response
 
     def on_stop(self, request, response):
+        self.get_logger().warn(f'stop requested (service /mission/stop) in state {self.mission.status}')
         self.mission.stop()
-        for name in ('speed',):
-            self.pubs[name].publish(Float64(data=0.0))
+        self.pubs['speed'].publish(Float64(data=0.0))
         self.publish_status()
         response.success = True
         response.message = 'mission stopped, propeller off'
         return response
 
     def on_abort(self, request, response):
+        self.get_logger().warn('abort requested (service /mission/abort)')
         self.mission.abort('manual abort', self.now())
         self.publish_status()
         response.success = self.mission.state == 'ABORT'
@@ -182,19 +184,24 @@ class MissionNode(Node):
             self.send(command)
 
     def send(self, cmd: Command):
-        self.pubs['speed'].publish(Float64(data=cmd.speed))
-        self.pubs['heading'].publish(Float64(data=cmd.heading))
+        # float() everywhere: values can come as int (parameters) or numpy types,
+        # and Float64 accepts only a python float (it crashed the node, seen in testing)
+        self.pubs['speed'].publish(Float64(data=float(cmd.speed)))
+        self.pubs['heading'].publish(Float64(data=float(cmd.heading)))
         if cmd.altitude is not None:
-            self.pubs['altitude'].publish(Float64(data=cmd.altitude))
+            self.pubs['altitude'].publish(Float64(data=float(cmd.altitude)))
         else:
-            self.pubs['depth'].publish(Float64(data=cmd.depth))
+            self.pubs['depth'].publish(Float64(data=float(cmd.depth)))
 
     def publish_status(self):
         status = self.mission.status
         if status != self.last_status:
             self.status_pub.publish(String(data=status))
-            log = self.get_logger().warn if status.startswith('ABORT') else self.get_logger().info
-            log(f'mission: {status}')
+            # separate calls: rclpy does not allow one log line to change its severity
+            if status.startswith('ABORT'):
+                self.get_logger().warn(f'mission: {status}')
+            else:
+                self.get_logger().info(f'mission: {status}')
             self.last_status = status
 
     def publish_path(self):
