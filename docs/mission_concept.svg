@@ -56,81 +56,111 @@
 <path d="M1366 630h12" stroke="#e0f2fe"/><text x="1362" y="634" text-anchor="end" font-size="11" fill="#e0f2fe">40 m</text>
 <text x="30" y="46" font-size="26" font-weight="700" fill="#0f172a">auv-slam-sim · survey mission concept</text>
 <text x="30" y="72" font-size="14.5" fill="#475569">What the simulated vehicle does in one run and which sensor helps where. Depth to scale, horizontal not to scale.</text>
-<path d="M126.3875 123.0L170 160" stroke="#dc2626" stroke-width="1.4"/><circle cx="170" cy="160" r="3.2" fill="#dc2626"/>
-<rect x="30" y="96" width="193" height="54" rx="8" fill="#fff" fill-opacity="0.95" stroke="#dc2626" stroke-width="1.4" filter="url(#sh)"/>
+<path d="M134.60000000000002 123.0L170 160" stroke="#dc2626" stroke-width="1.4"/><circle cx="170" cy="160" r="3.2" fill="#dc2626"/>
+<rect x="30" y="96" width="209" height="54" rx="8" fill="#fff" fill-opacity="0.95" stroke="#dc2626" stroke-width="1.4" filter="url(#sh)"/>
 <rect x="30" y="96" width="5" height="54" rx="2.5" fill="#dc2626"/>
-<text x="43" y="113" font-size="12.5" font-weight="700" fill="#0f172a">Support ship</text>
+<text x="43" y="113" font-size="12.5" font-weight="700" fill="#0f172a">Support ship at (-20, -20)</text>
 <text x="43" y="129" font-size="11.5" fill="#475569">USBL transceiver on a pole,</text>
-<text x="43" y="144" font-size="11.5" fill="#475569">recovery point next to it</text>
-<path d="M343.225 159.5L330 214" stroke="#6366f1" stroke-width="1.4"/><circle cx="330" cy="214" r="3.2" fill="#6366f1"/>
-<rect x="250" y="140" width="186" height="39" rx="8" fill="#fff" fill-opacity="0.95" stroke="#6366f1" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="250" y="140" width="5" height="39" rx="2.5" fill="#6366f1"/>
+<text x="43" y="144" font-size="11.5" fill="#475569">recovery point, 8 m radius</text>
+<path d="M340.0625 167.0L330 214" stroke="#6366f1" stroke-width="1.4"/><circle cx="330" cy="214" r="3.2" fill="#6366f1"/>
+<rect x="250" y="140" width="180" height="54" rx="8" fill="#fff" fill-opacity="0.95" stroke="#6366f1" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="250" y="140" width="5" height="54" rx="2.5" fill="#6366f1"/>
 <text x="263" y="157" font-size="12.5" font-weight="700" fill="#0f172a">PRE_DIVE · GPS fix</text>
-<text x="263" y="173" font-size="11.5" fill="#475569">10 s of fix at the surface</text>
-<path d="M1135.55 159.5L1240 214" stroke="#6366f1" stroke-width="1.4"/><circle cx="1240" cy="214" r="3.2" fill="#6366f1"/>
-<rect x="1036" y="140" width="199" height="39" rx="8" fill="#fff" fill-opacity="0.95" stroke="#6366f1" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="1036" y="140" width="5" height="39" rx="2.5" fill="#6366f1"/>
+<text x="263" y="173" font-size="11.5" fill="#475569">10 s of fix, 2.5 m noise,</text>
+<text x="263" y="188" font-size="11.5" fill="#475569">NO_FIX under water</text>
+<path d="M1135.55 167.0L1240 214" stroke="#6366f1" stroke-width="1.4"/><circle cx="1240" cy="214" r="3.2" fill="#6366f1"/>
+<rect x="1036" y="140" width="199" height="54" rx="8" fill="#fff" fill-opacity="0.95" stroke="#6366f1" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="1036" y="140" width="5" height="54" rx="2.5" fill="#6366f1"/>
 <text x="1049" y="157" font-size="12.5" font-weight="700" fill="#0f172a">SURFACE_FOR_FIX</text>
-<text x="1049" y="173" font-size="11.5" fill="#475569">every 400 s, GPS, dive again</text>
-<path d="M327.4125 497.0L382.0 332.41811309666275" stroke="#ca8a04" stroke-width="1.4"/><circle cx="382.0" cy="332.41811309666275" r="3.2" fill="#ca8a04"/>
-<rect x="250" y="470" width="155" height="54" rx="8" fill="#fff" fill-opacity="0.95" stroke="#ca8a04" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="250" y="470" width="5" height="54" rx="2.5" fill="#ca8a04"/>
+<text x="1049" y="173" font-size="11.5" fill="#475569">every 400 s at a lane end,</text>
+<text x="1049" y="188" font-size="11.5" fill="#475569">15 s of fix, then DIVE again</text>
+<path d="M362.2 504.5L382.0 332.41811309666275" stroke="#ca8a04" stroke-width="1.4"/><circle cx="382.0" cy="332.41811309666275" r="3.2" fill="#ca8a04"/>
+<rect x="250" y="470" width="224" height="69" rx="8" fill="#fff" fill-opacity="0.95" stroke="#ca8a04" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="250" y="470" width="5" height="69" rx="2.5" fill="#ca8a04"/>
 <text x="263" y="487" font-size="12.5" font-weight="700" fill="#0f172a">USBL fix every 5 s</text>
-<text x="263" y="503" font-size="11.5" fill="#475569">0.5 % of slant range,</text>
-<text x="263" y="518" font-size="11.5" fill="#475569">0.4 s late, 10 % lost</text>
-<path d="M444.7625 319.5L451.9672131147541 440" stroke="#facc15" stroke-width="1.4"/><circle cx="451.9672131147541" cy="440" r="3.2" fill="#facc15"/>
-<rect x="380" y="300" width="130" height="39" rx="8" fill="#fff" fill-opacity="0.95" stroke="#facc15" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="380" y="300" width="5" height="39" rx="2.5" fill="#facc15"/>
+<text x="263" y="503" font-size="11.5" fill="#475569">0.5 % of slant range, 10 % lost,</text>
+<text x="263" y="518" font-size="11.5" fill="#475569">0.4–0.6 s late, put in at ping</text>
+<text x="263" y="533" font-size="11.5" fill="#475569">time (3 s EKF history)</text>
+<path d="M489.0375 327.0L451.9672131147541 440" stroke="#facc15" stroke-width="1.4"/><circle cx="451.9672131147541" cy="440" r="3.2" fill="#facc15"/>
+<rect x="380" y="300" width="218" height="54" rx="8" fill="#fff" fill-opacity="0.95" stroke="#facc15" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="380" y="300" width="5" height="54" rx="2.5" fill="#facc15"/>
 <text x="393" y="317" font-size="12.5" font-weight="700" fill="#0f172a">DIVE to 25 m</text>
-<text x="393" y="333" font-size="11.5" fill="#475569">straight, 1.4 m/s</text>
-<path d="M640.575 422.0L760 493.39371032220924" stroke="#facc15" stroke-width="1.4"/><circle cx="760" cy="493.39371032220924" r="3.2" fill="#facc15"/>
-<rect x="560" y="395" width="161" height="54" rx="8" fill="#fff" fill-opacity="0.95" stroke="#facc15" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="560" y="395" width="5" height="54" rx="2.5" fill="#facc15"/>
-<text x="573" y="412" font-size="12.5" font-weight="700" fill="#0f172a">SURVEY lanes</text>
-<text x="573" y="428" font-size="11.5" fill="#475569">10 m altitude, 1 m/s,</text>
-<text x="573" y="443" font-size="11.5" fill="#475569">line of sight guidance</text>
-<path d="M1146.6 357.0L1050 475.39371032220924" stroke="#16a34a" stroke-width="1.4"/><circle cx="1050" cy="475.39371032220924" r="3.2" fill="#16a34a"/>
-<rect x="1060" y="330" width="173" height="54" rx="8" fill="#fff" fill-opacity="0.95" stroke="#16a34a" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="1060" y="330" width="5" height="54" rx="2.5" fill="#16a34a"/>
-<text x="1073" y="347" font-size="12.5" font-weight="700" fill="#0f172a">Forward sonar 64 × 16</text>
-<text x="1073" y="363" font-size="11.5" fill="#475569">abort if an obstacle is</text>
-<text x="1073" y="378" font-size="11.5" fill="#475569">within 8 m and ±20°</text>
-<path d="M973.7375 717.0L920 615.3937103222092" stroke="#06b6d4" stroke-width="1.4"/><circle cx="920" cy="615.3937103222092" r="3.2" fill="#06b6d4"/>
-<rect x="890" y="690" width="167" height="54" rx="8" fill="#fff" fill-opacity="0.95" stroke="#06b6d4" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="890" y="690" width="5" height="54" rx="2.5" fill="#06b6d4"/>
+<text x="393" y="333" font-size="11.5" fill="#475569">straight at 1.4 m/s, ~100 s</text>
+<text x="393" y="348" font-size="11.5" fill="#475569">speed model only until DVL lock</text>
+<circle cx="420.4" cy="370" r="5" fill="#d946ef" stroke="#fff" stroke-width="1.5"/>
+<text x="410.4" y="374" text-anchor="end" font-size="11" font-weight="600" fill="#f5d0fe">DVL lock ≈ 14 m</text>
+<path d="M669.0375 414.5L760 493.39371032220924" stroke="#facc15" stroke-width="1.4"/><circle cx="760" cy="493.39371032220924" r="3.2" fill="#facc15"/>
+<rect x="560" y="380" width="218" height="69" rx="8" fill="#fff" fill-opacity="0.95" stroke="#facc15" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="560" y="380" width="5" height="69" rx="2.5" fill="#facc15"/>
+<text x="573" y="397" font-size="12.5" font-weight="700" fill="#0f172a">SURVEY lanes</text>
+<text x="573" y="413" font-size="11.5" fill="#475569">10 m altitude, 1 m/s, LOS 12 m,</text>
+<text x="573" y="428" font-size="11.5" fill="#475569">4 lanes × 100 m, 24 m apart,</text>
+<text x="573" y="443" font-size="11.5" fill="#475569">aided nav 0.9 m rms</text>
+<path d="M975.875 439.5L820 496.39371032220924" stroke="#f59e0b" stroke-width="1.4"/><circle cx="820" cy="496.39371032220924" r="3.2" fill="#f59e0b"/>
+<rect x="870" y="420" width="212" height="39" rx="8" fill="#fff" fill-opacity="0.95" stroke="#f59e0b" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="870" y="420" width="5" height="39" rx="2.5" fill="#f59e0b"/>
+<text x="883" y="437" font-size="12.5" font-weight="700" fill="#0f172a">Tethys LRAUV</text>
+<text x="883" y="453" font-size="11.5" fill="#475569">2.3 m, 148 kg, +0.4 kg buoyant</text>
+<path d="M1153.225 330.5L1050 475.39371032220924" stroke="#16a34a" stroke-width="1.4"/><circle cx="1050" cy="475.39371032220924" r="3.2" fill="#16a34a"/>
+<rect x="1060" y="296" width="186" height="69" rx="8" fill="#fff" fill-opacity="0.95" stroke="#16a34a" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="1060" y="296" width="5" height="69" rx="2.5" fill="#16a34a"/>
+<text x="1073" y="313" font-size="12.5" font-weight="700" fill="#0f172a">Forward sonar 64 × 16</text>
+<text x="1073" y="329" font-size="11.5" fill="#475569">120 × 40°, 0.5–30 m, 5 Hz,</text>
+<text x="1073" y="344" font-size="11.5" fill="#475569">abort if obstacle within</text>
+<text x="1073" y="359" font-size="11.5" fill="#475569">8 m and ±20°</text>
+<path d="M999.0375 724.5L920 615.3937103222092" stroke="#06b6d4" stroke-width="1.4"/><circle cx="920" cy="615.3937103222092" r="3.2" fill="#06b6d4"/>
+<rect x="890" y="690" width="218" height="69" rx="8" fill="#fff" fill-opacity="0.95" stroke="#06b6d4" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="890" y="690" width="5" height="69" rx="2.5" fill="#06b6d4"/>
 <text x="903" y="707" font-size="12.5" font-weight="700" fill="#0f172a">Multibeam swath 120°</text>
-<text x="903" y="723" font-size="11.5" fill="#475569">15 m submaps → RTAB-Map</text>
-<text x="903" y="738" font-size="11.5" fill="#475569">bathymetry map</text>
-<path d="M1196.9 709.5L1100 637.3937103222092" stroke="#d97706" stroke-width="1.4"/><circle cx="1100" cy="637.3937103222092" r="3.2" fill="#d97706"/>
-<rect x="1110" y="690" width="174" height="39" rx="8" fill="#fff" fill-opacity="0.95" stroke="#d97706" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="1110" y="690" width="5" height="39" rx="2.5" fill="#d97706"/>
-<text x="1123" y="707" font-size="12.5" font-weight="700" fill="#0f172a">Sidescan 60 m / side</text>
-<text x="1123" y="723" font-size="11.5" fill="#475569">waterfall image, shadows</text>
-<path d="M656.3875 709.5L734 629.765083738795" stroke="#d946ef" stroke-width="1.4"/><circle cx="734" cy="629.765083738795" r="3.2" fill="#d946ef"/>
-<rect x="560" y="690" width="193" height="39" rx="8" fill="#fff" fill-opacity="0.95" stroke="#d946ef" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="560" y="690" width="5" height="39" rx="2.5" fill="#d946ef"/>
-<text x="573" y="707" font-size="12.5" font-weight="700" fill="#0f172a">DVL bottom lock</text>
-<text x="573" y="723" font-size="11.5" fill="#475569">4 beams, &lt; 30 m slant range</text>
-<path d="M402.7125 709.5L690 626.3507236680528" stroke="#a16207" stroke-width="1.4"/><circle cx="690" cy="626.3507236680528" r="3.2" fill="#a16207"/>
-<rect x="300" y="690" width="205" height="39" rx="8" fill="#fff" fill-opacity="0.95" stroke="#a16207" stroke-width="1.4" filter="url(#sh)"/>
-<rect x="300" y="690" width="5" height="39" rx="2.5" fill="#a16207"/>
-<text x="313" y="707" font-size="12.5" font-weight="700" fill="#0f172a">Seabed 34 to 46 m</text>
-<text x="313" y="723" font-size="11.5" fill="#475569">dunes, pipeline, rocks, wreck</text>
-<rect x="30" y="560" width="236" height="112" rx="10" fill="#fff" fill-opacity="0.95" filter="url(#sh)"/>
-<text x="42" y="580" font-size="12.5" font-weight="700" fill="#0f172a">Mission state machine</text>
-<rect x="42" y="592" width="65" height="19" rx="9.5" fill="#6366f1" fill-opacity="0.13" stroke="#6366f1"/>
-<text x="75" y="605.5" text-anchor="middle" font-size="10" font-weight="700" fill="#6366f1">PRE_DIVE</text>
-<rect x="113" y="592" width="40" height="19" rx="9.5" fill="#ca8a04" fill-opacity="0.13" stroke="#ca8a04"/>
-<text x="133" y="605.5" text-anchor="middle" font-size="10" font-weight="700" fill="#ca8a04">DIVE</text>
-<rect x="159" y="592" width="52" height="19" rx="9.5" fill="#ca8a04" fill-opacity="0.13" stroke="#ca8a04"/>
-<text x="185" y="605.5" text-anchor="middle" font-size="10" font-weight="700" fill="#ca8a04">SURVEY</text>
-<rect x="42" y="618" width="110" height="19" rx="9.5" fill="#6366f1" fill-opacity="0.13" stroke="#6366f1"/>
-<text x="97" y="631.5" text-anchor="middle" font-size="10" font-weight="700" fill="#6366f1">SURFACE_FOR_FIX</text>
-<rect x="158" y="618" width="52" height="19" rx="9.5" fill="#ec4899" fill-opacity="0.13" stroke="#ec4899"/>
-<text x="184" y="631.5" text-anchor="middle" font-size="10" font-weight="700" fill="#ec4899">RETURN</text>
-<rect x="216" y="618" width="33" height="19" rx="9.5" fill="#16a34a" fill-opacity="0.13" stroke="#16a34a"/>
-<text x="233" y="631.5" text-anchor="middle" font-size="10" font-weight="700" fill="#16a34a">END</text>
-<text x="42" y="660" font-size="10.5" fill="#b91c1c">ABORT on leak, battery, depth, obstacle…</text>
+<text x="903" y="723" font-size="11.5" fill="#475569">512-ray fan, 35 m wide at 10 m,</text>
+<text x="903" y="738" font-size="11.5" fill="#475569">15 m submaps → RTAB-Map ICP,</text>
+<text x="903" y="753" font-size="11.5" fill="#475569">0.5 m bathymetry map</text>
+<path d="M1216.9 724.5L1100 637.3937103222092" stroke="#d97706" stroke-width="1.4"/><circle cx="1100" cy="637.3937103222092" r="3.2" fill="#d97706"/>
+<rect x="1130" y="690" width="174" height="69" rx="8" fill="#fff" fill-opacity="0.95" stroke="#d97706" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="1130" y="690" width="5" height="69" rx="2.5" fill="#d97706"/>
+<text x="1143" y="707" font-size="12.5" font-weight="700" fill="#0f172a">Sidescan 60 m / side</text>
+<text x="1143" y="723" font-size="11.5" fill="#475569">0.2 m bins, slant range,</text>
+<text x="1143" y="738" font-size="11.5" fill="#475569">Lambert echo, speckle,</text>
+<text x="1143" y="753" font-size="11.5" fill="#475569">acoustic shadows</text>
+<path d="M689.55 724.5L734 629.765083738795" stroke="#d946ef" stroke-width="1.4"/><circle cx="734" cy="629.765083738795" r="3.2" fill="#d946ef"/>
+<rect x="590" y="690" width="199" height="69" rx="8" fill="#fff" fill-opacity="0.95" stroke="#d946ef" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="590" y="690" width="5" height="69" rx="2.5" fill="#d946ef"/>
+<text x="603" y="707" font-size="12.5" font-weight="700" fill="#0f172a">DVL bottom lock</text>
+<text x="603" y="723" font-size="11.5" fill="#475569">4 Janus beams at 30°, 10 Hz,</text>
+<text x="603" y="738" font-size="11.5" fill="#475569">lock &lt; 30 m slant range,</text>
+<text x="603" y="753" font-size="11.5" fill="#475569">1 cm/s noise, 2 % dropouts</text>
+<path d="M406.9 724.5L690 626.3507236680528" stroke="#a16207" stroke-width="1.4"/><circle cx="690" cy="626.3507236680528" r="3.2" fill="#a16207"/>
+<rect x="320" y="690" width="174" height="69" rx="8" fill="#fff" fill-opacity="0.95" stroke="#a16207" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="320" y="690" width="5" height="69" rx="2.5" fill="#a16207"/>
+<text x="333" y="707" font-size="12.5" font-weight="700" fill="#0f172a">Seabed 34 to 46 m</text>
+<text x="333" y="723" font-size="11.5" fill="#475569">300 × 300 m sandy dunes,</text>
+<text x="333" y="738" font-size="11.5" fill="#475569">270 m pipeline, 4 rock</text>
+<text x="333" y="753" font-size="11.5" fill="#475569">fields, a ship wreck</text>
+<text x="690" y="613.4" text-anchor="middle" font-size="11" font-weight="600" fill="#fef3c7">pipeline</text>
+<text x="1015" y="623.4" text-anchor="middle" font-size="11" font-weight="600" fill="#fef3c7">rock field</text>
+<text x="1270" y="540.0" text-anchor="middle" font-size="11" font-weight="600" fill="#fef3c7">wreck</text>
+<rect x="30" y="690" width="180" height="69" rx="8" fill="#fff" fill-opacity="0.95" stroke="#0f766e" stroke-width="1.4" filter="url(#sh)"/>
+<rect x="30" y="690" width="5" height="69" rx="2.5" fill="#0f766e"/>
+<text x="43" y="707" font-size="12.5" font-weight="700" fill="#0f172a">Measured run</text>
+<text x="43" y="723" font-size="11.5" fill="#475569">1166 m in 1153 s, 17 Wh,</text>
+<text x="43" y="738" font-size="11.5" fill="#475569">nav 1.15 m rms, END 7.7 m</text>
+<text x="43" y="753" font-size="11.5" fill="#475569">from the recovery point</text>
+<rect x="30" y="556" width="236" height="122" rx="10" fill="#fff" fill-opacity="0.95" filter="url(#sh)"/>
+<text x="42" y="576" font-size="12.5" font-weight="700" fill="#0f172a">Mission state machine</text>
+<rect x="42" y="588" width="65" height="19" rx="9.5" fill="#6366f1" fill-opacity="0.13" stroke="#6366f1"/>
+<text x="75" y="601.5" text-anchor="middle" font-size="10" font-weight="700" fill="#6366f1">PRE_DIVE</text>
+<rect x="113" y="588" width="40" height="19" rx="9.5" fill="#ca8a04" fill-opacity="0.13" stroke="#ca8a04"/>
+<text x="133" y="601.5" text-anchor="middle" font-size="10" font-weight="700" fill="#ca8a04">DIVE</text>
+<rect x="159" y="588" width="52" height="19" rx="9.5" fill="#ca8a04" fill-opacity="0.13" stroke="#ca8a04"/>
+<text x="185" y="601.5" text-anchor="middle" font-size="10" font-weight="700" fill="#ca8a04">SURVEY</text>
+<rect x="42" y="614" width="110" height="19" rx="9.5" fill="#6366f1" fill-opacity="0.13" stroke="#6366f1"/>
+<text x="97" y="627.5" text-anchor="middle" font-size="10" font-weight="700" fill="#6366f1">SURFACE_FOR_FIX</text>
+<rect x="158" y="614" width="52" height="19" rx="9.5" fill="#ec4899" fill-opacity="0.13" stroke="#ec4899"/>
+<text x="184" y="627.5" text-anchor="middle" font-size="10" font-weight="700" fill="#ec4899">RETURN</text>
+<rect x="216" y="614" width="33" height="19" rx="9.5" fill="#16a34a" fill-opacity="0.13" stroke="#16a34a"/>
+<text x="233" y="627.5" text-anchor="middle" font-size="10" font-weight="700" fill="#16a34a">END</text>
+<text x="42" y="654" font-size="10" fill="#b91c1c">ABORT: leak, battery &lt; 15 %, depth &gt; 45 m,</text>
+<text x="42" y="667" font-size="10" fill="#b91c1c">alt &lt; 3 m, obstacle, no DVL 60 s, area</text>
 <rect x="1060" y="16" width="310" height="112" rx="10" fill="#fff" stroke="#cbd5e1" filter="url(#sh)"/>
 <text x="1072" y="36" font-size="12" font-weight="700" fill="#0f172a">Survey plan · top view</text>
 <text x="1072" y="52" font-size="10.5" fill="#475569">4 lanes × 100 m, 24 m apart</text>

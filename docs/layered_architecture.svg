@@ -1,250 +1,382 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1340" height="1034" viewBox="0 0 1340 1034" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1340" height="1286" viewBox="0 0 1340 1286" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
 <defs><filter id="sh" x="-5%" y="-5%" width="110%" height="120%"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#0f172a" flood-opacity="0.12"/></filter><marker id="arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker></defs>
-<rect width="1340" height="1034" rx="14" fill="#ffffff"/>
+<rect width="1340" height="1286" rx="14" fill="#ffffff"/>
 <text x="30" y="50" font-size="26" font-weight="700" fill="#0f172a">auv-slam-sim · layered architecture</text>
 <text x="30" y="78" font-size="14.5" fill="#475569">From the host machine up to the survey mission. Each layer only uses the one below it; everything from layer 1 up runs inside Docker containers.</text>
-<rect x="30" y="118" width="1130" height="84" rx="10" fill="#fef3c7"/>
-<rect x="30" y="118" width="236" height="84" rx="10" fill="#b45309"/>
-<g transform="translate(44,140)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><rect x="3" y="6" width="34" height="23" rx="2"/><path d="M8 24l7 -8l6 5l9 -11"/><path d="M14 35h12M20 29v6"/></g>
-<text x="96" y="154" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 8</text>
-<text x="96" y="174" font-size="14.5" font-weight="700" fill="#fff">Visualisation &amp; Ops</text>
-<rect x="280.0" y="130" width="187.3" height="60" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="280.0" y="130" width="4" height="60" rx="2" fill="#b45309"/>
-<text x="375.6" y="156" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">RViz2 + Gazebo GUI</text>
-<text x="375.6" y="174" text-anchor="middle" font-size="11.5" fill="#475569">noVNC desktop :6080</text>
-<rect x="475.3" y="130" width="160.2" height="60" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="475.3" y="130" width="4" height="60" rx="2" fill="#b45309"/>
-<text x="557.4" y="156" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Foxglove bridge</text>
-<text x="557.4" y="174" text-anchor="middle" font-size="11.5" fill="#475569">WebSocket :8765</text>
-<rect x="643.4" y="130" width="175.5" height="60" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="643.4" y="130" width="4" height="60" rx="2" fill="#b45309"/>
-<text x="733.2" y="156" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">eval</text>
-<text x="733.2" y="174" text-anchor="middle" font-size="11.5" fill="#475569">error vs ground truth</text>
-<rect x="826.9" y="130" width="125.2" height="60" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="826.9" y="130" width="4" height="60" rx="2" fill="#b45309"/>
-<text x="891.5" y="156" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">rosbag2</text>
-<text x="891.5" y="174" text-anchor="middle" font-size="11.5" fill="#475569">MCAP recording</text>
-<rect x="960.1" y="130" width="189.9" height="60" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="960.1" y="130" width="4" height="60" rx="2" fill="#b45309"/>
-<text x="1057.1" y="156" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">make · tests</text>
-<text x="1057.1" y="174" text-anchor="middle" font-size="11.5" fill="#475569">smoke check, unit tests</text>
-<rect x="30" y="212" width="1130" height="84" rx="10" fill="#fce7f3"/>
-<rect x="30" y="212" width="236" height="84" rx="10" fill="#be185d"/>
-<g transform="translate(44,234)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="8" cy="31" r="3.5"/><circle cx="32" cy="9" r="3.5"/><path d="M11 31h10a6 6 0 0 0 0 -11h-4a6 6 0 0 1 0 -11h11" stroke-dasharray="3 3"/></g>
-<text x="96" y="248" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 7</text>
-<text x="96" y="268" font-size="14.5" font-weight="700" fill="#fff">Autonomy &amp; Control</text>
-<rect x="280.0" y="224" width="225.9" height="60" rx="7" fill="#fff" stroke="#be185d" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="280.0" y="224" width="4" height="60" rx="2" fill="#be185d"/>
-<text x="394.9" y="250" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">mission</text>
-<text x="394.9" y="268" text-anchor="middle" font-size="11.5" fill="#475569">state machine, lanes, aborts</text>
-<rect x="513.9" y="224" width="269.0" height="60" rx="7" fill="#fff" stroke="#be185d" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="513.9" y="224" width="4" height="60" rx="2" fill="#be185d"/>
-<text x="650.4" y="250" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">controller</text>
-<text x="650.4" y="268" text-anchor="middle" font-size="11.5" fill="#475569">speed / heading / depth / altitude</text>
-<rect x="790.9" y="224" width="154.0" height="60" rx="7" fill="#fff" stroke="#be185d" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="790.9" y="224" width="4" height="60" rx="2" fill="#be185d"/>
-<text x="869.9" y="250" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">teleop</text>
-<text x="869.9" y="268" text-anchor="middle" font-size="11.5" fill="#475569">keyboard, /cmd_vel</text>
-<rect x="952.9" y="224" width="197.1" height="60" rx="7" fill="#fff" stroke="#be185d" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="952.9" y="224" width="4" height="60" rx="2" fill="#be185d"/>
-<text x="1053.4" y="250" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">fault injection</text>
-<text x="1053.4" y="268" text-anchor="middle" font-size="11.5" fill="#475569">leak, battery, DVL, USBL</text>
-<rect x="30" y="306" width="1130" height="84" rx="10" fill="#d1fae5"/>
-<rect x="30" y="306" width="236" height="84" rx="10" fill="#047857"/>
-<g transform="translate(44,328)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="4" fill="currentColor"/><path d="M20 2v8M20 30v8M2 20h8M30 20h8"/></g>
-<text x="96" y="342" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 6</text>
-<text x="96" y="362" font-size="14.5" font-weight="700" fill="#fff">Estimation &amp; Mapping</text>
-<rect x="280.0" y="318" width="250.6" height="60" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="280.0" y="318" width="4" height="60" rx="2" fill="#047857"/>
-<text x="407.3" y="344" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">localization</text>
-<text x="407.3" y="362" text-anchor="middle" font-size="11.5" fill="#475569">local EKF  odom → base_link</text>
-<rect x="538.6" y="318" width="209.4" height="60" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="538.6" y="318" width="4" height="60" rx="2" fill="#047857"/>
-<text x="645.4" y="344" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">navigation</text>
-<text x="645.4" y="362" text-anchor="middle" font-size="11.5" fill="#475569">global EKF  map → odom</text>
-<rect x="756.1" y="318" width="242.4" height="60" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="756.1" y="318" width="4" height="60" rx="2" fill="#047857"/>
-<text x="879.3" y="344" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">RTAB-Map SLAM</text>
-<text x="879.3" y="362" text-anchor="middle" font-size="11.5" fill="#475569">slam_map → map, bathymetry</text>
-<rect x="1006.5" y="318" width="143.5" height="60" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="1006.5" y="318" width="4" height="60" rx="2" fill="#047857"/>
-<text x="1080.2" y="344" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">state-pub</text>
-<text x="1080.2" y="362" text-anchor="middle" font-size="11.5" fill="#475569">URDF → TF tree</text>
-<rect x="30" y="400" width="1130" height="84" rx="10" fill="#ede9fe"/>
-<rect x="30" y="400" width="236" height="84" rx="10" fill="#6d28d9"/>
-<g transform="translate(44,422)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="28" r="2.5" fill="currentColor"/><path d="M12 22a11 11 0 0 1 16 0"/><path d="M7 16a18 18 0 0 1 26 0"/><path d="M2 10a25 25 0 0 1 36 0"/></g>
-<text x="96" y="436" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 5</text>
-<text x="96" y="456" font-size="14.5" font-weight="700" fill="#fff">Sensor &amp; Sonar Models</text>
-<rect x="280.0" y="412" width="98.2" height="60" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="280.0" y="412" width="4" height="60" rx="2" fill="#6d28d9"/>
-<text x="331.1" y="438" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">ahrs</text>
-<text x="331.1" y="456" text-anchor="middle" font-size="10.5" fill="#475569">compass drift</text>
-<rect x="386.2" y="412" width="86.5" height="60" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="386.2" y="412" width="4" height="60" rx="2" fill="#6d28d9"/>
-<text x="431.4" y="438" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">dvl</text>
-<text x="431.4" y="456" text-anchor="middle" font-size="10.5" fill="#475569">bottom lock</text>
-<rect x="480.7" y="412" width="68.9" height="60" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="480.7" y="412" width="4" height="60" rx="2" fill="#6d28d9"/>
-<text x="517.1" y="438" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">depth</text>
-<text x="517.1" y="456" text-anchor="middle" font-size="10.5" fill="#475569">pressure</text>
-<rect x="557.5" y="412" width="92.3" height="60" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="557.5" y="412" width="4" height="60" rx="2" fill="#6d28d9"/>
-<text x="605.7" y="438" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">gps</text>
-<text x="605.7" y="456" text-anchor="middle" font-size="10.5" fill="#475569">surface only</text>
-<rect x="657.9" y="412" width="80.6" height="60" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="657.9" y="412" width="4" height="60" rx="2" fill="#6d28d9"/>
-<text x="700.2" y="438" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">usbl</text>
-<text x="700.2" y="456" text-anchor="middle" font-size="10.5" fill="#475569">late fixes</text>
-<rect x="746.5" y="412" width="74.3" height="60" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="746.5" y="412" width="4" height="60" rx="2" fill="#6d28d9"/>
-<text x="785.6" y="438" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">battery</text>
-<text x="785.6" y="456" text-anchor="middle" font-size="10.5" fill="#475569">1 kWh</text>
-<rect x="828.8" y="412" width="89.3" height="60" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="828.8" y="412" width="4" height="60" rx="2" fill="#6d28d9"/>
-<text x="875.4" y="438" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">multibeam</text>
-<text x="875.4" y="456" text-anchor="middle" font-size="10.5" fill="#475569">120° swath</text>
-<rect x="926.0" y="412" width="134.2" height="60" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="926.0" y="412" width="4" height="60" rx="2" fill="#6d28d9"/>
-<text x="995.1" y="438" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">swath-assembler</text>
-<text x="995.1" y="456" text-anchor="middle" font-size="10.5" fill="#475569">15 m submaps</text>
-<rect x="1068.2" y="412" width="81.8" height="60" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="1068.2" y="412" width="4" height="60" rx="2" fill="#6d28d9"/>
-<text x="1111.1" y="438" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">sidescan</text>
-<text x="1111.1" y="456" text-anchor="middle" font-size="10.5" fill="#475569">waterfall</text>
-<rect x="30" y="494" width="1130" height="84" rx="10" fill="#ccfbf1"/>
-<rect x="30" y="494" width="236" height="84" rx="10" fill="#0f766e"/>
-<g transform="translate(44,516)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><path d="M20 4l14 8v16l-14 8l-14 -8v-16z"/><path d="M6 12l14 8l14 -8M20 20v16"/></g>
-<text x="96" y="530" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 4</text>
-<text x="96" y="550" font-size="14.5" font-weight="700" fill="#fff">Simulation</text>
-<rect x="280.0" y="506" width="142.2" height="60" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="280.0" y="506" width="4" height="60" rx="2" fill="#0f766e"/>
-<text x="353.1" y="532" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Gazebo Harmonic</text>
-<text x="353.1" y="550" text-anchor="middle" font-size="11.5" fill="#475569">gz-sim 8, headless</text>
-<rect x="430.2" y="506" width="206.9" height="60" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="430.2" y="506" width="4" height="60" rx="2" fill="#0f766e"/>
-<text x="535.7" y="532" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Vehicle physics</text>
-<text x="535.7" y="550" text-anchor="middle" font-size="11.5" fill="#475569">hydrodynamics, buoyancy, fins</text>
-<rect x="645.1" y="506" width="175.0" height="60" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="645.1" y="506" width="4" height="60" rx="2" fill="#0f766e"/>
-<text x="734.6" y="532" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Raw sensors</text>
-<text x="734.6" y="550" text-anchor="middle" font-size="11.5" fill="#475569">IMU · 3 gpu_lidar sonars</text>
-<rect x="828.1" y="506" width="187.7" height="60" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="828.1" y="506" width="4" height="60" rx="2" fill="#0f766e"/>
-<text x="924.0" y="532" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">World</text>
-<text x="924.0" y="550" text-anchor="middle" font-size="11.5" fill="#475569">seabed, rocks, pipe, wreck</text>
-<rect x="1023.8" y="506" width="126.2" height="60" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="1023.8" y="506" width="4" height="60" rx="2" fill="#0f766e"/>
-<text x="1088.9" y="532" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">ros_gz_bridge</text>
-<text x="1088.9" y="550" text-anchor="middle" font-size="11.5" fill="#475569">gz ⇄ ROS</text>
-<rect x="30" y="588" width="1130" height="84" rx="10" fill="#dbeafe"/>
-<rect x="30" y="588" width="236" height="84" rx="10" fill="#1e40af"/>
-<g transform="translate(44,610)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="9" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="9" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="9" cy="31" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="31" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="31" r="3.6" fill="currentColor" stroke="none"/></g>
-<text x="96" y="624" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 3</text>
-<text x="96" y="644" font-size="14.5" font-weight="700" fill="#fff">ROS 2 Middleware</text>
-<rect x="280.0" y="600" width="186.9" height="60" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="280.0" y="600" width="4" height="60" rx="2" fill="#1e40af"/>
-<text x="375.4" y="626" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">ROS 2 Jazzy</text>
-<text x="375.4" y="644" text-anchor="middle" font-size="11.5" fill="#475569">rclpy · rclcpp · launch</text>
-<rect x="474.9" y="600" width="151.5" height="60" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="474.9" y="600" width="4" height="60" rx="2" fill="#1e40af"/>
-<text x="552.6" y="626" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">rmw_zenoh_cpp</text>
-<text x="552.6" y="644" text-anchor="middle" font-size="11.5" fill="#475569">Zenoh router :7447</text>
-<rect x="634.4" y="600" width="148.7" height="60" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="634.4" y="600" width="4" height="60" rx="2" fill="#1e40af"/>
-<text x="710.8" y="626" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">tf2 · sim time</text>
-<text x="710.8" y="644" text-anchor="middle" font-size="11.5" fill="#475569">/tf, /clock</text>
-<rect x="791.1" y="600" width="184.3" height="60" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="791.1" y="600" width="4" height="60" rx="2" fill="#1e40af"/>
-<text x="885.3" y="626" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">robot_localization</text>
-<text x="885.3" y="644" text-anchor="middle" font-size="11.5" fill="#475569">ekf_node</text>
-<rect x="983.5" y="600" width="166.5" height="60" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="983.5" y="600" width="4" height="60" rx="2" fill="#1e40af"/>
-<text x="1068.7" y="626" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Gazebo Transport</text>
-<text x="1068.7" y="644" text-anchor="middle" font-size="11.5" fill="#475569">GZ_PARTITION</text>
-<rect x="30" y="682" width="1130" height="84" rx="10" fill="#e0f2fe"/>
-<rect x="30" y="682" width="236" height="84" rx="10" fill="#0369a1"/>
-<g transform="translate(44,704)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><rect x="6" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="22" y="14" width="7" height="7"/><rect x="14" y="6" width="7" height="7"/><path d="M3 23h32c0 7 -6 11 -15 11c-10 0 -16 -4 -17 -11z"/></g>
-<text x="96" y="718" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 2</text>
-<text x="96" y="738" font-size="14.5" font-weight="700" fill="#fff">Container Runtime</text>
-<rect x="280.0" y="694" width="224.9" height="60" rx="7" fill="#fff" stroke="#0369a1" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="280.0" y="694" width="4" height="60" rx="2" fill="#0369a1"/>
-<text x="394.4" y="720" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Docker Compose v2</text>
-<text x="394.4" y="738" text-anchor="middle" font-size="11.5" fill="#475569">21 services, one node each</text>
-<rect x="512.9" y="694" width="133.1" height="60" rx="7" fill="#fff" stroke="#0369a1" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="512.9" y="694" width="4" height="60" rx="2" fill="#0369a1"/>
-<text x="581.4" y="720" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">auv_net</text>
-<text x="581.4" y="738" text-anchor="middle" font-size="11.5" fill="#475569">bridge network</text>
-<rect x="654.0" y="694" width="263.1" height="60" rx="7" fill="#fff" stroke="#0369a1" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="654.0" y="694" width="4" height="60" rx="2" fill="#0369a1"/>
-<text x="787.6" y="720" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Multi-stage images</text>
-<text x="787.6" y="738" text-anchor="middle" font-size="11.5" fill="#475569">base · sim · nodes · slam · gui</text>
-<rect x="925.1" y="694" width="224.9" height="60" rx="7" fill="#fff" stroke="#0369a1" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="925.1" y="694" width="4" height="60" rx="2" fill="#0369a1"/>
-<text x="1039.6" y="720" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Health &amp; restart</text>
-<text x="1039.6" y="738" text-anchor="middle" font-size="11.5" fill="#475569">restart with the sim clock</text>
-<rect x="30" y="776" width="1130" height="84" rx="10" fill="#ffedd5"/>
-<rect x="30" y="776" width="236" height="84" rx="10" fill="#c2410c"/>
-<g transform="translate(44,798)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="20" r="12"/><circle cx="8" cy="20" r="3.5" fill="currentColor"/><circle cx="26" cy="9.6" r="3.5" fill="currentColor"/><circle cx="26" cy="30.4" r="3.5" fill="currentColor"/></g>
-<text x="96" y="812" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 1</text>
-<text x="96" y="832" font-size="14.5" font-weight="700" fill="#fff">Container OS</text>
-<rect x="280.0" y="788" width="209.7" height="60" rx="7" fill="#fff" stroke="#c2410c" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="280.0" y="788" width="4" height="60" rx="2" fill="#c2410c"/>
-<text x="386.9" y="814" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Ubuntu 24.04 Noble</text>
-<text x="386.9" y="832" text-anchor="middle" font-size="11.5" fill="#475569">ros:jazzy-ros-base</text>
-<rect x="497.7" y="788" width="230.0" height="60" rx="7" fill="#fff" stroke="#c2410c" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="497.7" y="788" width="4" height="60" rx="2" fill="#c2410c"/>
-<text x="614.7" y="814" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Python 3.12 · colcon</text>
-<text x="614.7" y="832" text-anchor="middle" font-size="11.5" fill="#475569">workspace in /ws</text>
-<rect x="735.7" y="788" width="196.5" height="60" rx="7" fill="#fff" stroke="#c2410c" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="735.7" y="788" width="4" height="60" rx="2" fill="#c2410c"/>
-<text x="836.0" y="814" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Mesa llvmpipe</text>
-<text x="836.0" y="832" text-anchor="middle" font-size="11.5" fill="#475569">CPU rendering, no GPU</text>
-<rect x="940.3" y="788" width="209.7" height="60" rx="7" fill="#fff" stroke="#c2410c" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="940.3" y="788" width="4" height="60" rx="2" fill="#c2410c"/>
-<text x="1047.1" y="814" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">TigerVNC · openbox</text>
-<text x="1047.1" y="832" text-anchor="middle" font-size="11.5" fill="#475569">gui image only</text>
-<rect x="30" y="870" width="1130" height="84" rx="10" fill="#e2e8f0"/>
-<rect x="30" y="870" width="236" height="84" rx="10" fill="#334155"/>
-<g transform="translate(44,892)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><rect x="6" y="8" width="28" height="18" rx="2"/><path d="M2 31h36l-3 -5h-30z"/></g>
-<text x="96" y="906" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 0</text>
-<text x="96" y="926" font-size="14.5" font-weight="700" fill="#fff">Host</text>
-<rect x="280.0" y="882" width="284.8" height="60" rx="7" fill="#fff" stroke="#334155" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="280.0" y="882" width="4" height="60" rx="2" fill="#334155"/>
-<text x="424.4" y="908" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">macOS + Docker Desktop</text>
-<text x="424.4" y="926" text-anchor="middle" font-size="11.5" fill="#475569">Linux VM, 8 GB, 10 CPUs</text>
-<rect x="572.8" y="882" width="150.4" height="60" rx="7" fill="#fff" stroke="#334155" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="572.8" y="882" width="4" height="60" rx="2" fill="#334155"/>
-<text x="650.0" y="908" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Apple M4</text>
-<text x="650.0" y="926" text-anchor="middle" font-size="11.5" fill="#475569">arm64, tested</text>
-<rect x="731.2" y="882" width="242.0" height="60" rx="7" fill="#fff" stroke="#334155" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="731.2" y="882" width="4" height="60" rx="2" fill="#334155"/>
-<text x="854.3" y="908" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Linux + NVIDIA GPU</text>
-<text x="854.3" y="926" text-anchor="middle" font-size="11.5" fill="#475569">optional, denser sonars</text>
-<rect x="981.3" y="882" width="168.7" height="60" rx="7" fill="#fff" stroke="#334155" stroke-opacity="0.45" filter="url(#sh)"/>
-<rect x="981.3" y="882" width="4" height="60" rx="2" fill="#334155"/>
-<text x="1067.6" y="908" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Browser</text>
-<text x="1067.6" y="926" text-anchor="middle" font-size="11.5" fill="#475569">noVNC, Foxglove</text>
-<line x1="24" y1="395.0" x2="1302" y2="395.0" stroke="#dc2626" stroke-width="2" stroke-dasharray="7 5"/>
-<rect x="330" y="384.0" width="810" height="22" rx="11" fill="#fff" stroke="#dc2626"/>
-<text x="735" y="399.5" text-anchor="middle" font-size="12" font-weight="600" fill="#b91c1c">sim ↔ real boundary · same ROS topics: /imu/data  /dvl/twist  /depth/pose  /gps/fix  /usbl/pose  /multibeam/submap</text>
-<path d="M1172 122h10v76h-10" fill="none" stroke="#b45309" stroke-width="2.2"/>
-<text x="1194" y="156.0" font-size="12.5" font-weight="700" fill="#b45309">Operator side</text>
-<text x="1194" y="173.0" font-size="11.5" fill="#475569">shore / laptop</text>
-<path d="M1172 216h10v170h-10" fill="none" stroke="#047857" stroke-width="2.2"/>
-<text x="1194" y="297.0" font-size="12.5" font-weight="700" fill="#047857">Runs on a real AUV</text>
-<text x="1194" y="314.0" font-size="11.5" fill="#475569">unchanged, gains</text>
-<text x="1194" y="329.0" font-size="11.5" fill="#475569">tuned for the hull</text>
-<path d="M1172 404h10v170h-10" fill="none" stroke="#dc2626" stroke-width="2.2"/>
-<text x="1194" y="485.0" font-size="12.5" font-weight="700" fill="#dc2626">Simulation only</text>
-<text x="1194" y="502.0" font-size="11.5" fill="#475569">replaced by the</text>
-<text x="1194" y="517.0" font-size="11.5" fill="#475569">vehicle drivers</text>
-<path d="M1172 592h10v170h-10" fill="none" stroke="#1e40af" stroke-width="2.2"/>
-<text x="1194" y="673.0" font-size="12.5" font-weight="700" fill="#1e40af">Shared plumbing</text>
-<text x="1194" y="690.0" font-size="11.5" fill="#475569">same on sim</text>
-<text x="1194" y="705.0" font-size="11.5" fill="#475569">and vehicle</text>
-<path d="M1172 780h10v170h-10" fill="none" stroke="#334155" stroke-width="2.2"/>
-<text x="1194" y="861.0" font-size="12.5" font-weight="700" fill="#334155">Platform</text>
-<text x="1194" y="878.0" font-size="11.5" fill="#475569">dev machine or</text>
-<text x="1194" y="893.0" font-size="11.5" fill="#475569">vehicle computer</text>
-<text x="30" y="994" font-size="12" fill="#64748b">Data flows up from the sensors to the mission; commands flow back down to the actuators in Gazebo through ros_gz_bridge. Switch RMW to CycloneDDS with RMW_IMPLEMENTATION in .env.</text>
+<rect x="30" y="118" width="1130" height="112" rx="10" fill="#fef3c7"/>
+<rect x="30" y="118" width="236" height="112" rx="10" fill="#b45309"/>
+<g transform="translate(44,154)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><rect x="3" y="6" width="34" height="23" rx="2"/><path d="M8 24l7 -8l6 5l9 -11"/><path d="M14 35h12M20 29v6"/></g>
+<text x="96" y="168" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 8</text>
+<text x="96" y="188" font-size="14.5" font-weight="700" fill="#fff">Visualisation &amp; Ops</text>
+<rect x="280.0" y="128" width="186.7" height="92" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="280.0" y="128" width="4" height="92" rx="2" fill="#b45309"/>
+<text x="375.4" y="150" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">RViz2 + Gazebo GUI</text>
+<text x="375.4" y="167" text-anchor="middle" font-size="11.5" font-weight="600" fill="#b45309">noVNC desktop :6080</text>
+<path d="M292.0 176H458.7" stroke="#b45309" stroke-opacity="0.18"/>
+<text x="375.4" y="193" text-anchor="middle" font-size="10.5" fill="#475569">TigerVNC 1600×900</text>
+<text x="375.4" y="208" text-anchor="middle" font-size="10.5" fill="#475569">fixed frame: map</text>
+<rect x="474.7" y="128" width="159.3" height="92" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="474.7" y="128" width="4" height="92" rx="2" fill="#b45309"/>
+<text x="556.4" y="150" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Foxglove bridge</text>
+<text x="556.4" y="167" text-anchor="middle" font-size="11.5" font-weight="600" fill="#b45309">WebSocket :8765</text>
+<path d="M486.7 176H626.0" stroke="#b45309" stroke-opacity="0.18"/>
+<text x="556.4" y="193" text-anchor="middle" font-size="10.5" fill="#475569">foxglove/layout.json</text>
+<text x="556.4" y="208" text-anchor="middle" font-size="10.5" fill="#475569">3D, sidescan, plots</text>
+<rect x="642.0" y="128" width="174.8" height="92" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="642.0" y="128" width="4" height="92" rx="2" fill="#b45309"/>
+<text x="731.4" y="150" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">eval</text>
+<text x="731.4" y="167" text-anchor="middle" font-size="11.5" font-weight="600" fill="#b45309">error vs ground truth</text>
+<path d="M654.0 176H808.9" stroke="#b45309" stroke-opacity="0.18"/>
+<text x="731.4" y="193" text-anchor="middle" font-size="10.5" fill="#475569">/eval/*_position_error</text>
+<text x="731.4" y="208" text-anchor="middle" font-size="10.5" fill="#475569">summary every 60 s</text>
+<rect x="824.9" y="128" width="135.1" height="92" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="824.9" y="128" width="4" height="92" rx="2" fill="#b45309"/>
+<text x="894.4" y="150" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">rosbag2</text>
+<text x="894.4" y="167" text-anchor="middle" font-size="11.5" font-weight="600" fill="#b45309">MCAP recording</text>
+<path d="M836.9 176H951.9" stroke="#b45309" stroke-opacity="0.18"/>
+<text x="894.4" y="193" text-anchor="middle" font-size="10.5" fill="#475569">make bag → ./bags</text>
+<text x="894.4" y="208" text-anchor="middle" font-size="10.5" fill="#475569">tens of MB / min</text>
+<rect x="967.9" y="128" width="182.1" height="92" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="967.9" y="128" width="4" height="92" rx="2" fill="#b45309"/>
+<text x="1061.0" y="150" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">make · tests</text>
+<text x="1061.0" y="167" text-anchor="middle" font-size="11.5" font-weight="600" fill="#b45309">make check · make test</text>
+<path d="M979.9 176H1142.0" stroke="#b45309" stroke-opacity="0.18"/>
+<text x="1061.0" y="193" text-anchor="middle" font-size="10.5" fill="#475569">tests/stack_check.py</text>
+<text x="1061.0" y="208" text-anchor="middle" font-size="10.5" fill="#475569">pytest per package</text>
+<rect x="30" y="240" width="1130" height="112" rx="10" fill="#fce7f3"/>
+<rect x="30" y="240" width="236" height="112" rx="10" fill="#be185d"/>
+<g transform="translate(44,276)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="8" cy="31" r="3.5"/><circle cx="32" cy="9" r="3.5"/><path d="M11 31h10a6 6 0 0 0 0 -11h-4a6 6 0 0 1 0 -11h11" stroke-dasharray="3 3"/></g>
+<text x="96" y="290" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 7</text>
+<text x="96" y="310" font-size="14.5" font-weight="700" fill="#fff">Autonomy &amp; Control</text>
+<rect x="280.0" y="250" width="208.6" height="92" rx="7" fill="#fff" stroke="#be185d" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="280.0" y="250" width="4" height="92" rx="2" fill="#be185d"/>
+<text x="386.3" y="272" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">mission</text>
+<text x="386.3" y="289" text-anchor="middle" font-size="11.5" font-weight="600" fill="#be185d">auv_mission · 10 Hz</text>
+<path d="M292.0 298H480.6" stroke="#be185d" stroke-opacity="0.18"/>
+<text x="386.3" y="315" text-anchor="middle" font-size="10.5" fill="#475569">PRE_DIVE → … → END</text>
+<text x="386.3" y="330" text-anchor="middle" font-size="10.5" fill="#475569">8 abort rules, LOS 12 m</text>
+<rect x="496.6" y="250" width="251.8" height="92" rx="7" fill="#fff" stroke="#be185d" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="496.6" y="250" width="4" height="92" rx="2" fill="#be185d"/>
+<text x="624.5" y="272" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">controller</text>
+<text x="624.5" y="289" text-anchor="middle" font-size="11.5" font-weight="600" fill="#be185d">auv_control · 50 Hz on IMU</text>
+<path d="M508.6 298H740.4" stroke="#be185d" stroke-opacity="0.18"/>
+<text x="624.5" y="315" text-anchor="middle" font-size="10.5" fill="#475569">speed PI, heading PID</text>
+<text x="624.5" y="330" text-anchor="middle" font-size="10.5" fill="#475569">depth → pitch → elevator</text>
+<rect x="756.4" y="250" width="184.9" height="92" rx="7" fill="#fff" stroke="#be185d" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="756.4" y="250" width="4" height="92" rx="2" fill="#be185d"/>
+<text x="850.9" y="272" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">teleop</text>
+<text x="850.9" y="289" text-anchor="middle" font-size="11.5" font-weight="600" fill="#be185d">auv_teleop</text>
+<path d="M768.4 298H933.3" stroke="#be185d" stroke-opacity="0.18"/>
+<text x="850.9" y="315" text-anchor="middle" font-size="10.5" fill="#475569">w/s speed, a/d turn</text>
+<text x="850.9" y="330" text-anchor="middle" font-size="10.5" fill="#475569">r/f depth → /cmd_vel</text>
+<rect x="949.3" y="250" width="200.7" height="92" rx="7" fill="#fff" stroke="#be185d" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="949.3" y="250" width="4" height="92" rx="2" fill="#be185d"/>
+<text x="1051.7" y="272" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">fault injection</text>
+<text x="1051.7" y="289" text-anchor="middle" font-size="11.5" font-weight="600" fill="#be185d">make fault F=…</text>
+<path d="M961.3 298H1142.0" stroke="#be185d" stroke-opacity="0.18"/>
+<text x="1051.7" y="315" text-anchor="middle" font-size="10.5" fill="#475569">leak · battery_low</text>
+<text x="1051.7" y="330" text-anchor="middle" font-size="10.5" fill="#475569">dvl_failure · usbl_off</text>
+<rect x="30" y="362" width="1130" height="112" rx="10" fill="#d1fae5"/>
+<rect x="30" y="362" width="236" height="112" rx="10" fill="#047857"/>
+<g transform="translate(44,398)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="4" fill="currentColor"/><path d="M20 2v8M20 30v8M2 20h8M30 20h8"/></g>
+<text x="96" y="412" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 6</text>
+<text x="96" y="432" font-size="14.5" font-weight="700" fill="#fff">Estimation &amp; Mapping</text>
+<rect x="280.0" y="372" width="220.9" height="92" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="280.0" y="372" width="4" height="92" rx="2" fill="#047857"/>
+<text x="392.4" y="394" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">localization</text>
+<text x="392.4" y="411" text-anchor="middle" font-size="11.5" font-weight="600" fill="#047857">local EKF · 50 Hz</text>
+<path d="M292.0 420H492.9" stroke="#047857" stroke-opacity="0.18"/>
+<text x="392.4" y="437" text-anchor="middle" font-size="10.5" fill="#475569">ahrs + dvl + speed + depth</text>
+<text x="392.4" y="452" text-anchor="middle" font-size="10.5" fill="#475569">odom → base_link</text>
+<rect x="508.9" y="372" width="213.4" height="92" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="508.9" y="372" width="4" height="92" rx="2" fill="#047857"/>
+<text x="617.6" y="394" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">navigation</text>
+<text x="617.6" y="411" text-anchor="middle" font-size="11.5" font-weight="600" fill="#047857">global EKF · 30 Hz</text>
+<path d="M520.9 420H714.3" stroke="#047857" stroke-opacity="0.18"/>
+<text x="617.6" y="437" text-anchor="middle" font-size="10.5" fill="#475569">+ USBL + GPS, 3 s history</text>
+<text x="617.6" y="452" text-anchor="middle" font-size="10.5" fill="#475569">map → odom, 5σ gate</text>
+<rect x="730.3" y="372" width="213.4" height="92" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="730.3" y="372" width="4" height="92" rx="2" fill="#047857"/>
+<text x="839.0" y="394" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">RTAB-Map SLAM</text>
+<text x="839.0" y="411" text-anchor="middle" font-size="11.5" font-weight="600" fill="#047857">ICP on submaps</text>
+<path d="M742.3 420H935.6" stroke="#047857" stroke-opacity="0.18"/>
+<text x="839.0" y="437" text-anchor="middle" font-size="10.5" fill="#475569">proximity 25 m radius</text>
+<text x="839.0" y="452" text-anchor="middle" font-size="10.5" fill="#475569">slam_map → map, 0.5 m map</text>
+<rect x="951.6" y="372" width="198.4" height="92" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="951.6" y="372" width="4" height="92" rx="2" fill="#047857"/>
+<text x="1052.8" y="394" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">state-pub</text>
+<text x="1052.8" y="411" text-anchor="middle" font-size="11.5" font-weight="600" fill="#047857">robot_state_publisher</text>
+<path d="M963.6 420H1142.0" stroke="#047857" stroke-opacity="0.18"/>
+<text x="1052.8" y="437" text-anchor="middle" font-size="10.5" fill="#475569">auv.urdf.xacro</text>
+<text x="1052.8" y="452" text-anchor="middle" font-size="10.5" fill="#475569">sensor frames on /tf</text>
+<rect x="30" y="484" width="1130" height="112" rx="10" fill="#ede9fe"/>
+<rect x="30" y="484" width="236" height="112" rx="10" fill="#6d28d9"/>
+<g transform="translate(44,520)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="28" r="2.5" fill="currentColor"/><path d="M12 22a11 11 0 0 1 16 0"/><path d="M7 16a18 18 0 0 1 26 0"/><path d="M2 10a25 25 0 0 1 36 0"/></g>
+<text x="96" y="534" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 5</text>
+<text x="96" y="554" font-size="14.5" font-weight="700" fill="#fff">Sensor &amp; Sonar Models</text>
+<rect x="280.0" y="494" width="69.0" height="92" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="280.0" y="494" width="4" height="92" rx="2" fill="#6d28d9"/>
+<text x="316.5" y="516" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">ahrs</text>
+<text x="316.5" y="533" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">50 Hz</text>
+<path d="M292.0 542H341.0" stroke="#6d28d9" stroke-opacity="0.18"/>
+<text x="316.5" y="559" text-anchor="middle" font-size="9.8" fill="#475569">/imu/data</text>
+<text x="316.5" y="574" text-anchor="middle" font-size="9.8" fill="#475569">1.5° drift</text>
+<rect x="357.0" y="494" width="74.1" height="92" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="357.0" y="494" width="4" height="92" rx="2" fill="#6d28d9"/>
+<text x="396.1" y="516" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">dvl</text>
+<text x="396.1" y="533" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">10 Hz</text>
+<path d="M369.0 542H423.1" stroke="#6d28d9" stroke-opacity="0.18"/>
+<text x="396.1" y="559" text-anchor="middle" font-size="9.8" fill="#475569">/dvl/twist</text>
+<text x="396.1" y="574" text-anchor="middle" font-size="9.8" fill="#475569">lock &lt; 30 m</text>
+<rect x="439.1" y="494" width="74.1" height="92" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="439.1" y="494" width="4" height="92" rx="2" fill="#6d28d9"/>
+<text x="478.2" y="516" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">depth</text>
+<text x="478.2" y="533" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">25 Hz</text>
+<path d="M451.1 542H505.2" stroke="#6d28d9" stroke-opacity="0.18"/>
+<text x="478.2" y="559" text-anchor="middle" font-size="9.8" fill="#475569">/depth/pose</text>
+<text x="478.2" y="574" text-anchor="middle" font-size="9.8" fill="#475569">1 cm noise</text>
+<rect x="521.2" y="494" width="89.3" height="92" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="521.2" y="494" width="4" height="92" rx="2" fill="#6d28d9"/>
+<text x="567.9" y="516" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">gps</text>
+<text x="567.9" y="533" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">1 Hz</text>
+<path d="M533.2 542H602.5" stroke="#6d28d9" stroke-opacity="0.18"/>
+<text x="567.9" y="559" text-anchor="middle" font-size="9.8" fill="#475569">/gps/fix</text>
+<text x="567.9" y="574" text-anchor="middle" font-size="9.8" fill="#475569">surface, 2.5 m</text>
+<rect x="618.5" y="494" width="74.1" height="92" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="618.5" y="494" width="4" height="92" rx="2" fill="#6d28d9"/>
+<text x="657.6" y="516" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">usbl</text>
+<text x="657.6" y="533" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">every 5 s</text>
+<path d="M630.5 542H684.6" stroke="#6d28d9" stroke-opacity="0.18"/>
+<text x="657.6" y="559" text-anchor="middle" font-size="9.8" fill="#475569">/usbl/pose</text>
+<text x="657.6" y="574" text-anchor="middle" font-size="9.8" fill="#475569">0.5 % range</text>
+<rect x="700.6" y="494" width="89.3" height="92" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="700.6" y="494" width="4" height="92" rx="2" fill="#6d28d9"/>
+<text x="747.2" y="516" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">battery</text>
+<text x="747.2" y="533" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">1 kWh</text>
+<path d="M712.6 542H781.9" stroke="#6d28d9" stroke-opacity="0.18"/>
+<text x="747.2" y="559" text-anchor="middle" font-size="9.8" fill="#475569">/battery/state</text>
+<text x="747.2" y="574" text-anchor="middle" font-size="9.8" fill="#475569">hotel + prop</text>
+<rect x="797.9" y="494" width="99.4" height="92" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="797.9" y="494" width="4" height="92" rx="2" fill="#6d28d9"/>
+<text x="849.6" y="516" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">multibeam</text>
+<text x="849.6" y="533" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">10 Hz</text>
+<path d="M809.9 542H889.3" stroke="#6d28d9" stroke-opacity="0.18"/>
+<text x="849.6" y="559" text-anchor="middle" font-size="9.8" fill="#475569">/multibeam/swath</text>
+<text x="849.6" y="574" text-anchor="middle" font-size="9.8" fill="#475569">±60°, 0.2 %</text>
+<rect x="905.3" y="494" width="122.2" height="92" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="905.3" y="494" width="4" height="92" rx="2" fill="#6d28d9"/>
+<text x="968.3" y="516" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">swath-assembler</text>
+<text x="968.3" y="533" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">every 15 m</text>
+<path d="M917.3 542H1019.4" stroke="#6d28d9" stroke-opacity="0.18"/>
+<text x="968.3" y="559" text-anchor="middle" font-size="9.8" fill="#475569">/multibeam/submap</text>
+<text x="968.3" y="574" text-anchor="middle" font-size="9.8" fill="#475569">0.25 m voxels</text>
+<rect x="1035.4" y="494" width="114.6" height="92" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="1035.4" y="494" width="4" height="92" rx="2" fill="#6d28d9"/>
+<text x="1094.7" y="516" text-anchor="middle" font-size="12.5" font-weight="650" fill="#0f172a">sidescan</text>
+<text x="1094.7" y="533" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">2 Hz</text>
+<path d="M1047.4 542H1142.0" stroke="#6d28d9" stroke-opacity="0.18"/>
+<text x="1094.7" y="559" text-anchor="middle" font-size="9.8" fill="#475569">/sidescan/waterfall</text>
+<text x="1094.7" y="574" text-anchor="middle" font-size="9.8" fill="#475569">60 m / side</text>
+<rect x="30" y="606" width="1130" height="112" rx="10" fill="#ccfbf1"/>
+<rect x="30" y="606" width="236" height="112" rx="10" fill="#0f766e"/>
+<g transform="translate(44,642)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><path d="M20 4l14 8v16l-14 8l-14 -8v-16z"/><path d="M6 12l14 8l14 -8M20 20v16"/></g>
+<text x="96" y="656" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 4</text>
+<text x="96" y="676" font-size="14.5" font-weight="700" fill="#fff">Simulation</text>
+<rect x="280.0" y="616" width="155.6" height="92" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="280.0" y="616" width="4" height="92" rx="2" fill="#0f766e"/>
+<text x="359.8" y="638" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Gazebo Harmonic</text>
+<text x="359.8" y="655" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f766e">gz-sim 8, headless</text>
+<path d="M292.0 664H427.6" stroke="#0f766e" stroke-opacity="0.18"/>
+<text x="359.8" y="681" text-anchor="middle" font-size="10.5" fill="#475569">4 ms step, RTF 1.0</text>
+<text x="359.8" y="696" text-anchor="middle" font-size="10.5" fill="#475569">underwater.sdf</text>
+<rect x="443.6" y="616" width="170.7" height="92" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="443.6" y="616" width="4" height="92" rx="2" fill="#0f766e"/>
+<text x="531.0" y="638" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Vehicle physics</text>
+<text x="531.0" y="655" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f766e">Tethys LRAUV 148 kg</text>
+<path d="M455.6 664H606.4" stroke="#0f766e" stroke-opacity="0.18"/>
+<text x="531.0" y="681" text-anchor="middle" font-size="10.5" fill="#475569">hydrodynamics, buoyancy</text>
+<text x="531.0" y="696" text-anchor="middle" font-size="10.5" fill="#475569">thruster, LiftDrag fins</text>
+<rect x="622.4" y="616" width="190.1" height="92" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="622.4" y="616" width="4" height="92" rx="2" fill="#0f766e"/>
+<text x="719.5" y="638" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Raw sensors</text>
+<text x="719.5" y="655" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f766e">IMU 50 Hz</text>
+<path d="M634.4 664H804.5" stroke="#0f766e" stroke-opacity="0.18"/>
+<text x="719.5" y="681" text-anchor="middle" font-size="10.5" fill="#475569">sonar fan 512 rays</text>
+<text x="719.5" y="696" text-anchor="middle" font-size="10.5" fill="#475569">DVL beams, fwd sonar 64×16</text>
+<rect x="820.5" y="616" width="163.7" height="92" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="820.5" y="616" width="4" height="92" rx="2" fill="#0f766e"/>
+<text x="904.4" y="638" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">World</text>
+<text x="904.4" y="655" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f766e">300 × 300 m, 34–46 m</text>
+<path d="M832.5 664H976.2" stroke="#0f766e" stroke-opacity="0.18"/>
+<text x="904.4" y="681" text-anchor="middle" font-size="10.5" fill="#475569">dunes, 4 rock fields</text>
+<text x="904.4" y="696" text-anchor="middle" font-size="10.5" fill="#475569">270 m pipeline, wreck</text>
+<rect x="992.2" y="616" width="157.8" height="92" rx="7" fill="#fff" stroke="#0f766e" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="992.2" y="616" width="4" height="92" rx="2" fill="#0f766e"/>
+<text x="1073.1" y="638" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">ros_gz_bridge</text>
+<text x="1073.1" y="655" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0f766e">gz ⇄ ROS</text>
+<path d="M1004.2 664H1142.0" stroke="#0f766e" stroke-opacity="0.18"/>
+<text x="1073.1" y="681" text-anchor="middle" font-size="10.5" fill="#475569">bridge.yaml</text>
+<text x="1073.1" y="696" text-anchor="middle" font-size="10.5" fill="#475569">/clock, sensors, cmds</text>
+<rect x="30" y="728" width="1130" height="112" rx="10" fill="#dbeafe"/>
+<rect x="30" y="728" width="236" height="112" rx="10" fill="#1e40af"/>
+<g transform="translate(44,764)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="9" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="9" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="9" cy="31" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="31" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="31" r="3.6" fill="currentColor" stroke="none"/></g>
+<text x="96" y="778" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 3</text>
+<text x="96" y="798" font-size="14.5" font-weight="700" fill="#fff">ROS 2 Middleware</text>
+<rect x="280.0" y="738" width="181.5" height="92" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="280.0" y="738" width="4" height="92" rx="2" fill="#1e40af"/>
+<text x="372.7" y="760" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">ROS 2 Jazzy</text>
+<text x="372.7" y="777" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1e40af">rclpy · rclcpp · launch</text>
+<path d="M292.0 786H453.5" stroke="#1e40af" stroke-opacity="0.18"/>
+<text x="372.7" y="803" text-anchor="middle" font-size="10.5" fill="#475569">10 auv_* packages</text>
+<text x="372.7" y="818" text-anchor="middle" font-size="10.5" fill="#475569">use_sim_time: true</text>
+<rect x="469.5" y="738" width="154.9" height="92" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="469.5" y="738" width="4" height="92" rx="2" fill="#1e40af"/>
+<text x="548.9" y="760" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">rmw_zenoh_cpp</text>
+<text x="548.9" y="777" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1e40af">Zenoh router :7447</text>
+<path d="M481.5 786H616.3" stroke="#1e40af" stroke-opacity="0.18"/>
+<text x="548.9" y="803" text-anchor="middle" font-size="10.5" fill="#475569">ROS_DOMAIN_ID 42</text>
+<text x="548.9" y="818" text-anchor="middle" font-size="10.5" fill="#475569">CycloneDDS selectable</text>
+<rect x="632.3" y="738" width="161.2" height="92" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="632.3" y="738" width="4" height="92" rx="2" fill="#1e40af"/>
+<text x="714.9" y="760" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">tf2 · sim time</text>
+<text x="714.9" y="777" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1e40af">/tf, /clock</text>
+<path d="M644.3 786H785.6" stroke="#1e40af" stroke-opacity="0.18"/>
+<text x="714.9" y="803" text-anchor="middle" font-size="10.5" fill="#475569">world → slam_map → map</text>
+<text x="714.9" y="818" text-anchor="middle" font-size="10.5" fill="#475569">→ odom → base_link</text>
+<rect x="801.6" y="738" width="179.0" height="92" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="801.6" y="738" width="4" height="92" rx="2" fill="#1e40af"/>
+<text x="893.0" y="760" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">robot_localization</text>
+<text x="893.0" y="777" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1e40af">ekf_node</text>
+<path d="M813.6 786H972.5" stroke="#1e40af" stroke-opacity="0.18"/>
+<text x="893.0" y="803" text-anchor="middle" font-size="10.5" fill="#475569">ekf.yaml</text>
+<text x="893.0" y="818" text-anchor="middle" font-size="10.5" fill="#475569">local + global filter</text>
+<rect x="988.5" y="738" width="161.5" height="92" rx="7" fill="#fff" stroke="#1e40af" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="988.5" y="738" width="4" height="92" rx="2" fill="#1e40af"/>
+<text x="1071.3" y="760" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Gazebo Transport</text>
+<text x="1071.3" y="777" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1e40af">GZ_PARTITION</text>
+<path d="M1000.5 786H1142.0" stroke="#1e40af" stroke-opacity="0.18"/>
+<text x="1071.3" y="803" text-anchor="middle" font-size="10.5" fill="#475569">auv_sim</text>
+<text x="1071.3" y="818" text-anchor="middle" font-size="10.5" fill="#475569">sim, bridge, gui</text>
+<rect x="30" y="850" width="1130" height="112" rx="10" fill="#e0f2fe"/>
+<rect x="30" y="850" width="236" height="112" rx="10" fill="#0369a1"/>
+<g transform="translate(44,886)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><rect x="6" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="22" y="14" width="7" height="7"/><rect x="14" y="6" width="7" height="7"/><path d="M3 23h32c0 7 -6 11 -15 11c-10 0 -16 -4 -17 -11z"/></g>
+<text x="96" y="900" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 2</text>
+<text x="96" y="920" font-size="14.5" font-weight="700" fill="#fff">Container Runtime</text>
+<rect x="280.0" y="860" width="211.5" height="92" rx="7" fill="#fff" stroke="#0369a1" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="280.0" y="860" width="4" height="92" rx="2" fill="#0369a1"/>
+<text x="387.8" y="882" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Docker Compose v2</text>
+<text x="387.8" y="899" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0369a1">21 services, one node each</text>
+<path d="M292.0 908H483.5" stroke="#0369a1" stroke-opacity="0.18"/>
+<text x="387.8" y="925" text-anchor="middle" font-size="10.5" fill="#475569">compose.yaml, .env</text>
+<text x="387.8" y="940" text-anchor="middle" font-size="10.5" fill="#475569">make up / down / ps</text>
+<rect x="499.5" y="860" width="175.2" height="92" rx="7" fill="#fff" stroke="#0369a1" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="499.5" y="860" width="4" height="92" rx="2" fill="#0369a1"/>
+<text x="589.1" y="882" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">auv_net</text>
+<text x="589.1" y="899" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0369a1">bridge network</text>
+<path d="M511.5 908H666.7" stroke="#0369a1" stroke-opacity="0.18"/>
+<text x="589.1" y="925" text-anchor="middle" font-size="10.5" fill="#475569">ports on localhost only</text>
+<text x="589.1" y="940" text-anchor="middle" font-size="10.5" fill="#475569">6080 · 8765</text>
+<rect x="682.7" y="860" width="247.8" height="92" rx="7" fill="#fff" stroke="#0369a1" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="682.7" y="860" width="4" height="92" rx="2" fill="#0369a1"/>
+<text x="808.6" y="882" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Multi-stage images</text>
+<text x="808.6" y="899" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0369a1">base · sim · nodes · slam · gui</text>
+<path d="M694.7 908H922.5" stroke="#0369a1" stroke-opacity="0.18"/>
+<text x="808.6" y="925" text-anchor="middle" font-size="10.5" fill="#475569">docker/Dockerfile</text>
+<text x="808.6" y="940" text-anchor="middle" font-size="10.5" fill="#475569">workspace built once</text>
+<rect x="938.5" y="860" width="211.5" height="92" rx="7" fill="#fff" stroke="#0369a1" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="938.5" y="860" width="4" height="92" rx="2" fill="#0369a1"/>
+<text x="1046.2" y="882" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Health &amp; restart</text>
+<text x="1046.2" y="899" text-anchor="middle" font-size="11.5" font-weight="600" fill="#0369a1">restart with the sim clock</text>
+<path d="M950.5 908H1142.0" stroke="#0369a1" stroke-opacity="0.18"/>
+<text x="1046.2" y="925" text-anchor="middle" font-size="10.5" fill="#475569">depends_on restart: true</text>
+<text x="1046.2" y="940" text-anchor="middle" font-size="10.5" fill="#475569">router healthcheck</text>
+<rect x="30" y="972" width="1130" height="112" rx="10" fill="#ffedd5"/>
+<rect x="30" y="972" width="236" height="112" rx="10" fill="#c2410c"/>
+<g transform="translate(44,1008)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="20" r="12"/><circle cx="8" cy="20" r="3.5" fill="currentColor"/><circle cx="26" cy="9.6" r="3.5" fill="currentColor"/><circle cx="26" cy="30.4" r="3.5" fill="currentColor"/></g>
+<text x="96" y="1022" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 1</text>
+<text x="96" y="1042" font-size="14.5" font-weight="700" fill="#fff">Container OS</text>
+<rect x="280.0" y="982" width="210.9" height="92" rx="7" fill="#fff" stroke="#c2410c" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="280.0" y="982" width="4" height="92" rx="2" fill="#c2410c"/>
+<text x="387.4" y="1004" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Ubuntu 24.04 Noble</text>
+<text x="387.4" y="1021" text-anchor="middle" font-size="11.5" font-weight="600" fill="#c2410c">ros:jazzy-ros-base</text>
+<path d="M292.0 1030H482.9" stroke="#c2410c" stroke-opacity="0.18"/>
+<text x="387.4" y="1047" text-anchor="middle" font-size="10.5" fill="#475569">apt ROS packages</text>
+<text x="387.4" y="1062" text-anchor="middle" font-size="10.5" fill="#475569">entrypoint.sh sources /ws</text>
+<rect x="498.9" y="982" width="229.8" height="92" rx="7" fill="#fff" stroke="#c2410c" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="498.9" y="982" width="4" height="92" rx="2" fill="#c2410c"/>
+<text x="615.8" y="1004" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Python 3.12 · colcon</text>
+<text x="615.8" y="1021" text-anchor="middle" font-size="11.5" font-weight="600" fill="#c2410c">workspace in /ws</text>
+<path d="M510.9 1030H720.7" stroke="#c2410c" stroke-opacity="0.18"/>
+<text x="615.8" y="1047" text-anchor="middle" font-size="10.5" fill="#475569">Release build</text>
+<text x="615.8" y="1062" text-anchor="middle" font-size="10.5" fill="#475569">ament_python + cmake</text>
+<rect x="736.7" y="982" width="196.0" height="92" rx="7" fill="#fff" stroke="#c2410c" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="736.7" y="982" width="4" height="92" rx="2" fill="#c2410c"/>
+<text x="836.7" y="1004" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Mesa llvmpipe</text>
+<text x="836.7" y="1021" text-anchor="middle" font-size="11.5" font-weight="600" fill="#c2410c">CPU rendering, no GPU</text>
+<path d="M748.7 1030H924.7" stroke="#c2410c" stroke-opacity="0.18"/>
+<text x="836.7" y="1047" text-anchor="middle" font-size="10.5" fill="#475569">LIBGL_ALWAYS_SOFTWARE=1</text>
+<text x="836.7" y="1062" text-anchor="middle" font-size="10.5" fill="#475569">ogre2 on CPU</text>
+<rect x="940.7" y="982" width="209.3" height="92" rx="7" fill="#fff" stroke="#c2410c" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="940.7" y="982" width="4" height="92" rx="2" fill="#c2410c"/>
+<text x="1047.3" y="1004" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">TigerVNC · openbox</text>
+<text x="1047.3" y="1021" text-anchor="middle" font-size="11.5" font-weight="600" fill="#c2410c">gui image only</text>
+<path d="M952.7 1030H1142.0" stroke="#c2410c" stroke-opacity="0.18"/>
+<text x="1047.3" y="1047" text-anchor="middle" font-size="10.5" fill="#475569">supervisord, noVNC</text>
+<text x="1047.3" y="1062" text-anchor="middle" font-size="10.5" fill="#475569">RViz left, Gazebo right</text>
+<rect x="30" y="1094" width="1130" height="112" rx="10" fill="#e2e8f0"/>
+<rect x="30" y="1094" width="236" height="112" rx="10" fill="#334155"/>
+<g transform="translate(44,1130)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="#fff"><rect x="6" y="8" width="28" height="18" rx="2"/><path d="M2 31h36l-3 -5h-30z"/></g>
+<text x="96" y="1144" font-size="11.5" font-weight="700" fill="#fff" fill-opacity="0.8" letter-spacing="1.5">LAYER 0</text>
+<text x="96" y="1164" font-size="14.5" font-weight="700" fill="#fff">Host</text>
+<rect x="280.0" y="1104" width="263.8" height="92" rx="7" fill="#fff" stroke="#334155" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="280.0" y="1104" width="4" height="92" rx="2" fill="#334155"/>
+<text x="413.9" y="1126" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">macOS + Docker Desktop</text>
+<text x="413.9" y="1143" text-anchor="middle" font-size="11.5" font-weight="600" fill="#334155">Linux VM, 8 GB, 10 CPUs</text>
+<path d="M292.0 1152H535.8" stroke="#334155" stroke-opacity="0.18"/>
+<text x="413.9" y="1169" text-anchor="middle" font-size="10.5" fill="#475569">~3.5 GB used by stack</text>
+<text x="413.9" y="1184" text-anchor="middle" font-size="10.5" fill="#475569">~10 GB images</text>
+<rect x="551.8" y="1104" width="183.1" height="92" rx="7" fill="#fff" stroke="#334155" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="551.8" y="1104" width="4" height="92" rx="2" fill="#334155"/>
+<text x="645.4" y="1126" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Apple M4</text>
+<text x="645.4" y="1143" text-anchor="middle" font-size="11.5" font-weight="600" fill="#334155">arm64, tested</text>
+<path d="M563.8 1152H726.9" stroke="#334155" stroke-opacity="0.18"/>
+<text x="645.4" y="1169" text-anchor="middle" font-size="10.5" fill="#475569">RTF 0.9 to 1.0</text>
+<text x="645.4" y="1184" text-anchor="middle" font-size="10.5" fill="#475569">Gazebo GUI 4–5 cores</text>
+<rect x="742.9" y="1104" width="223.8" height="92" rx="7" fill="#fff" stroke="#334155" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="742.9" y="1104" width="4" height="92" rx="2" fill="#334155"/>
+<text x="856.8" y="1126" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Linux + NVIDIA GPU</text>
+<text x="856.8" y="1143" text-anchor="middle" font-size="11.5" font-weight="600" fill="#334155">optional, denser sonars</text>
+<path d="M754.9 1152H958.7" stroke="#334155" stroke-opacity="0.18"/>
+<text x="856.8" y="1169" text-anchor="middle" font-size="10.5" fill="#475569">same code</text>
+<text x="856.8" y="1184" text-anchor="middle" font-size="10.5" fill="#475569">nicer underwater scene</text>
+<rect x="974.7" y="1104" width="175.3" height="92" rx="7" fill="#fff" stroke="#334155" stroke-opacity="0.45" filter="url(#sh)"/>
+<rect x="974.7" y="1104" width="4" height="92" rx="2" fill="#334155"/>
+<text x="1064.3" y="1126" text-anchor="middle" font-size="13.5" font-weight="650" fill="#0f172a">Browser</text>
+<text x="1064.3" y="1143" text-anchor="middle" font-size="11.5" font-weight="600" fill="#334155">noVNC, Foxglove</text>
+<path d="M986.7 1152H1142.0" stroke="#334155" stroke-opacity="0.18"/>
+<text x="1064.3" y="1169" text-anchor="middle" font-size="10.5" fill="#475569">localhost:6080</text>
+<text x="1064.3" y="1184" text-anchor="middle" font-size="10.5" fill="#475569">ws://localhost:8765</text>
+<line x1="24" y1="479.0" x2="1302" y2="479.0" stroke="#dc2626" stroke-width="2" stroke-dasharray="7 5"/>
+<rect x="330" y="468.0" width="810" height="22" rx="11" fill="#fff" stroke="#dc2626"/>
+<text x="735" y="483.5" text-anchor="middle" font-size="12" font-weight="600" fill="#b91c1c">sim ↔ real boundary · same ROS topics: /imu/data  /dvl/twist  /depth/pose  /gps/fix  /usbl/pose  /multibeam/submap</text>
+<path d="M1172 122h10v104h-10" fill="none" stroke="#b45309" stroke-width="2.2"/>
+<text x="1194" y="170.0" font-size="12.5" font-weight="700" fill="#b45309">Operator side</text>
+<text x="1194" y="187.0" font-size="11.5" fill="#475569">shore / laptop</text>
+<path d="M1172 244h10v226h-10" fill="none" stroke="#047857" stroke-width="2.2"/>
+<text x="1194" y="353.0" font-size="12.5" font-weight="700" fill="#047857">Runs on a real AUV</text>
+<text x="1194" y="370.0" font-size="11.5" fill="#475569">unchanged, gains</text>
+<text x="1194" y="385.0" font-size="11.5" fill="#475569">tuned for the hull</text>
+<path d="M1172 488h10v226h-10" fill="none" stroke="#dc2626" stroke-width="2.2"/>
+<text x="1194" y="597.0" font-size="12.5" font-weight="700" fill="#dc2626">Simulation only</text>
+<text x="1194" y="614.0" font-size="11.5" fill="#475569">replaced by the</text>
+<text x="1194" y="629.0" font-size="11.5" fill="#475569">vehicle drivers</text>
+<path d="M1172 732h10v226h-10" fill="none" stroke="#1e40af" stroke-width="2.2"/>
+<text x="1194" y="841.0" font-size="12.5" font-weight="700" fill="#1e40af">Shared plumbing</text>
+<text x="1194" y="858.0" font-size="11.5" fill="#475569">same on sim</text>
+<text x="1194" y="873.0" font-size="11.5" fill="#475569">and vehicle</text>
+<path d="M1172 976h10v226h-10" fill="none" stroke="#334155" stroke-width="2.2"/>
+<text x="1194" y="1085.0" font-size="12.5" font-weight="700" fill="#334155">Platform</text>
+<text x="1194" y="1102.0" font-size="11.5" fill="#475569">dev machine or</text>
+<text x="1194" y="1117.0" font-size="11.5" fill="#475569">vehicle computer</text>
+<text x="30" y="1246" font-size="12" fill="#64748b">Data flows up from the sensors to the mission; commands flow back down to the actuators in Gazebo through ros_gz_bridge. Switch RMW to CycloneDDS with RMW_IMPLEMENTATION in .env.</text>
 </svg>

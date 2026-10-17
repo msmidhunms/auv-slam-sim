@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="980" viewBox="0 0 1400 980" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1075" viewBox="0 0 1400 1075" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
 <defs><filter id="sh" x="-5%" y="-5%" width="110%" height="125%"><feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#0f172a" flood-opacity="0.13"/></filter>
 <marker id="m475569" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker>
 <marker id="mbe185d" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#be185d"/></marker>
@@ -9,254 +9,299 @@
 <marker id="m047857" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#047857"/></marker>
 <marker id="m0e7490" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#0e7490"/></marker>
 <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e7490"/><stop offset="1" stop-color="#083344"/></linearGradient></defs>
-<rect width="1400" height="980" rx="14" fill="#fff"/>
+<rect width="1400" height="1075" rx="14" fill="#fff"/>
 <text x="30" y="48" font-size="26" font-weight="700" fill="#0f172a">auv-slam-sim · system architecture</text>
-<text x="30" y="74" font-size="14.5" fill="#475569">Every box is a Docker container running one ROS 2 node. Arrows are the main ROS topics; the control loop closes through Gazebo.</text>
-<rect x="30" y="130" width="220" height="570" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+<text x="30" y="74" font-size="14.5" fill="#475569">Every box is a Docker container running one ROS 2 node. Arrows are the main ROS topics with their rates; the control loop closes through Gazebo.</text>
+<rect x="30" y="130" width="220" height="670" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
 <path d="M30 142a12 12 0 0 1 12 -12h196a12 12 0 0 1 12 12v24h-220z" fill="#0f766e"/>
 <g transform="translate(40,136) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><path d="M20 4l14 8v16l-14 8l-14 -8v-16z"/><path d="M6 12l14 8l14 -8M20 20v16"/></g>
 <text x="72" y="153" font-size="14" font-weight="700" fill="#fff">sim</text>
 <text x="240" y="153" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">Gazebo Harmonic</text>
 <rect x="44" y="178" width="192" height="120" rx="8" fill="url(#sea)"/>
 <path d="M44 278q24 -14 48 -4t48 -2t48 6t48 -6v26h-192z" fill="#a16207" fill-opacity="0.85"/>
-<path d="M118 280l-26 38M118 280l26 38" stroke="#5eead4" stroke-opacity="0.0"/>
 <path d="M140 228l-50 46h100z" fill="#5eead4" fill-opacity="0.22"/>
 <g transform="translate(88,214)"><rect x="0" y="6" width="96" height="16" rx="8" fill="#fbbf24"/><path d="M96 8l10 -6v24l-10 -6z" fill="#f59e0b"/><circle cx="10" cy="14" r="3" fill="#78350f"/><rect x="72" y="0" width="3" height="6" fill="#f59e0b"/></g>
-<text x="140" y="198" text-anchor="middle" font-size="10.5" fill="#ccfbf1">Tethys LRAUV · 300 × 300 m survey</text>
+<text x="140" y="198" text-anchor="middle" font-size="10.5" font-weight="400" fill="#ccfbf1">Tethys LRAUV · 2.3 m · 148 kg</text>
 <circle cx="54" cy="328" r="4" fill="#0f766e"/>
-<text x="66" y="332" font-size="12.5" font-weight="650" fill="#0f172a">Physics</text>
-<text x="66" y="348" font-size="11" fill="#475569">hydrodynamics, buoyancy</text>
-<circle cx="54" cy="374" r="4" fill="#0f766e"/>
-<text x="66" y="378" font-size="12.5" font-weight="650" fill="#0f172a">Actuators</text>
-<text x="66" y="394" font-size="11" fill="#475569">thruster, rudder, elevator</text>
-<circle cx="54" cy="420" r="4" fill="#0f766e"/>
-<text x="66" y="424" font-size="12.5" font-weight="650" fill="#0f172a">IMU</text>
-<text x="66" y="440" font-size="11" fill="#475569">gyro + accel, 50 Hz</text>
-<circle cx="54" cy="466" r="4" fill="#0f766e"/>
-<text x="66" y="470" font-size="12.5" font-weight="650" fill="#0f172a">Sonar fan</text>
-<text x="66" y="486" font-size="11" fill="#475569">512 rays, multibeam/sidescan</text>
-<circle cx="54" cy="512" r="4" fill="#0f766e"/>
-<text x="66" y="516" font-size="12.5" font-weight="650" fill="#0f172a">DVL beams</text>
-<text x="66" y="532" font-size="11" fill="#475569">4 Janus beams, 30°</text>
-<circle cx="54" cy="558" r="4" fill="#0f766e"/>
-<text x="66" y="562" font-size="12.5" font-weight="650" fill="#0f172a">Forward sonar</text>
-<text x="66" y="578" font-size="11" fill="#475569">64 × 16, obstacle check</text>
-<circle cx="54" cy="604" r="4" fill="#0f766e"/>
-<text x="66" y="608" font-size="12.5" font-weight="650" fill="#0f172a">Ground truth</text>
-<text x="66" y="624" font-size="11" fill="#475569">eval and sensor models</text>
-<circle cx="54" cy="650" r="4" fill="#0f766e"/>
-<text x="66" y="654" font-size="12.5" font-weight="650" fill="#0f172a">World</text>
-<text x="66" y="670" font-size="11" fill="#475569">seabed, rocks, pipe, wreck</text>
-<rect x="290" y="130" width="110" height="570" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="5 3"/>
+<text x="66" y="332" text-anchor="start" font-size="12.5" font-weight="650" fill="#0f172a">Physics</text>
+<text x="66" y="348" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">4 ms step, RTF 1.0, +0.4 kg buoyant</text>
+<circle cx="54" cy="380" r="4" fill="#0f766e"/>
+<text x="66" y="384" text-anchor="start" font-size="12.5" font-weight="650" fill="#0f172a">Actuators</text>
+<text x="66" y="400" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">thruster ≤ 20 N, fins ±0.26 rad</text>
+<circle cx="54" cy="432" r="4" fill="#0f766e"/>
+<text x="66" y="436" text-anchor="start" font-size="12.5" font-weight="650" fill="#0f172a">IMU</text>
+<text x="66" y="452" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">gyro + accel, /imu/raw 50 Hz</text>
+<circle cx="54" cy="484" r="4" fill="#0f766e"/>
+<text x="66" y="488" text-anchor="start" font-size="12.5" font-weight="650" fill="#0f172a">Sonar fan</text>
+<text x="66" y="504" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">512 rays, ±85°, 10 Hz</text>
+<circle cx="54" cy="536" r="4" fill="#0f766e"/>
+<text x="66" y="540" text-anchor="start" font-size="12.5" font-weight="650" fill="#0f172a">DVL beams</text>
+<text x="66" y="556" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">4 Janus beams at 30°, 10 Hz</text>
+<circle cx="54" cy="588" r="4" fill="#0f766e"/>
+<text x="66" y="592" text-anchor="start" font-size="12.5" font-weight="650" fill="#0f172a">Forward sonar</text>
+<text x="66" y="608" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">64 × 16, 120 × 40°, 5 Hz</text>
+<circle cx="54" cy="640" r="4" fill="#0f766e"/>
+<text x="66" y="644" text-anchor="start" font-size="12.5" font-weight="650" fill="#0f172a">Ground truth</text>
+<text x="66" y="660" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">/ground_truth/odom, 50 Hz</text>
+<circle cx="54" cy="692" r="4" fill="#0f766e"/>
+<text x="66" y="696" text-anchor="start" font-size="12.5" font-weight="650" fill="#0f172a">World</text>
+<text x="66" y="712" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">300 × 300 m, 34–46 m deep</text>
+<text x="66" y="728" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">dunes, rocks, pipeline, wreck</text>
+<text x="140" y="786" text-anchor="middle" font-size="10" font-weight="400" fill="#0f766e" font-family="Menlo, Consolas, monospace">underwater.sdf · auv_sim</text>
+<rect x="290" y="130" width="110" height="670" rx="12" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="5 3"/>
 <rect x="290" y="130" width="110" height="36" rx="12" fill="#115e59"/><rect x="290" y="150" width="110" height="16" fill="#115e59"/>
 <text x="345.0" y="153" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">bridge</text>
-<text x="345.0" y="420" text-anchor="middle" font-size="11.5" fill="#115e59" font-weight="600">ros_gz_bridge</text>
-<text x="345.0" y="436" text-anchor="middle" font-size="11.5" fill="#115e59" font-weight="400"></text>
-<text x="345.0" y="452" text-anchor="middle" font-size="11.5" fill="#115e59" font-weight="600">gz-transport</text>
-<text x="345.0" y="468" text-anchor="middle" font-size="11.5" fill="#115e59" font-weight="400">⇅</text>
-<text x="345.0" y="484" text-anchor="middle" font-size="11.5" fill="#115e59" font-weight="600">ROS 2 topics</text>
-<text x="345.0" y="500" text-anchor="middle" font-size="11.5" fill="#115e59" font-weight="400"></text>
-<text x="345.0" y="516" text-anchor="middle" font-size="11.5" fill="#115e59" font-weight="400">bridge.yaml</text>
+<text x="345.0" y="430" text-anchor="middle" font-size="11.5" font-weight="600" fill="#115e59">ros_gz_bridge</text>
+<text x="345.0" y="446" text-anchor="middle" font-size="11.5" font-weight="400" fill="#115e59"></text>
+<text x="345.0" y="462" text-anchor="middle" font-size="11.5" font-weight="600" fill="#115e59">gz-transport</text>
+<text x="345.0" y="478" text-anchor="middle" font-size="11.5" font-weight="400" fill="#115e59">⇅</text>
+<text x="345.0" y="494" text-anchor="middle" font-size="11.5" font-weight="600" fill="#115e59">ROS 2 topics</text>
+<text x="345.0" y="510" text-anchor="middle" font-size="11.5" font-weight="400" fill="#115e59"></text>
+<text x="345.0" y="526" text-anchor="middle" font-size="11.5" font-weight="400" fill="#115e59">bridge.yaml</text>
+<text x="345.0" y="542" text-anchor="middle" font-size="11.5" font-weight="400" fill="#115e59">9 topics</text>
+<text x="345.0" y="558" text-anchor="middle" font-size="11.5" font-weight="400" fill="#115e59">GZ_PARTITION</text>
+<text x="345.0" y="574" text-anchor="middle" font-size="11.5" font-weight="400" fill="#115e59">auv_sim</text>
 <path d="M250 250H290" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#m0f766e)"/>
-<path d="M290 670H250" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#m0f766e)"/>
-<text x="270" y="242" text-anchor="middle" font-size="10" fill="#0f766e">data</text>
-<text x="270" y="662" text-anchor="middle" font-size="10" fill="#0f766e">cmds</text>
-<rect x="500" y="130" width="290" height="220" rx="12" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.5"/>
-<path d="M500 142a12 12 0 0 1 12 -12h266a12 12 0 0 1 12 12v24h-290z" fill="#6d28d9"/>
+<path d="M290 740H250" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#m0f766e)"/>
+<text x="270" y="242" text-anchor="middle" font-size="10" font-weight="400" fill="#0f766e">data</text>
+<text x="270" y="732" text-anchor="middle" font-size="10" font-weight="400" fill="#0f766e">cmds</text>
+<rect x="500" y="130" width="300" height="250" rx="12" fill="#f5f3ff" stroke="#6d28d9" stroke-width="1.5"/>
+<path d="M500 142a12 12 0 0 1 12 -12h276a12 12 0 0 1 12 12v24h-300z" fill="#6d28d9"/>
 <g transform="translate(510,136) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="28" r="2.5" fill="currentColor"/><path d="M12 22a11 11 0 0 1 16 0"/><path d="M7 16a18 18 0 0 1 26 0"/><path d="M2 10a25 25 0 0 1 36 0"/></g>
 <text x="542" y="153" font-size="14" font-weight="700" fill="#fff">sensors</text>
-<text x="780" y="153" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">auv_sensors</text>
-<rect x="512" y="182" width="84" height="64" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="512" y="182" width="4" height="64" rx="2" fill="#6d28d9"/>
-<text x="556.0" y="211.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">ahrs</text>
-<text x="556.0" y="226.0" text-anchor="middle" font-size="10.5" fill="#475569">heading drift</text>
-<rect x="603" y="182" width="84" height="64" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="603" y="182" width="4" height="64" rx="2" fill="#6d28d9"/>
-<text x="647.0" y="211.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">dvl</text>
-<text x="647.0" y="226.0" text-anchor="middle" font-size="10.5" fill="#475569">bottom lock</text>
-<rect x="694" y="182" width="84" height="64" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="694" y="182" width="4" height="64" rx="2" fill="#6d28d9"/>
-<text x="738.0" y="211.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">depth</text>
-<text x="738.0" y="226.0" text-anchor="middle" font-size="10.5" fill="#475569">pressure</text>
-<rect x="512" y="262" width="84" height="64" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="512" y="262" width="4" height="64" rx="2" fill="#6d28d9"/>
-<text x="556.0" y="291.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">gps</text>
-<text x="556.0" y="306.0" text-anchor="middle" font-size="10.5" fill="#475569">surface only</text>
-<rect x="603" y="262" width="84" height="64" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="603" y="262" width="4" height="64" rx="2" fill="#6d28d9"/>
-<text x="647.0" y="291.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">usbl</text>
-<text x="647.0" y="306.0" text-anchor="middle" font-size="10.5" fill="#475569">ship fixes</text>
-<rect x="694" y="262" width="84" height="64" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="694" y="262" width="4" height="64" rx="2" fill="#6d28d9"/>
-<text x="738.0" y="291.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">battery</text>
-<text x="738.0" y="306.0" text-anchor="middle" font-size="10.5" fill="#475569">1 kWh</text>
-<rect x="500" y="390" width="290" height="200" rx="12" fill="#eef2ff" stroke="#4338ca" stroke-width="1.5"/>
-<path d="M500 402a12 12 0 0 1 12 -12h266a12 12 0 0 1 12 12v24h-290z" fill="#4338ca"/>
-<g transform="translate(510,396) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="28" r="2.5" fill="currentColor"/><path d="M12 22a11 11 0 0 1 16 0"/><path d="M7 16a18 18 0 0 1 26 0"/><path d="M2 10a25 25 0 0 1 36 0"/></g>
-<text x="542" y="413" font-size="14" font-weight="700" fill="#fff">sonars</text>
-<text x="780" y="413" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">auv_sonar</text>
-<rect x="512" y="442" width="110" height="56" rx="7" fill="#fff" stroke="#4338ca" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="512" y="442" width="4" height="56" rx="2" fill="#4338ca"/>
-<text x="569.0" y="467.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">multibeam</text>
-<text x="569.0" y="482.0" text-anchor="middle" font-size="10.5" fill="#475569">120° swath</text>
-<rect x="662" y="442" width="116" height="56" rx="7" fill="#fff" stroke="#4338ca" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="662" y="442" width="4" height="56" rx="2" fill="#4338ca"/>
-<text x="722.0" y="467.0" text-anchor="middle" font-size="12" font-weight="650" fill="#0f172a">swath-assembler</text>
-<text x="722.0" y="482.0" text-anchor="middle" font-size="10.5" fill="#475569">15 m submaps</text>
-<path d="M622 470H660" fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#m475569)"/>
-<rect x="512" y="514" width="110" height="56" rx="7" fill="#fff" stroke="#4338ca" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="512" y="514" width="4" height="56" rx="2" fill="#4338ca"/>
-<text x="569.0" y="539.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">sidescan</text>
-<text x="569.0" y="554.0" text-anchor="middle" font-size="10.5" fill="#475569">waterfall image</text>
-<text x="640" y="540" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#4338ca">/sidescan/waterfall</text>
-<text x="640" y="556" font-size="10.5" fill="#64748b">to RViz and Foxglove</text>
-<rect x="870" y="130" width="240" height="220" rx="12" fill="#ecfdf5" stroke="#047857" stroke-width="1.5"/>
-<path d="M870 142a12 12 0 0 1 12 -12h216a12 12 0 0 1 12 12v24h-240z" fill="#047857"/>
-<g transform="translate(880,136) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="4" fill="currentColor"/><path d="M20 2v8M20 30v8M2 20h8M30 20h8"/></g>
-<text x="912" y="153" font-size="14" font-weight="700" fill="#fff">navigation</text>
-<text x="1100" y="153" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">robot_localization</text>
-<rect x="882" y="182" width="216" height="64" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="882" y="182" width="4" height="64" rx="2" fill="#047857"/>
-<text x="992.0" y="211.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">localization</text>
-<text x="992.0" y="226.0" text-anchor="middle" font-size="10.5" fill="#475569">local EKF · odom → base_link</text>
-<rect x="882" y="262" width="216" height="64" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="882" y="262" width="4" height="64" rx="2" fill="#047857"/>
-<text x="992.0" y="291.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">navigation</text>
-<text x="992.0" y="306.0" text-anchor="middle" font-size="10.5" fill="#475569">global EKF + USBL + GPS · map → odom</text>
-<rect x="870" y="390" width="240" height="200" rx="12" fill="#ecfeff" stroke="#0e7490" stroke-width="1.5"/>
-<path d="M870 402a12 12 0 0 1 12 -12h216a12 12 0 0 1 12 12v24h-240z" fill="#0e7490"/>
-<g transform="translate(880,396) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="4" fill="currentColor"/><path d="M20 2v8M20 30v8M2 20h8M30 20h8"/></g>
-<text x="912" y="413" font-size="14" font-weight="700" fill="#fff">slam</text>
-<text x="1100" y="413" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">RTAB-Map</text>
-<rect x="882" y="442" width="216" height="56" rx="7" fill="#fff" stroke="#0e7490" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="882" y="442" width="4" height="56" rx="2" fill="#0e7490"/>
-<text x="992.0" y="467.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">rtabmap</text>
-<text x="992.0" y="482.0" text-anchor="middle" font-size="10.5" fill="#475569">ICP on bathymetry submaps</text>
-<text x="886" y="522" font-size="11" fill="#155e75">▸ /rtabmap/cloud_map  bathymetry</text>
-<text x="886" y="540" font-size="11" fill="#155e75">▸ TF slam_map → map</text>
-<text x="886" y="558" font-size="11" fill="#155e75">▸ /rtabmap/mapPath, mapGraph</text>
-<rect x="1170" y="130" width="200" height="220" rx="12" fill="#fdf2f8" stroke="#be185d" stroke-width="1.5"/>
+<text x="790" y="153" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">auv_sensors · sensors.yaml</text>
+<rect x="512" y="178" width="88" height="90" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="512" y="178" width="4" height="90" rx="2" fill="#6d28d9"/>
+<text x="558.0" y="205.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">ahrs</text>
+<text x="558.0" y="220.0" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">50 Hz</text>
+<text x="558.0" y="234.0" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">1.5° drift</text>
+<text x="558.0" y="248.0" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/imu/data</text>
+<rect x="608" y="178" width="88" height="90" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="608" y="178" width="4" height="90" rx="2" fill="#6d28d9"/>
+<text x="654.0" y="205.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">dvl</text>
+<text x="654.0" y="220.0" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">10 Hz</text>
+<text x="654.0" y="234.0" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">lock &lt; 30 m</text>
+<text x="654.0" y="248.0" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/dvl/twist</text>
+<rect x="704" y="178" width="88" height="90" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="704" y="178" width="4" height="90" rx="2" fill="#6d28d9"/>
+<text x="750.0" y="205.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">depth</text>
+<text x="750.0" y="220.0" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">25 Hz</text>
+<text x="750.0" y="234.0" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">1 cm noise</text>
+<text x="750.0" y="248.0" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/depth/pose</text>
+<rect x="512" y="278" width="88" height="90" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="512" y="278" width="4" height="90" rx="2" fill="#6d28d9"/>
+<text x="558.0" y="305.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">gps</text>
+<text x="558.0" y="320.0" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">1 Hz</text>
+<text x="558.0" y="334.0" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">surface, 2.5 m</text>
+<text x="558.0" y="348.0" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/gps/fix</text>
+<rect x="608" y="278" width="88" height="90" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="608" y="278" width="4" height="90" rx="2" fill="#6d28d9"/>
+<text x="654.0" y="305.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">usbl</text>
+<text x="654.0" y="320.0" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">every 5 s</text>
+<text x="654.0" y="334.0" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">0.5 % range</text>
+<text x="654.0" y="348.0" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/usbl/pose</text>
+<rect x="704" y="278" width="88" height="90" rx="7" fill="#fff" stroke="#6d28d9" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="704" y="278" width="4" height="90" rx="2" fill="#6d28d9"/>
+<text x="750.0" y="305.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">battery</text>
+<text x="750.0" y="320.0" text-anchor="middle" font-size="10.5" font-weight="600" fill="#6d28d9">1 kWh pack</text>
+<text x="750.0" y="334.0" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">hotel + prop</text>
+<text x="750.0" y="348.0" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/battery/state</text>
+<rect x="500" y="420" width="300" height="210" rx="12" fill="#eef2ff" stroke="#4338ca" stroke-width="1.5"/>
+<path d="M500 432a12 12 0 0 1 12 -12h276a12 12 0 0 1 12 12v24h-300z" fill="#4338ca"/>
+<g transform="translate(510,426) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="28" r="2.5" fill="currentColor"/><path d="M12 22a11 11 0 0 1 16 0"/><path d="M7 16a18 18 0 0 1 26 0"/><path d="M2 10a25 25 0 0 1 36 0"/></g>
+<text x="542" y="443" font-size="14" font-weight="700" fill="#fff">sonars</text>
+<text x="790" y="443" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">auv_sonar · sonar.yaml</text>
+<rect x="512" y="468" width="120" height="72" rx="7" fill="#fff" stroke="#4338ca" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="512" y="468" width="4" height="72" rx="2" fill="#4338ca"/>
+<text x="574.0" y="493.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">multibeam</text>
+<text x="574.0" y="508.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#4338ca">10 Hz · ±60° swath</text>
+<text x="574.0" y="522.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/multibeam/swath</text>
+<rect x="666" y="468" width="122" height="72" rx="7" fill="#fff" stroke="#4338ca" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="666" y="468" width="4" height="72" rx="2" fill="#4338ca"/>
+<text x="729.0" y="493.5" text-anchor="middle" font-size="12" font-weight="650" fill="#0f172a">swath-assembler</text>
+<text x="729.0" y="508.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#4338ca">every 15 m track</text>
+<text x="729.0" y="522.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/multibeam/submap</text>
+<path d="M632 504H664" fill="none" stroke="#475569" stroke-width="1.6" marker-end="url(#m475569)"/>
+<rect x="512" y="552" width="120" height="66" rx="7" fill="#fff" stroke="#4338ca" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="512" y="552" width="4" height="66" rx="2" fill="#4338ca"/>
+<text x="574.0" y="574.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">sidescan</text>
+<text x="574.0" y="589.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#4338ca">2 Hz · 60 m / side</text>
+<text x="574.0" y="603.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/sidescan/waterfall</text>
+<text x="646" y="568" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">Lambert echo + speckle,</text>
+<text x="646" y="582" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">acoustic shadows,</text>
+<text x="646" y="596" text-anchor="start" font-size="10.5" font-weight="400" fill="#475569">0.2 m bins, slant range</text>
+<text x="646" y="610" text-anchor="start" font-size="10.5" font-weight="400" fill="#4338ca">→ RViz and Foxglove</text>
+<rect x="880" y="130" width="230" height="250" rx="12" fill="#ecfdf5" stroke="#047857" stroke-width="1.5"/>
+<path d="M880 142a12 12 0 0 1 12 -12h206a12 12 0 0 1 12 12v24h-230z" fill="#047857"/>
+<g transform="translate(890,136) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="4" fill="currentColor"/><path d="M20 2v8M20 30v8M2 20h8M30 20h8"/></g>
+<text x="922" y="153" font-size="14" font-weight="700" fill="#fff">navigation</text>
+<text x="1100" y="153" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">ekf.yaml</text>
+<rect x="892" y="178" width="206" height="90" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="892" y="178" width="4" height="90" rx="2" fill="#047857"/>
+<text x="997.0" y="197.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">localization</text>
+<text x="997.0" y="212.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#047857">local EKF · 50 Hz</text>
+<text x="997.0" y="226.5" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">ahrs, dvl, speed model, depth</text>
+<text x="997.0" y="240.5" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">odom → base_link</text>
+<text x="997.0" y="254.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/odometry/filtered</text>
+<rect x="892" y="278" width="206" height="90" rx="7" fill="#fff" stroke="#047857" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="892" y="278" width="4" height="90" rx="2" fill="#047857"/>
+<text x="997.0" y="297.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">navigation</text>
+<text x="997.0" y="312.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#047857">global EKF · 30 Hz</text>
+<text x="997.0" y="326.5" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">+ USBL, GPS · 3 s history, 5σ</text>
+<text x="997.0" y="340.5" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">map → odom</text>
+<text x="997.0" y="354.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/odometry/global</text>
+<rect x="880" y="420" width="230" height="210" rx="12" fill="#ecfeff" stroke="#0e7490" stroke-width="1.5"/>
+<path d="M880 432a12 12 0 0 1 12 -12h206a12 12 0 0 1 12 12v24h-230z" fill="#0e7490"/>
+<g transform="translate(890,426) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="20" cy="20" r="12"/><circle cx="20" cy="20" r="4" fill="currentColor"/><path d="M20 2v8M20 30v8M2 20h8M30 20h8"/></g>
+<text x="922" y="443" font-size="14" font-weight="700" fill="#fff">slam</text>
+<text x="1100" y="443" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">RTAB-Map · rtabmap.yaml</text>
+<rect x="892" y="468" width="206" height="60" rx="7" fill="#fff" stroke="#0e7490" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="892" y="468" width="4" height="60" rx="2" fill="#0e7490"/>
+<text x="997.0" y="487.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">rtabmap</text>
+<text x="997.0" y="502.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#0e7490">ICP on bathymetry submaps</text>
+<text x="997.0" y="516.5" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">1 node per 15 m, 25 m search</text>
+<text x="894" y="552" text-anchor="start" font-size="10.3" font-weight="400" fill="#155e75" font-family="Menlo, Consolas, monospace">▸ /rtabmap/cloud_map  0.5 m voxels</text>
+<text x="894" y="569" text-anchor="start" font-size="10.3" font-weight="400" fill="#155e75" font-family="Menlo, Consolas, monospace">▸ TF slam_map → map</text>
+<text x="894" y="586" text-anchor="start" font-size="10.3" font-weight="400" fill="#155e75" font-family="Menlo, Consolas, monospace">▸ /rtabmap/mapPath</text>
+<text x="894" y="603" text-anchor="start" font-size="10.3" font-weight="400" fill="#155e75" font-family="Menlo, Consolas, monospace">▸ /rtabmap/mapGraph</text>
+<rect x="1170" y="130" width="200" height="250" rx="12" fill="#fdf2f8" stroke="#be185d" stroke-width="1.5"/>
 <path d="M1170 142a12 12 0 0 1 12 -12h176a12 12 0 0 1 12 12v24h-200z" fill="#be185d"/>
 <g transform="translate(1180,136) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="8" cy="31" r="3.5"/><circle cx="32" cy="9" r="3.5"/><path d="M11 31h10a6 6 0 0 0 0 -11h-4a6 6 0 0 1 0 -11h11" stroke-dasharray="3 3"/></g>
 <text x="1212" y="153" font-size="14" font-weight="700" fill="#fff">mission</text>
-<text x="1360" y="153" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">auv_mission</text>
-<rect x="1184" y="180" width="124" height="20" rx="10" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
-<text x="1246" y="194" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9d174d">PRE_DIVE</text>
-<rect x="1184" y="206" width="124" height="20" rx="10" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
-<text x="1246" y="220" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9d174d">DIVE</text>
-<path d="M1246 200v5" stroke="#be185d" stroke-width="1.4"/>
-<rect x="1184" y="232" width="124" height="20" rx="10" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
-<text x="1246" y="246" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9d174d">SURVEY</text>
-<path d="M1246 226v5" stroke="#be185d" stroke-width="1.4"/>
-<rect x="1184" y="258" width="124" height="20" rx="10" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
-<text x="1246" y="272" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9d174d">SURFACE_FOR_FIX</text>
-<path d="M1246 252v5" stroke="#be185d" stroke-width="1.4"/>
-<rect x="1184" y="284" width="124" height="20" rx="10" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
-<text x="1246" y="298" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9d174d">RETURN</text>
-<path d="M1246 278v5" stroke="#be185d" stroke-width="1.4"/>
-<rect x="1184" y="310" width="124" height="20" rx="10" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
-<text x="1246" y="324" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9d174d">END</text>
-<path d="M1246 304v5" stroke="#be185d" stroke-width="1.4"/>
-<rect x="1318" y="232" width="42" height="54" rx="8" fill="#fee2e2" stroke="#dc2626"/>
-<text x="1339" y="256" text-anchor="middle" font-size="9.5" font-weight="700" fill="#b91c1c">ABORT</text>
-<text x="1339" y="271" text-anchor="middle" font-size="9" fill="#b91c1c">8 rules</text>
-<rect x="870" y="612" width="500" height="112" rx="12" fill="#fdf2f8" stroke="#9d174d" stroke-width="1.5"/>
-<path d="M870 624a12 12 0 0 1 12 -12h476a12 12 0 0 1 12 12v24h-500z" fill="#9d174d"/>
-<g transform="translate(880,618) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="8" cy="31" r="3.5"/><circle cx="32" cy="9" r="3.5"/><path d="M11 31h10a6 6 0 0 0 0 -11h-4a6 6 0 0 1 0 -11h11" stroke-dasharray="3 3"/></g>
-<text x="912" y="635" font-size="14" font-weight="700" fill="#fff">controller</text>
-<text x="1360" y="635" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">auv_control · torpedo cascade</text>
-<rect x="882.0" y="660" width="153.33333333333334" height="52" rx="7" fill="#fff" stroke="#9d174d" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="882.0" y="660" width="4" height="52" rx="2" fill="#9d174d"/>
-<text x="960.6666666666666" y="683.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">speed</text>
-<text x="960.6666666666666" y="698.0" text-anchor="middle" font-size="10.5" fill="#475569">PI + drag feed forward</text>
-<rect x="1043.3333333333333" y="660" width="153.33333333333334" height="52" rx="7" fill="#fff" stroke="#9d174d" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="1043.3333333333333" y="660" width="4" height="52" rx="2" fill="#9d174d"/>
-<text x="1122.0" y="683.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">heading</text>
-<text x="1122.0" y="698.0" text-anchor="middle" font-size="10.5" fill="#475569">PID → rudder</text>
-<rect x="1204.6666666666667" y="660" width="153.33333333333334" height="52" rx="7" fill="#fff" stroke="#9d174d" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="1204.6666666666667" y="660" width="4" height="52" rx="2" fill="#9d174d"/>
-<text x="1283.3333333333335" y="683.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">depth / altitude</text>
-<text x="1283.3333333333335" y="698.0" text-anchor="middle" font-size="10.5" fill="#475569">pitch loop → elevator</text>
-<rect x="30" y="760" width="1340" height="112" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
-<path d="M30 772a12 12 0 0 1 12 -12h1316a12 12 0 0 1 12 12v24h-1340z" fill="#b45309"/>
-<g transform="translate(40,766) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><rect x="3" y="6" width="34" height="23" rx="2"/><path d="M8 24l7 -8l6 5l9 -11"/><path d="M14 35h12M20 29v6"/></g>
-<text x="72" y="783" font-size="14" font-weight="700" fill="#fff">viewing &amp; tools</text>
-<text x="1360" y="783" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">subscribe to any topic over Zenoh</text>
-<rect x="42.0" y="808" width="209.33333333333334" height="52" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="42.0" y="808" width="4" height="52" rx="2" fill="#b45309"/>
-<text x="148.66666666666669" y="831.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">gui</text>
-<text x="148.66666666666669" y="846.0" text-anchor="middle" font-size="10.5" fill="#475569">RViz + Gazebo GUI · :6080</text>
-<rect x="263.33333333333337" y="808" width="209.33333333333334" height="52" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="263.33333333333337" y="808" width="4" height="52" rx="2" fill="#b45309"/>
-<text x="370.00000000000006" y="831.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">foxglove</text>
-<text x="370.00000000000006" y="846.0" text-anchor="middle" font-size="10.5" fill="#475569">foxglove_bridge · :8765</text>
-<rect x="484.6666666666667" y="808" width="209.33333333333334" height="52" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="484.6666666666667" y="808" width="4" height="52" rx="2" fill="#b45309"/>
-<text x="591.3333333333334" y="831.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">eval</text>
-<text x="591.3333333333334" y="846.0" text-anchor="middle" font-size="10.5" fill="#475569">error vs ground truth</text>
-<rect x="706.0" y="808" width="209.33333333333334" height="52" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="706.0" y="808" width="4" height="52" rx="2" fill="#b45309"/>
-<text x="812.6666666666666" y="831.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">bag</text>
-<text x="812.6666666666666" y="846.0" text-anchor="middle" font-size="10.5" fill="#475569">rosbag2 → MCAP</text>
-<rect x="927.3333333333334" y="808" width="209.33333333333334" height="52" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="927.3333333333334" y="808" width="4" height="52" rx="2" fill="#b45309"/>
-<text x="1034.0" y="831.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">state-pub</text>
-<text x="1034.0" y="846.0" text-anchor="middle" font-size="10.5" fill="#475569">URDF → TF</text>
-<rect x="1148.6666666666667" y="808" width="209.33333333333334" height="52" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
-<rect x="1148.6666666666667" y="808" width="4" height="52" rx="2" fill="#b45309"/>
-<text x="1255.3333333333335" y="831.0" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">teleop</text>
-<text x="1255.3333333333335" y="846.0" text-anchor="middle" font-size="10.5" fill="#475569">keyboard → /cmd_vel</text>
-<rect x="30" y="896" width="1340" height="54" rx="12" fill="#1e3a8a"/>
-<g transform="translate(44,905) scale(0.9)" fill="none" stroke="#fff" stroke-width="1.60" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="9" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="9" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="9" cy="31" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="31" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="31" r="3.6" fill="currentColor" stroke="none"/></g>
-<text x="92" y="920" font-size="15" font-weight="700" fill="#fff">zenoh-router  ·  rmw_zenoh_cpp</text>
-<text x="92" y="938" font-size="12" fill="#bfdbfe">ROS 2 Jazzy discovery and transport for all 21 containers on the auv_net compose network · sim time from /clock · CycloneDDS selectable in .env</text>
+<text x="1360" y="153" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">10 Hz</text>
+<rect x="1180" y="176" width="88" height="19" rx="9.5" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
+<text x="1224" y="189.5" text-anchor="middle" font-size="10" font-weight="700" fill="#9d174d">PRE_DIVE</text>
+<rect x="1272" y="176" width="88" height="19" rx="9.5" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
+<text x="1316" y="189.5" text-anchor="middle" font-size="10" font-weight="700" fill="#9d174d">DIVE</text>
+<rect x="1180" y="200" width="88" height="19" rx="9.5" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
+<text x="1224" y="213.5" text-anchor="middle" font-size="10" font-weight="700" fill="#9d174d">SURVEY</text>
+<rect x="1272" y="200" width="88" height="19" rx="9.5" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
+<text x="1316" y="213.5" text-anchor="middle" font-size="8.3" font-weight="700" fill="#9d174d">SURFACE_FOR_FIX</text>
+<rect x="1180" y="224" width="88" height="19" rx="9.5" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
+<text x="1224" y="237.5" text-anchor="middle" font-size="10" font-weight="700" fill="#9d174d">RETURN</text>
+<rect x="1272" y="224" width="88" height="19" rx="9.5" fill="#fff" stroke="#be185d" stroke-opacity="0.6"/>
+<text x="1316" y="237.5" text-anchor="middle" font-size="10" font-weight="700" fill="#9d174d">END</text>
+<rect x="1180" y="252" width="180" height="80" rx="8" fill="#fee2e2" stroke="#dc2626"/>
+<text x="1188" y="267" text-anchor="start" font-size="10.5" font-weight="700" fill="#b91c1c">ABORT → climb, prop off</text>
+<text x="1188" y="283" text-anchor="start" font-size="9.8" font-weight="400" fill="#7f1d1d">leak · battery &lt; 15 %</text>
+<text x="1188" y="296" text-anchor="start" font-size="9.8" font-weight="400" fill="#7f1d1d">depth &gt; 45 m · alt &lt; 3 m</text>
+<text x="1188" y="309" text-anchor="start" font-size="9.8" font-weight="400" fill="#7f1d1d">obstacle &lt; 8 m · no DVL 60 s</text>
+<text x="1188" y="322" text-anchor="start" font-size="9.8" font-weight="400" fill="#7f1d1d">outside ±140 m · timeouts</text>
+<text x="1180" y="350" text-anchor="start" font-size="9.8" font-weight="400" fill="#475569">LOS 12 m · accept 8 m · 25 m transit</text>
+<text x="1180" y="366" text-anchor="start" font-size="9.3" font-weight="400" fill="#9d174d" font-family="Menlo, Consolas, monospace">/mission/start|stop|abort, status</text>
+<rect x="880" y="660" width="490" height="140" rx="12" fill="#fdf2f8" stroke="#9d174d" stroke-width="1.5"/>
+<path d="M880 672a12 12 0 0 1 12 -12h466a12 12 0 0 1 12 12v24h-490z" fill="#9d174d"/>
+<g transform="translate(890,666) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="8" cy="31" r="3.5"/><circle cx="32" cy="9" r="3.5"/><path d="M11 31h10a6 6 0 0 0 0 -11h-4a6 6 0 0 1 0 -11h11" stroke-dasharray="3 3"/></g>
+<text x="922" y="683" font-size="14" font-weight="700" fill="#fff">controller</text>
+<text x="1360" y="683" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">auv_control · 50 Hz on IMU · control.yaml</text>
+<rect x="892.0" y="704" width="150.0" height="62" rx="7" fill="#fff" stroke="#9d174d" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="892.0" y="704" width="4" height="62" rx="2" fill="#9d174d"/>
+<text x="969.0" y="724.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">speed</text>
+<text x="969.0" y="739.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9d174d">PI + drag feed forward</text>
+<text x="969.0" y="753.5" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">DVL speed feedback</text>
+<rect x="1050.0" y="704" width="150.0" height="62" rx="7" fill="#fff" stroke="#9d174d" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="1050.0" y="704" width="4" height="62" rx="2" fill="#9d174d"/>
+<text x="1127.0" y="724.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">heading</text>
+<text x="1127.0" y="739.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9d174d">PID → rudder</text>
+<text x="1127.0" y="753.5" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">from /imu/data</text>
+<rect x="1208.0" y="704" width="150.0" height="62" rx="7" fill="#fff" stroke="#9d174d" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="1208.0" y="704" width="4" height="62" rx="2" fill="#9d174d"/>
+<text x="1285.0" y="724.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">depth / altitude</text>
+<text x="1285.0" y="739.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9d174d">pitch ref ≤ 25° → elevator</text>
+<text x="1285.0" y="753.5" text-anchor="middle" font-size="10" font-weight="400" fill="#475569">gains × (1 m/s / speed)²</text>
+<text x="894" y="786" text-anchor="start" font-size="10.3" font-weight="400" fill="#475569">no setpoint for 5 s → propeller off, floats up · publishes /speed_model/twist for the EKFs</text>
+<rect x="30" y="840" width="1340" height="128" rx="12" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+<path d="M30 852a12 12 0 0 1 12 -12h1316a12 12 0 0 1 12 12v24h-1340z" fill="#b45309"/>
+<g transform="translate(40,846) scale(0.6)" fill="none" stroke="#fff" stroke-width="2.40" stroke-linecap="round" stroke-linejoin="round" color="#fff"><rect x="3" y="6" width="34" height="23" rx="2"/><path d="M8 24l7 -8l6 5l9 -11"/><path d="M14 35h12M20 29v6"/></g>
+<text x="72" y="863" font-size="14" font-weight="700" fill="#fff">viewing &amp; tools</text>
+<text x="1360" y="863" text-anchor="end" font-size="11" fill="#fff" fill-opacity="0.85">subscribe to any topic over Zenoh</text>
+<rect x="42.0" y="886" width="209.33333333333334" height="68" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="42.0" y="886" width="4" height="68" rx="2" fill="#b45309"/>
+<text x="148.66666666666669" y="909.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">gui</text>
+<text x="148.66666666666669" y="924.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#b45309">RViz + Gazebo GUI</text>
+<text x="148.66666666666669" y="938.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">noVNC :6080 · make gui</text>
+<rect x="263.33333333333337" y="886" width="209.33333333333334" height="68" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="263.33333333333337" y="886" width="4" height="68" rx="2" fill="#b45309"/>
+<text x="370.00000000000006" y="909.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">foxglove</text>
+<text x="370.00000000000006" y="924.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#b45309">foxglove_bridge :8765</text>
+<text x="370.00000000000006" y="938.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">foxglove/layout.json</text>
+<rect x="484.6666666666667" y="886" width="209.33333333333334" height="68" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="484.6666666666667" y="886" width="4" height="68" rx="2" fill="#b45309"/>
+<text x="591.3333333333334" y="909.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">eval</text>
+<text x="591.3333333333334" y="924.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#b45309">error vs ground truth</text>
+<text x="591.3333333333334" y="938.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">/eval/*_position_error</text>
+<rect x="706.0" y="886" width="209.33333333333334" height="68" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="706.0" y="886" width="4" height="68" rx="2" fill="#b45309"/>
+<text x="812.6666666666666" y="909.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">bag</text>
+<text x="812.6666666666666" y="924.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#b45309">rosbag2 → MCAP</text>
+<text x="812.6666666666666" y="938.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">make bag → ./bags</text>
+<rect x="927.3333333333334" y="886" width="209.33333333333334" height="68" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="927.3333333333334" y="886" width="4" height="68" rx="2" fill="#b45309"/>
+<text x="1034.0" y="909.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">state-pub</text>
+<text x="1034.0" y="924.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#b45309">robot_state_publisher</text>
+<text x="1034.0" y="938.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">auv.urdf.xacro → /tf</text>
+<rect x="1148.6666666666667" y="886" width="209.33333333333334" height="68" rx="7" fill="#fff" stroke="#b45309" stroke-opacity="0.5" filter="url(#sh)"/>
+<rect x="1148.6666666666667" y="886" width="4" height="68" rx="2" fill="#b45309"/>
+<text x="1255.3333333333335" y="909.5" text-anchor="middle" font-size="13" font-weight="650" fill="#0f172a">teleop</text>
+<text x="1255.3333333333335" y="924.5" text-anchor="middle" font-size="10.5" font-weight="600" fill="#b45309">keyboard, make teleop</text>
+<text x="1255.3333333333335" y="938.5" text-anchor="middle" font-size="9.3" font-weight="400" fill="#475569" font-family="Menlo, Consolas, monospace">w/s a/d r/f → /cmd_vel</text>
+<rect x="30" y="992" width="1340" height="56" rx="12" fill="#1e3a8a"/>
+<g transform="translate(44,1002) scale(0.9)" fill="none" stroke="#fff" stroke-width="1.60" stroke-linecap="round" stroke-linejoin="round" color="#fff"><circle cx="9" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="9" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="9" cy="31" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="20" cy="31" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="9" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="20" r="3.6" fill="currentColor" stroke="none"/><circle cx="31" cy="31" r="3.6" fill="currentColor" stroke="none"/></g>
+<text x="92" y="1016" text-anchor="start" font-size="15" font-weight="700" fill="#fff">zenoh-router  ·  rmw_zenoh_cpp  ·  tcp/7447</text>
+<text x="92" y="1035" text-anchor="start" font-size="12" font-weight="400" fill="#bfdbfe">ROS 2 Jazzy discovery and transport for all 21 containers on auv_net · ROS_DOMAIN_ID 42 · sim time from /clock · CycloneDDS selectable in .env</text>
+<text x="1356" y="1016" text-anchor="end" font-size="12" font-weight="600" fill="#fde68a" font-family="Menlo, Consolas, monospace">TF  world → slam_map → map → odom → base_link</text>
 <path d="M400 240H500" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#m0f766e)"/>
-<rect x="414.6" y="201.5" width="70.9" height="32.0" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="450" y="214.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#0f766e">/imu/raw</text>
-<text x="450" y="227.5" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#0f766e">/dvl/beams</text>
-<path d="M400 470H500" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#m0f766e)"/>
-<rect x="411.5" y="437.5" width="77.0" height="32.0" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="450" y="450.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#0f766e">/sonar_fan/</text>
-<text x="450" y="463.5" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#0f766e">points</text>
-<path d="M400 320H500" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#m0f766e)"/>
-<rect x="402.4" y="283.5" width="95.3" height="32.0" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="450" y="296.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#0f766e">/ground_truth/</text>
-<text x="450" y="309.5" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#0f766e">odom</text>
+<rect x="406.0" y="198" width="88.0" height="44" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="450" y="210" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#0f766e">/imu/raw 50Hz</text>
+<text x="450" y="223" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#0f766e">/dvl/beams</text>
+<text x="450" y="236" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#0f766e">10 Hz</text>
+<path d="M400 330H500" fill="none" stroke="#0f766e" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#m0f766e)"/>
+<rect x="403.0" y="286" width="94.0" height="31" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="450" y="298" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#0f766e">/ground_truth/</text>
+<text x="450" y="311" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#0f766e">odom 50 Hz</text>
+<path d="M400 504H500" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#m0f766e)"/>
+<rect x="412.0" y="458" width="76.0" height="44" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="450" y="470" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#0f766e">/sonar_fan/</text>
+<text x="450" y="483" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#0f766e">points</text>
+<text x="450" y="496" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#0f766e">10 Hz</text>
 <path d="M345.0 130V108H1340V130" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#m0f766e)"/>
-<rect x="698.0" y="99.5" width="284.0" height="18.5" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="840" y="112.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#0f766e">/sonar/points  forward sonar → obstacle abort</text>
-<path d="M790 230H870" fill="none" stroke="#6d28d9" stroke-width="2" marker-end="url(#m6d28d9)"/>
-<rect x="789.1" y="162" width="73.8" height="70" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="826" y="174" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/imu/data</text>
-<text x="826" y="187" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/dvl/twist</text>
-<text x="826" y="200" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/depth/pose</text>
-<text x="826" y="213" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/gps/pose</text>
-<text x="826" y="226" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/usbl/pose</text>
-<path d="M790 470H870" fill="none" stroke="#4338ca" stroke-width="2" marker-end="url(#m4338ca)"/>
-<rect x="787.5" y="437.5" width="77.0" height="32.0" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="826" y="450.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#4338ca">/multibeam/</text>
-<text x="826" y="463.5" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#4338ca">submap</text>
-<path d="M990.0 350V390" fill="none" stroke="#047857" stroke-width="2" marker-end="url(#m047857)"/>
-<rect x="993.0" y="365.5" width="137.9" height="18.5" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="998.0" y="378.0" text-anchor="start" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#047857">odom: map → base_link</text>
+<rect x="617.6" y="99.5" width="444.7" height="18.5" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="840" y="112.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#0f766e">/sonar/points 5 Hz · forward sonar 64×16 → obstacle abort (8 m, ±20°)</text>
+<path d="M800 258H880" fill="none" stroke="#6d28d9" stroke-width="2" marker-end="url(#m6d28d9)"/>
+<rect x="800.0" y="164" width="76.0" height="70" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="838" y="176" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/imu/data</text>
+<text x="838" y="189" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/dvl/twist</text>
+<text x="838" y="202" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/depth/pose</text>
+<text x="838" y="215" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/gps/pose</text>
+<text x="838" y="228" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">/usbl/pose</text>
+<path d="M800 504H880" fill="none" stroke="#4338ca" stroke-width="2" marker-end="url(#m4338ca)"/>
+<rect x="800.0" y="470" width="76.0" height="31" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="838" y="482" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#4338ca">/multibeam/</text>
+<text x="838" y="495" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#4338ca">submap</text>
+<path d="M995.0 380V420" fill="none" stroke="#047857" stroke-width="2" marker-end="url(#m047857)"/>
+<rect x="998.0" y="396" width="136.0" height="18" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="1003.0" y="408" text-anchor="start" font-size="10" font-family="Menlo, Consolas, monospace" fill="#047857">odom: map → base_link</text>
 <path d="M1110 230H1170" fill="none" stroke="#047857" stroke-width="2" marker-end="url(#m047857)"/>
-<rect x="1104.5" y="197.5" width="70.9" height="32.0" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="1140" y="210.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#047857">/odometry/</text>
-<text x="1140" y="223.5" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#047857">global</text>
-<path d="M1270.0 350V612" fill="none" stroke="#be185d" stroke-width="2" marker-end="url(#mbe185d)"/>
-<rect x="1210.2" y="417.5" width="119.6" height="59.0" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="1270.0" y="430.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#be185d">/speed_setpoint</text>
-<text x="1270.0" y="443.5" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#be185d">/heading_setpoint</text>
-<text x="1270.0" y="457.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#be185d">/depth_setpoint</text>
-<text x="1270.0" y="470.5" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#be185d">/altitude_setpoint</text>
-<path d="M790 330H860V642H870" fill="none" stroke="#6d28d9" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#m6d28d9)"/>
-<rect x="744.6" y="600" width="114.4" height="31" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="854" y="612" text-anchor="end" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">direct feedback</text>
-<text x="854" y="625" text-anchor="end" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">ahrs · depth · dvl</text>
-<path d="M870 678H400" fill="none" stroke="#be185d" stroke-width="2" marker-end="url(#mbe185d)"/>
-<rect x="470.6" y="657.5" width="338.9" height="18.5" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="640" y="670.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#be185d">/propeller/cmd_thrust  /fins/rudder|elevator/cmd_angle</text>
-<path d="M1253.3333333333335 760V724" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#mb45309)"/>
-<rect x="1256.3" y="725.5" width="58.7" height="18.5" rx="4" fill="#fff" fill-opacity="0.92"/>
-<text x="1261.3333333333335" y="738.0" text-anchor="start" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#b45309">/cmd_vel</text>
+<rect x="1105.0" y="198" width="70.0" height="31" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="1140" y="210" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#047857">/odometry/</text>
+<text x="1140" y="223" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#047857">global</text>
+<path d="M1270.0 380V660" fill="none" stroke="#be185d" stroke-width="2" marker-end="url(#mbe185d)"/>
+<rect x="1211.0" y="448" width="118.0" height="57" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="1270.0" y="460" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#be185d">/speed_setpoint</text>
+<text x="1270.0" y="473" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#be185d">/heading_setpoint</text>
+<text x="1270.0" y="486" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#be185d">/depth_setpoint</text>
+<text x="1270.0" y="499" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#be185d">/altitude_setpoint</text>
+<rect x="1220.0" y="528" width="100.0" height="31" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="1270.0" y="540" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#9d174d">/mission/path</text>
+<text x="1270.0" y="553" text-anchor="middle" font-size="10" font-family="Menlo, Consolas, monospace" fill="#9d174d">/mission/status</text>
+<path d="M800 355H870V690H880" fill="none" stroke="#6d28d9" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#m6d28d9)"/>
+<rect x="751.0" y="644" width="118.0" height="31" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="864" y="656" text-anchor="end" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">direct feedback</text>
+<text x="864" y="669" text-anchor="end" font-size="10" font-family="Menlo, Consolas, monospace" fill="#6d28d9">ahrs · depth · dvl</text>
+<path d="M880 750H400" fill="none" stroke="#be185d" stroke-width="2" marker-end="url(#mbe185d)"/>
+<rect x="484.9" y="729.5" width="350.2" height="18.5" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="660" y="742.0" text-anchor="middle" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#be185d">/propeller/cmd_thrust  /fins/rudder|elevator/cmd_angle</text>
+<path d="M1253.3333333333335 840V800" fill="none" stroke="#b45309" stroke-width="2" marker-end="url(#mb45309)"/>
+<rect x="1256.3" y="811.5" width="60.4" height="18.5" rx="4" fill="#fff" fill-opacity="0.92"/>
+<text x="1261.3333333333335" y="824.0" text-anchor="start" font-size="10.5" font-family="Menlo, Consolas, monospace" fill="#b45309">/cmd_vel</text>
 </svg>
