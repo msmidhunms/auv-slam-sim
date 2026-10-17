@@ -48,7 +48,10 @@ def test_dive_goes_to_transit_depth():
     m.step(surface(10.0))
     cmd = m.step(Inputs(t=11.0, x=-20.0, y=-20.0, z=-3.0, yaw=0.0))
     assert m.state == 'DIVE'
-    assert cmd.depth == -15.0 and cmd.speed == 1.0
+    assert cmd.depth == -15.0 and cmd.speed == 1.4
+    assert cmd.heading == pytest.approx(math.atan2(20.0, 20.0))
+    # heading stays fixed through the dive, no turning near the surface
+    cmd = m.step(Inputs(t=20.0, x=10.0, y=5.0, z=-8.0, yaw=0.5))
     assert cmd.heading == pytest.approx(math.atan2(20.0, 20.0))
 
 
@@ -89,8 +92,12 @@ def test_surfacing_only_at_lane_end_then_dives_again():
     assert m.state == 'SURVEY'
     m.step(Inputs(t=t + 300, x=100.0, y=0.0, z=-30.0, yaw=0.0, altitude=10.0))   # lane end
     assert m.state == 'SURFACE_FOR_FIX'
+    # next waypoint (100, 25) is to the left: turn first at the same depth
     cmd = m.step(Inputs(t=t + 301, x=100.0, y=0.0, z=-20.0, yaw=0.0))
-    assert cmd.depth == 0.0 and cmd.speed > 0.0             # climbing with some speed
+    assert cmd.depth == -20.0 and cmd.heading == pytest.approx(math.pi / 2)
+    # pointing at it now: climb straight with the propeller margin
+    cmd = m.step(Inputs(t=t + 320, x=95.0, y=5.0, z=-20.0, yaw=1.3))
+    assert cmd.depth == 0.0 and cmd.speed == 1.4
     m.step(Inputs(t=t + 400, x=100.0, y=0.0, z=-0.1, yaw=0.0, gps_fix=True))
     m.step(Inputs(t=t + 416, x=100.0, y=0.0, z=-0.1, yaw=0.0, gps_fix=True))
     assert m.state == 'DIVE'
@@ -138,6 +145,8 @@ def test_abort_climbs_then_stops_at_surface():
     m.abort('manual', t)
     cmd = m.step(Inputs(t=t + 1, x=10.0, y=0.0, z=-20.0, yaw=0.3))
     assert cmd.speed > 0.0 and cmd.depth == 0.0 and cmd.heading == 0.3
+    cmd = m.step(Inputs(t=t + 2, x=11.0, y=0.0, z=-19.0, yaw=0.5))
+    assert cmd.heading == 0.3                               # holds the heading of the abort
     cmd = m.step(Inputs(t=t + 60, x=10.0, y=0.0, z=-0.2, yaw=0.3))
     assert cmd.speed == 0.0
     assert m.status == 'ABORT: manual'

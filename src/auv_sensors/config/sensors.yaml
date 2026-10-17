@@ -63,3 +63,12 @@ usbl:
     dropout_probability: 0.1
     max_range: 1000.0               # m
     seed: 15
+
+battery:
+  ros__parameters:
+    capacity_wh: 1000.0             # Wh, Li-ion pack
+    hotel_load_w: 25.0              # W, computers, nav sensors and sonars
+    propulsion_efficiency: 0.4      # thrust x speed / electrical power
+    voltage_full: 33.6              # V, 8s Li-ion
+    voltage_empty: 25.0
+    initial_charge: 1.0

@@ -21,6 +21,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rclpy.time import Duration, Time
+from std_msgs.msg import Bool
 
 from auv_sensors.models import usbl_latency, usbl_std
 
@@ -46,7 +47,14 @@ class UsblNode(Node):
         self.pose_pub = self.create_publisher(PoseWithCovarianceStamped, 'usbl/pose', 10)
         self.ship_pub = self.create_publisher(PointStamped, 'usbl/ship', latched)
         self.create_subscription(Odometry, 'ground_truth/odom', self.on_odom, 10)
+        self.create_subscription(Bool, 'faults/usbl_off', self.on_fault, 10)
         self.ship_published = False
+        self.off = False
+
+    def on_fault(self, msg):
+        if msg.data != self.off:
+            self.get_logger().warn('fault injected: USBL off' if msg.data else 'USBL back on')
+        self.off = msg.data
 
     def on_odom(self, msg):
         stamp = Time.from_msg(msg.header.stamp)
@@ -72,7 +80,7 @@ class UsblNode(Node):
 
         p = msg.pose.pose.position
         slant = math.dist((p.x, p.y, p.z), self.ship)
-        if slant > self.max_range or self.rng.random() < self.dropout:
+        if self.off or slant > self.max_range or self.rng.random() < self.dropout:
             return
 
         std = usbl_std(slant, self.relative_error, self.min_error)

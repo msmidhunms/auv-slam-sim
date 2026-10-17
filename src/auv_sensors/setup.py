@@ -28,6 +28,7 @@ setup(
             'depth_node = auv_sensors.depth_node:main',
             'gps_node = auv_sensors.gps_node:main',
             'usbl_node = auv_sensors.usbl_node:main',
+            'battery_node = auv_sensors.battery_node:main',
         ],
     },
 )

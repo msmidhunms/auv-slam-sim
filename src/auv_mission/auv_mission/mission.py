@@ -14,12 +14,18 @@ States, like a real AUV mission:
 Abort rules are checked in every active state: leak, low battery, too deep,
 too close to the seabed, obstacle ahead, DVL lock lost for too long during the
 survey, outside the operating area, mission taking too long.
+
+Dives and climbs are done on a straight heading with extra propeller. Near the
+surface the DVL has no bottom lock, so the speed is not measured and the
+vehicle runs slower than commanded; if it is also turning, the fins are not
+strong enough at that speed against the hull and it ends up circling (seen in
+testing). So the turns are done at depth, where the DVL is locked.
 """
 
 from dataclasses import dataclass
 import math
 
-from auv_mission.survey import line_of_sight
+from auv_mission.survey import line_of_sight, wrap_angle
 
 ACTIVE = ('DIVE', 'SURVEY', 'SURFACE_FOR_FIX', 'RETURN')
 
@@ -49,7 +55,7 @@ class Command:
 @dataclass
 class Config:
     cruise_speed: float = 1.0
-    abort_speed: float = 0.6
+    climb_speed: float = 1.4            # dive, surfacing and abort, propeller margin without DVL
     transit_depth: float = -15.0
     survey_altitude: float = 10.0
     lookahead: float = 12.0
@@ -61,6 +67,7 @@ class Config:
     surface_wait_max: float = 90.0
     surface_interval: float = 0.0       # s, 0 means no surfacing during the survey
     surfaced_z: float = -0.5
+    climb_heading_tolerance: float = 0.35     # rad, turn at depth till pointing this close
     dive_timeout: float = 300.0
     mission_timeout: float = 3600.0
     max_depth: float = 45.0
@@ -81,6 +88,7 @@ class Mission:
         self.reason = ''
         self.index = 0
         self.segment_start = None
+        self.fixed_heading = None
         self.reset_timers()
 
     def reset_timers(self):
@@ -115,6 +123,7 @@ class Mission:
     def enter(self, state, t):
         self.state = state
         self.state_time = t
+        self.fixed_heading = None
 
     @property
     def status(self):
@@ -181,8 +190,10 @@ class Mission:
 
     def do_dive(self, s):
         c = self.c
-        target = self.waypoints[self.index]
-        heading = math.atan2(target[1] - s.y, target[0] - s.x)
+        # dive straight on the bearing to the next waypoint, taken at the start of the dive
+        if self.fixed_heading is None:
+            target = self.waypoints[self.index]
+            self.fixed_heading = math.atan2(target[1] - s.y, target[0] - s.x)
         if s.z <= c.transit_depth + 1.0:
             self.segment_start = (s.x, s.y)
             self.dvl_lost_since = None
@@ -190,7 +201,7 @@ class Mission:
         elif s.t - self.state_time > c.dive_timeout:
             self.abort('dive took too long', s.t)
             return self.do_abort(s)
-        return Command(speed=c.cruise_speed, heading=heading, depth=c.transit_depth)
+        return Command(speed=c.climb_speed, heading=self.fixed_heading, depth=c.transit_depth)
 
     def do_survey(self, s):
         c = self.c
@@ -225,8 +236,15 @@ class Mission:
     def do_surface_for_fix(self, s):
         c = self.c
         if s.z < c.surfaced_z:
-            # keep some speed for the elevator while coming up
-            return Command(speed=c.abort_speed, heading=s.yaw, depth=0.0)
+            # first turn at depth towards the next waypoint (DVL locked, good control),
+            # then climb straight on that heading
+            target = self.waypoints[self.index]
+            bearing = math.atan2(target[1] - s.y, target[0] - s.x)
+            if self.fixed_heading is None:
+                if abs(wrap_angle(bearing - s.yaw)) > c.climb_heading_tolerance:
+                    return Command(speed=c.cruise_speed, heading=bearing, depth=s.z)
+                self.fixed_heading = bearing
+            return Command(speed=c.climb_speed, heading=self.fixed_heading, depth=0.0)
         if self.surfaced_since is None:
             self.surfaced_since = s.t
         if s.gps_fix:
@@ -252,8 +270,11 @@ class Mission:
         return Command(speed=0.0, heading=s.yaw, depth=0.0)
 
     def do_abort(self, s):
+        # climb straight on the heading the vehicle had at the abort
+        if self.fixed_heading is None:
+            self.fixed_heading = s.yaw
         if s.z < self.c.surfaced_z:
-            return Command(speed=self.c.abort_speed, heading=s.yaw, depth=0.0)
+            return Command(speed=self.c.climb_speed, heading=self.fixed_heading, depth=0.0)
         return Command(speed=0.0, heading=s.yaw, depth=0.0)
 
 

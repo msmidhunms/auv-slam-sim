@@ -129,6 +129,15 @@ services:
       target: nodes
     command: ros2 launch auv_sensors sensor.launch.py node:=usbl
 
+  # battery model, propeller and hotel load
+  battery:
+    <<: *sim-node
+    image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
+    build:
+      <<: *ros-build
+      target: nodes
+    command: ros2 launch auv_sensors sensor.launch.py node:=battery
+
   # --- survey sonars: across track fan -> multibeam swath / submaps, sidescan ---
   multibeam:
     <<: *sim-node
@@ -194,7 +203,7 @@ services:
     volumes:
       - slam_data:/data
 
-  # --- mission: survey waypoints -> cmd_vel and setpoints for the controller ---
+  # --- mission: state machine -> speed, heading, depth / altitude setpoints -----
   mission:
     <<: *sim-node
     image: auv-slam-sim/nodes:${ROS_DISTRO:-jazzy}
@@ -284,7 +293,7 @@ services:
       /controller/speed_reference /controller/heading_reference
       /controller/depth_reference /controller/pitch_reference
       /odometry/filtered /odometry/global /ground_truth/odom
-      /mission/status /mission/path
+      /mission/status /mission/path /mission/obstacle_range /battery/state /battery/power
       /eval/ekf_position_error /eval/slam_position_error /eval/depth_error
       /eval/heading_error_deg /eval/distance_travelled
 

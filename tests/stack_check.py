@@ -16,7 +16,7 @@ from rclpy.parameter import Parameter
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from rclpy.time import Time
 from rosgraph_msgs.msg import Clock
-from sensor_msgs.msg import FluidPressure, Image, Imu, NavSatFix, PointCloud2, Range
+from sensor_msgs.msg import BatteryState, FluidPressure, Image, Imu, NavSatFix, PointCloud2, Range
 from std_msgs.msg import Float64, String
 from tf2_ros import Buffer, TransformException, TransformListener
 
@@ -44,7 +44,9 @@ RATE_CHECKS = [
     ('/fins/rudder/cmd_angle', Float64, 30.0, 'controller'),
     ('/fins/elevator/cmd_angle', Float64, 30.0, 'controller'),
     ('/odometry/filtered', Odometry, 30.0, 'localization'),
-    ('/odometry/global', Odometry, 20.0, 'navigation'),
+    ('/odometry/global', Odometry, 15.0, 'navigation'),
+    ('/battery/state', BatteryState, 0.5, 'battery'),
+    ('/mission/obstacle_range', Float64, 3.0, 'mission'),
     ('/eval/nav_position_error', Float64, 1.0, 'eval'),
     ('/eval/ekf_position_error', Float64, 1.0, 'eval'),
     ('/eval/slam_position_error', Float64, 1.0, 'eval + slam'),

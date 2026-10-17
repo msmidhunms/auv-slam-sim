@@ -4,8 +4,11 @@
 mission:
   ros__parameters:
     cruise_speed: 1.0               # m/s
-    abort_speed: 0.6                # m/s, while climbing after an abort
-    transit_depth: -15.0            # z in m, dive and transit depth
+    climb_speed: 1.4                # m/s, dive, surfacing and abort. Extra margin, near the
+                                    # surface the DVL has no lock and speed is not measured
+    climb_heading_tolerance_deg: 20.0   # surfacing: turn at depth first, then climb straight
+    transit_depth: -25.0            # z in m, dive and transit depth. Deep enough for DVL
+                                    # bottom lock (seabed is 34 to 46 m, DVL range 30 m slant)
     survey_altitude: 10.0           # m above the seabed on the lanes
     lookahead: 12.0                 # m, line of sight guidance
     switch_distance: 6.0            # m before the waypoint the next segment is taken

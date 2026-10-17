@@ -1,6 +1,6 @@
 COMPOSE := docker compose
 
-.PHONY: help build up down ps logs shell teleop mission mission-stop gui rtf check bag test smoke smoke-down
+.PHONY: help build up down ps logs shell teleop mission mission-stop mission-abort mission-status fault fault-clear gui rtf check bag test smoke smoke-down
 
 help:
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
@@ -29,8 +29,20 @@ teleop: ## drive the vehicle from keyboard
 mission: ## start the survey mission
 	$(COMPOSE) run --rm -T shell ros2 service call /mission/start std_srvs/srv/Trigger
 
-mission-stop: ## stop the mission, vehicle holds position
+mission-stop: ## stop the mission, propeller off, vehicle floats up
 	$(COMPOSE) run --rm -T shell ros2 service call /mission/stop std_srvs/srv/Trigger
+
+mission-abort: ## abort the mission, vehicle climbs to the surface
+	$(COMPOSE) run --rm -T shell ros2 service call /mission/abort std_srvs/srv/Trigger
+
+mission-status: ## current state of the mission
+	@$(COMPOSE) run --rm -T shell ros2 topic echo /mission/status --once --qos-durability transient_local --field data
+
+fault: ## inject a fault, F=leak | dvl_failure | usbl_off | battery_low
+	$(COMPOSE) run --rm -T shell ros2 topic pub --times 5 --rate 2 /faults/$(F) std_msgs/msg/Bool "{data: true}"
+
+fault-clear: ## clear a fault, F=leak | dvl_failure | usbl_off
+	$(COMPOSE) run --rm -T shell ros2 topic pub --times 5 --rate 2 /faults/$(F) std_msgs/msg/Bool "{data: false}"
 
 gui: ## open the browser desktop with RViz and Gazebo GUI
 	open http://localhost:$${NOVNC_PORT:-6080}/

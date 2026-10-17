@@ -22,6 +22,7 @@ from rclpy.node import Node
 from rclpy.time import Time
 from sensor_msgs.msg import PointCloud2, Range
 from sensor_msgs_py import point_cloud2
+from std_msgs.msg import Bool
 
 from auv_sensors.models import dvl_altitude, velocity_at_offset
 
@@ -56,8 +57,15 @@ class DvlNode(Node):
 
         self.twist_pub = self.create_publisher(TwistWithCovarianceStamped, 'dvl/twist', 10)
         self.altitude_pub = self.create_publisher(Range, 'dvl/altitude', 10)
+        self.failed = False
         self.create_subscription(PointCloud2, 'dvl/beams', self.on_beams, 10)
+        self.create_subscription(Bool, 'faults/dvl_failure', self.on_fault, 10)
         self.create_subscription(Odometry, 'ground_truth/odom', self.on_odom, 10)
+
+    def on_fault(self, msg):
+        if msg.data != self.failed:
+            self.get_logger().warn('fault injected: DVL failed' if msg.data else 'DVL fault cleared')
+        self.failed = msg.data
 
     def on_beams(self, msg):
         points = list(point_cloud2.read_points(msg, field_names=('x', 'y', 'z'), skip_nans=False))
@@ -85,7 +93,7 @@ class DvlNode(Node):
         self.last_stamp = stamp
 
         altitude = self.altitude
-        if self.beams_stamp is None or \
+        if self.failed or self.beams_stamp is None or \
                 (stamp - self.beams_stamp).nanoseconds * 1e-9 > self.beam_timeout:
             altitude = None
         self.publish_altitude(msg.header.stamp, altitude)

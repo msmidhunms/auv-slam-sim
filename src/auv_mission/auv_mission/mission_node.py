@@ -39,7 +39,8 @@ class MissionNode(Node):
         defaults = Config()
         self.config = Config(
             cruise_speed=p('cruise_speed', defaults.cruise_speed),
-            abort_speed=p('abort_speed', defaults.abort_speed),
+            climb_speed=p('climb_speed', defaults.climb_speed),
+            climb_heading_tolerance=math.radians(p('climb_heading_tolerance_deg', 20.0)),
             transit_depth=p('transit_depth', defaults.transit_depth),
             survey_altitude=p('survey_altitude', defaults.survey_altitude),
             lookahead=p('lookahead', defaults.lookahead),
